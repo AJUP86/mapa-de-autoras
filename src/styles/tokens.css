@@ -1,0 +1,20 @@
+/* mapa-de-autoras — design tokens
+ * Single source of truth for color and type variables.
+ * Edit values here to repaint the entire site.
+ */
+
+:root {
+  --c-ink: #1b2a41;
+  --c-parchment: #f5efe6;
+  --c-bone: #faf6ee;
+  --c-oxblood: #7a1f2e;
+  --c-oxblood-2: #9c3a47;
+  --c-oxblood-3: #c97f87;
+  --c-ochre: #c68b3c;
+  --c-penguin: #e87722;
+  --c-sage: #7a9b82;
+  --c-shadow: rgba(27, 42, 65, 0.1);
+
+  --font-display: "Fraunces Variable", Georgia, serif;
+  --font-body: "Inter Variable", system-ui, sans-serif;
+}

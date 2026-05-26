@@ -36,7 +36,19 @@ Astro 5 (static) · React island for the map · Tailwind CSS · Supabase (Postgr
 
 ## Getting started
 
-> Scaffold is not yet in place. Setup instructions land here once `package.json` exists.
+Prerequisites: Node.js ≥ 20, pnpm ≥ 9.
+
+```sh
+pnpm install
+pnpm dev          # http://localhost:4321
+```
+
+Open `/styleguide` to see the live design tokens. To rebrand the palette, edit `src/styles/tokens.css` — every component reads from those variables, so changes propagate instantly.
+
+```sh
+pnpm build        # produce static dist/
+pnpm preview      # serve the built site locally
+```
 
 ## License
 

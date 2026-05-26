@@ -1,0 +1,148 @@
+---
+import Base from "../layouts/Base.astro";
+
+const swatches = [
+  { name: "ink",       hex: "#1B2A41", use: "Primary text" },
+  { name: "parchment", hex: "#F5EFE6", use: "Page background" },
+  { name: "bone",      hex: "#FAF6EE", use: "Card surfaces" },
+  { name: "oxblood",   hex: "#7A1F2E", use: "Brand · Read country" },
+  { name: "oxblood-2", hex: "#9C3A47", use: "Mixed country" },
+  { name: "oxblood-3", hex: "#C97F87", use: "Discoveries country" },
+  { name: "ochre",     hex: "#C68B3C", use: "Link underlines · subtle highlights" },
+  { name: "penguin",   hex: "#E87722", use: "Discovery tag · vintage accents" },
+  { name: "sage",      hex: "#7A9B82", use: "Confirmed · dividers" },
+];
+
+const mapStates = [
+  { label: "empty",       cls: "bg-parchment text-ink border border-ink/10" },
+  { label: "discoveries", cls: "bg-oxblood-3 text-ink" },
+  { label: "mixed",       cls: "bg-oxblood-2 text-parchment" },
+  { label: "read",        cls: "bg-oxblood text-parchment" },
+];
+
+const penguinBands = [
+  { tag: "Penguin Classics edition", title: "Sula",                                    meta: "Toni Morrison · 1973" },
+  { tag: "New discovery",            title: "Nada",                                    meta: "Carmen Laforet · 1944" },
+  { tag: "Translated to español",    title: "The Vegetarian → La vegetariana",         meta: "Han Kang · trans. Sunme Yoon" },
+];
+---
+
+<Base title="Style guide · mapa de autoras">
+  <main class="mx-auto max-w-5xl px-6 py-12 sm:py-16">
+    <h1 class="font-display text-5xl sm:text-6xl font-semibold tracking-tight">mapa de autoras</h1>
+    <p class="mt-2 text-ink/70 max-w-prose font-body">
+      Live design tokens. Edit <code class="font-mono text-sm">src/styles/tokens.css</code> and reload to repaint everything.
+    </p>
+
+    <!-- Color tokens -->
+    <h2 class="mt-16 mb-4 font-display text-2xl font-semibold border-b border-ink/10 pb-2">Color tokens</h2>
+    <div class="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4">
+      {swatches.map((s) => (
+        <div class="bg-bone rounded-lg p-4 flex gap-3 items-center shadow-sm">
+          <div class="w-14 h-14 rounded-md shrink-0 ring-1 ring-black/5" style={`background: ${s.hex}`}></div>
+          <div class="text-sm leading-snug font-body">
+            <div class="font-display font-semibold text-base">{s.name}</div>
+            <code class="font-mono text-xs text-ink/70">{s.hex}</code>
+            <div class="text-ink/70">{s.use}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <!-- Map highlight scale -->
+    <h2 class="mt-16 mb-2 font-display text-2xl font-semibold border-b border-ink/10 pb-2">Map highlight scale</h2>
+    <p class="text-ink/70 max-w-prose font-body">Country fill: no authors → only discoveries → mixed → only read.</p>
+    <div class="mt-4 flex gap-1">
+      {mapStates.map((s) => (
+        <div class={`flex-1 h-16 rounded-md flex items-end px-2 py-1 text-xs font-semibold font-body ${s.cls}`}>{s.label}</div>
+      ))}
+    </div>
+
+    <!-- Typography -->
+    <h2 class="mt-16 mb-4 font-display text-2xl font-semibold border-b border-ink/10 pb-2">Typography</h2>
+    <div class="space-y-6">
+      <div>
+        <div class="font-body text-xs uppercase tracking-[0.14em] text-ink/50">Fraunces · Display 60</div>
+        <div class="font-display text-6xl font-semibold leading-[1.05]">Mujeres que escriben el mundo</div>
+      </div>
+      <div>
+        <div class="font-body text-xs uppercase tracking-[0.14em] text-ink/50">Fraunces · H1 40</div>
+        <div class="font-display text-4xl font-semibold">Autoras de Argentina</div>
+      </div>
+      <div>
+        <div class="font-body text-xs uppercase tracking-[0.14em] text-ink/50">Fraunces · H2 28</div>
+        <div class="font-display text-2xl font-semibold">Discoveries</div>
+      </div>
+      <div>
+        <div class="font-body text-xs uppercase tracking-[0.14em] text-ink/50">Inter · Body 17</div>
+        <p class="font-body text-[17px] max-w-prose">
+          Selva Almada nació en Entre Ríos en 1973. Su novela <em>El viento que arrasa</em> abrió un nuevo camino en la literatura argentina contemporánea, y desde entonces sus libros se traducen a más de quince idiomas.
+        </p>
+      </div>
+      <div>
+        <div class="font-body text-xs uppercase tracking-[0.14em] text-ink/50">Inter · Small 13</div>
+        <div class="font-body text-[13px] text-ink/70">Suggested by María · 2026-05-26</div>
+      </div>
+    </div>
+
+    <!-- Reference components -->
+    <h2 class="mt-16 mb-4 font-display text-2xl font-semibold border-b border-ink/10 pb-2">Reference components</h2>
+    <div class="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-5">
+      <div class="bg-bone rounded-xl p-5 shadow-sm">
+        <h3 class="font-display text-lg opacity-70 mb-3">Buttons</h3>
+        <button class="bg-oxblood text-parchment font-semibold rounded-lg px-4 py-2 transition-colors hover:bg-oxblood-2 font-body">Sugerir autora</button>
+        <button class="ml-2 bg-transparent text-oxblood border-[1.5px] border-oxblood font-semibold rounded-lg px-4 py-2 transition-colors hover:bg-oxblood hover:text-parchment font-body">Cancelar</button>
+      </div>
+
+      <div class="bg-bone rounded-xl p-5 shadow-sm">
+        <h3 class="font-display text-lg opacity-70 mb-3">Badges</h3>
+        <span class="inline-block bg-oxblood text-parchment text-xs font-semibold rounded-full px-2.5 py-0.5 font-body">Read</span>
+        <span class="inline-block bg-penguin text-parchment text-xs font-semibold rounded-full px-2.5 py-0.5 ml-1 font-body">Discovery</span>
+        <span class="inline-block bg-sage text-ink text-xs font-semibold rounded-full px-2.5 py-0.5 ml-1 font-body">Confirmed</span>
+      </div>
+
+      <div class="bg-bone rounded-xl p-5 shadow-sm">
+        <h3 class="font-display text-lg opacity-70 mb-3">Link</h3>
+        <p class="font-body">
+          Conoce a <a href="#" class="text-oxblood underline decoration-ochre decoration-2 underline-offset-[3px]">Selva Almada</a> y a otras escritoras argentinas en el mapa.
+        </p>
+      </div>
+
+      <div class="bg-bone rounded-xl p-5 shadow-sm">
+        <h3 class="font-display text-lg opacity-70 mb-3">Author entry</h3>
+        <div class="font-display text-xl font-semibold">
+          Selva Almada
+          <span class="inline-block align-middle bg-oxblood text-parchment text-xs font-semibold rounded-full px-2.5 py-0.5 ml-1 font-body">Read</span>
+        </div>
+        <div class="text-[13px] text-ink/70 mt-1 font-body">Argentina · 1973–</div>
+        <ul class="mt-3 pl-5 list-disc space-y-1 font-body">
+          <li>El viento que arrasa <a href="#" class="text-oxblood underline decoration-ochre decoration-2 underline-offset-[3px] text-[13px]">amazon.es</a></li>
+          <li>Ladrilleros <a href="#" class="text-oxblood underline decoration-ochre decoration-2 underline-offset-[3px] text-[13px]">amazon.es</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Penguin band -->
+    <h2 class="mt-16 mb-2 font-display text-2xl font-semibold border-b border-ink/10 pb-2">Penguin band — vintage spine accent</h2>
+    <p class="text-ink/70 max-w-prose mt-2 font-body">
+      The classic orange-band motif over a card body. Use sparingly for "Featured", "Editor's pick", or a translated-edition callout — never on every card.
+    </p>
+    <div class="mt-5 grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-5">
+      {penguinBands.map((b) => (
+        <div class="bg-bone rounded-xl overflow-hidden shadow-sm">
+          <div class="bg-penguin text-parchment font-body uppercase font-bold text-[11px] tracking-[0.14em] px-3.5 py-1.5 flex justify-between items-center">
+            <span>{b.tag}</span>
+          </div>
+          <div class="px-5 py-4">
+            <div class="font-display text-xl font-semibold">{b.title}</div>
+            <div class="text-[13px] text-ink/70 font-body">{b.meta}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <footer class="mt-16 text-[13px] text-ink/60 font-body">
+      <code class="font-mono">src/pages/styleguide.astro</code> · edit <code class="font-mono">src/styles/tokens.css</code> to repaint.
+    </footer>
+  </main>
+</Base>

@@ -1,0 +1,30 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  lang?: "es" | "en";
+}
+
+const {
+  title = "mapa de autoras",
+  description = "Un mapa mundial de escritoras: autoras leídas y descubrimientos por descubrir.",
+  lang = "es",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body class="font-body bg-parchment text-ink">
+    <slot />
+  </body>
+</html>
