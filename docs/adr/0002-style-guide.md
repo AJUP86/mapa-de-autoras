@@ -43,19 +43,28 @@ Reference contrast checks (WCAG AA):
 
 ### Token wiring — palette must be easy to change
 
-Tokens live in **one place** and propagate via CSS custom properties + Tailwind theme aliases. Changing a hex requires editing exactly one file.
+Using **Tailwind 4** with CSS-first configuration. No `tailwind.config.mjs` — the `@theme` block in CSS *is* the theme, which dovetails with the CSS-variable approach. Editing one file repaints the site.
 
 ```
 src/styles/tokens.css         ← single source of truth (CSS variables)
    :root { --c-ink: #1B2A41; --c-parchment: #F5EFE6; ... }
 
-tailwind.config.mjs           ← maps Tailwind utilities → CSS variables
-   colors: { ink: 'var(--c-ink)', parchment: 'var(--c-parchment)', ... }
+src/styles/global.css         ← imports tokens + Tailwind theme aliases
+   @import "tailwindcss";
+   @import "./tokens.css";
+   @theme {
+     --color-ink:       var(--c-ink);
+     --color-parchment: var(--c-parchment);
+     --font-display:    var(--font-display);
+     ...
+   }
 ```
 
-Consumers always use Tailwind classes (`bg-parchment`, `text-ink`, `fill-oxblood`) — never hard-coded hexes. The same indirection enables a future dark mode (`:root.dark { --c-parchment: ...; }`) without touching component code.
+Consumers always use Tailwind utility classes (`bg-parchment`, `text-ink`, `font-display`) — never hard-coded hexes. The same indirection enables a future dark mode (`:root.dark { --c-parchment: ...; }`) without touching component code.
 
-A live `/styleguide` route renders every token as a swatch, plus the type scale and reference components. It's the visual confirmation that "the palette looks right" — built in Stage 1 so the brand is iterable from day one.
+A live `/styleguide` route renders every token as a swatch, plus the type scale and reference components (badges, buttons, Penguin spine band). It's the visual confirmation that "the palette looks right" — built in Stage 1 so the brand is iterable from day one.
+
+**Why Tailwind 4 over the legacy `@astrojs/tailwind` integration (Tailwind 3):** `@astrojs/tailwind` is deprecated; Tailwind 4 ships via `@tailwindcss/vite` and is the current default in Astro 5.2+. The CSS-first config also means there's no JS theme file to keep in sync with the CSS variables — Tailwind reads them directly.
 
 ### Map highlight scale
 

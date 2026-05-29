@@ -64,11 +64,11 @@ git push -u origin development
 **Goal:** a runnable Astro project with the brand wired through CSS variables and a visual styleguide page so the palette and type are iterable from day one.
 
 **Build:**
-- `pnpm create astro@latest .` — minimal template, TypeScript strict, no template content.
-- Add integrations: `@astrojs/react`, `@astrojs/tailwind`, `@astrojs/sitemap`.
-- `tailwind.config.mjs` — extend `colors` to reference CSS variables (`ink: 'var(--c-ink)'`, etc.) per [adr/0002 § Token wiring](adr/0002-style-guide.md).
-- `src/styles/tokens.css` — `:root { --c-ink: …; --c-parchment: …; … }` for every palette token, plus type-scale variables.
-- `src/styles/global.css` — base font-face for Fraunces + Inter via `@fontsource-variable/fraunces` and `@fontsource-variable/inter`; sets body bg `parchment`, text `ink`.
+- Manually scaffold a minimal Astro 5 project (avoids `create-astro`'s interactive boilerplate). TypeScript strict via `astro/tsconfigs/strict`.
+- Dependencies: `astro`, `@astrojs/react`, `@astrojs/sitemap`, `tailwindcss` v4, `@tailwindcss/vite`, `react`, `react-dom`, `@fontsource-variable/fraunces`, `@fontsource-variable/inter`. Dev: `typescript`, `@types/react`, `@types/react-dom`, `prettier`, `prettier-plugin-astro`.
+- `astro.config.mjs` — `output: 'static'`, integrations: React + sitemap; Vite plugin: `@tailwindcss/vite`.
+- `src/styles/tokens.css` — `:root { --c-ink: …; --c-parchment: …; … }` for every palette token, plus type-stack variables.
+- `src/styles/global.css` — `@import "tailwindcss"` + tokens + `@fontsource-variable/*` for Fraunces and Inter, plus a `@theme` block bridging `--c-*` → `--color-*` per [adr/0002 § Token wiring](adr/0002-style-guide.md).
 - `src/layouts/Base.astro` — minimal HTML shell, font preconnects, meta tags.
 - `src/pages/index.astro` — placeholder hero ("mapa de autoras") referencing the brand.
 - `src/pages/styleguide.astro` — **the visual proof**: renders every color token as a labelled swatch with hex and contrast info; renders Fraunces and Inter at all heading sizes + body; shows reference components (button, link, Read/Discovery badges, divider, Penguin spine-band featured card). Mirror the structure of `.work/palette-preview.html` — that file is the design source of truth for Stage 1.
