@@ -1,20 +1,52 @@
 ---
 import Base from "../../layouts/Base.astro";
 import LanguageSwitch from "../../components/LanguageSwitch.astro";
+import MapSection from "../../components/MapSection";
 import { t } from "../../i18n/t";
 
 const lang = "en";
+
+const mapLabels = {
+  filter: {
+    all: t(lang, "map.filter.all"),
+    read: t(lang, "map.filter.read"),
+    discoveries: t(lang, "map.filter.discoveries"),
+  },
+  panel: {
+    close: t(lang, "map.panel.close"),
+    empty: t(lang, "map.panel.empty"),
+    suggest: t(lang, "map.panel.suggest"),
+    booksLabel: t(lang, "map.panel.booksLabel"),
+  },
+  status: {
+    read: t(lang, "map.status.read"),
+    discovery: t(lang, "map.status.discovery"),
+  },
+  view: {
+    world: t(lang, "map.view.world"),
+    europe: t(lang, "map.view.europe"),
+    americas: t(lang, "map.view.americas"),
+    africa: t(lang, "map.view.africa"),
+    asia: t(lang, "map.view.asia"),
+    oceania: t(lang, "map.view.oceania"),
+  },
+  zoom: {
+    in: t(lang, "map.zoom.in"),
+    out: t(lang, "map.zoom.out"),
+    reset: t(lang, "map.zoom.reset"),
+  },
+};
 ---
 
 <Base lang={lang} title={t(lang, "meta.title")} description={t(lang, "meta.description")}>
-  <header class="mx-auto max-w-3xl px-6 pt-8 flex items-center justify-between">
+  <header class="mx-auto max-w-5xl px-6 pt-8 flex items-center justify-between">
     <span class="text-xs uppercase tracking-[0.18em] text-ink/50 font-body">
       {t(lang, "nav.home")}
     </span>
     <LanguageSwitch lang={lang} />
   </header>
 
-  <main class="mx-auto max-w-3xl px-6 py-20 sm:py-32">
+  <section class="mx-auto max-w-3xl px-6 pt-16 pb-12 sm:pt-24 sm:pb-16">
     <p class="text-sm uppercase tracking-[0.18em] text-ink/60 mb-4 font-body">
       {t(lang, "hero.eyebrow")}
     </p>
@@ -24,11 +56,28 @@ const lang = "en";
     <p class="mt-6 text-lg text-ink/75 max-w-prose font-body">
       {t(lang, "hero.subhead")}
     </p>
-    <p class="mt-10 text-sm text-ink/60 font-body">
-      <em>{t(lang, "hero.construction")}</em>{" "}
-      <a href="/styleguide" class="text-oxblood underline decoration-ochre decoration-2 underline-offset-4">
-        {t(lang, "hero.styleguideLink")}
-      </a>.
-    </p>
-  </main>
+  </section>
+
+  <section class="mx-auto max-w-6xl px-4 sm:px-6 pb-24">
+    <div class="mb-8 text-center">
+      <p class="text-xs uppercase tracking-[0.2em] text-ink/55 font-body mb-2">
+        {t(lang, "map.eyebrow")}
+      </p>
+      <h2 class="font-display text-3xl sm:text-4xl font-semibold text-ink tracking-tight">
+        {t(lang, "map.title")}
+      </h2>
+      <p class="mt-3 text-sm text-ink/70 font-body max-w-md mx-auto">
+        {t(lang, "map.subhead")}
+      </p>
+    </div>
+
+    <MapSection client:visible labels={mapLabels} />
+  </section>
+
+  <footer class="mx-auto max-w-3xl px-6 pb-12 text-center text-sm text-ink/55 font-body">
+    <em>{t(lang, "hero.construction")}</em>{" "}
+    <a href="/styleguide" class="text-oxblood underline decoration-ochre decoration-2 underline-offset-4">
+      {t(lang, "hero.styleguideLink")}
+    </a>.
+  </footer>
 </Base>

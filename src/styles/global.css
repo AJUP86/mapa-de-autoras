@@ -29,3 +29,13 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
   letter-spacing: -0.01em;
 }
+
+/* Suppress browser default focus ring on map countries — it renders as a
+   bounding-box rectangle around the clicked country and is visually jarring.
+   Selection state is communicated via the country's own stroke instead. */
+.rsm-geography:focus,
+.rsm-geography:focus-visible,
+svg[role="img"] path:focus,
+svg[role="img"] path:focus-visible {
+  outline: none !important;
+}

@@ -14,5 +14,38 @@
     "subhead": "An interactive map of women writers. Tap a country to discover its authors, the books I've read, and the ones still ahead.",
     "construction": "Site under construction. In the meantime, explore the",
     "styleguideLink": "style guide"
+  },
+  "map": {
+    "eyebrow": "Explore the map",
+    "title": "Tap a country",
+    "subhead": "Each tint marks a different state: authors I've read, discoveries to make, or a mix.",
+    "filter": {
+      "all": "All",
+      "read": "Read",
+      "discoveries": "Discoveries"
+    },
+    "panel": {
+      "close": "Close",
+      "empty": "No authors from this country yet. Know one?",
+      "suggest": "Suggest an author",
+      "booksLabel": "Books"
+    },
+    "status": {
+      "read": "Read",
+      "discovery": "Discovery"
+    },
+    "view": {
+      "world": "World",
+      "europe": "Europe",
+      "americas": "Americas",
+      "africa": "Africa",
+      "asia": "Asia",
+      "oceania": "Oceania"
+    },
+    "zoom": {
+      "in": "Zoom in",
+      "out": "Zoom out",
+      "reset": "Reset view"
+    }
   }
 }
