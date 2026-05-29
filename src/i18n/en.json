@@ -1,0 +1,18 @@
+{
+  "meta": {
+    "title": "map of women writers",
+    "description": "A world map of women writers: authors I've read and discoveries still ahead."
+  },
+  "nav": {
+    "home": "Home",
+    "suggest": "Suggest"
+  },
+  "hero": {
+    "eyebrow": "map of women writers",
+    "headlineA": "Women who write",
+    "headlineB": "the world.",
+    "subhead": "An interactive map of women writers. Tap a country to discover its authors, the books I've read, and the ones still ahead.",
+    "construction": "Site under construction. In the meantime, explore the",
+    "styleguideLink": "style guide"
+  }
+}

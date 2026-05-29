@@ -1,9 +1,9 @@
 ---
-import Base from "../layouts/Base.astro";
-import LanguageSwitch from "../components/LanguageSwitch.astro";
-import { t } from "../i18n/t";
+import Base from "../../layouts/Base.astro";
+import LanguageSwitch from "../../components/LanguageSwitch.astro";
+import { t } from "../../i18n/t";
 
-const lang = "es";
+const lang = "en";
 ---
 
 <Base lang={lang} title={t(lang, "meta.title")} description={t(lang, "meta.description")}>
