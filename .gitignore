@@ -21,3 +21,8 @@ Thumbs.db
 
 # Claude Code local config (per-developer)
 .claude/
+
+# Supabase CLI artifacts (local-only state, never committed)
+supabase/.branches/
+supabase/.temp/
+supabase/.env
