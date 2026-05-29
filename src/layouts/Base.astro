@@ -12,6 +12,14 @@ const {
   description = "Un mapa mundial de escritoras: autoras leídas y descubrimientos por descubrir.",
   lang = "es",
 } = Astro.props;
+
+const path = Astro.url.pathname;
+const esPath = path.replace(/^\/en(\/|$)/, "/");
+const enPath = esPath === "/" ? "/en/" : `/en${esPath}`;
+
+const site = Astro.site ?? new URL("http://localhost:4321/");
+const esUrl = new URL(esPath, site).href;
+const enUrl = new URL(enPath, site).href;
 ---
 
 <!doctype html>
@@ -23,6 +31,9 @@ const {
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate" hreflang="es" href={esUrl} />
+    <link rel="alternate" hreflang="en" href={enUrl} />
+    <link rel="alternate" hreflang="x-default" href={esUrl} />
   </head>
   <body class="font-body bg-parchment text-ink">
     <slot />
