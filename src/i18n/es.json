@@ -14,5 +14,38 @@
     "subhead": "Un mapa interactivo de escritoras. Toca un país para descubrir las autoras de ese rincón del mundo, sus libros leídos y los pendientes por leer.",
     "construction": "Sitio en construcción. Mientras tanto, explora la",
     "styleguideLink": "guía de estilo"
+  },
+  "map": {
+    "eyebrow": "Explora el mapa",
+    "title": "Toca un país",
+    "subhead": "Cada tinte marca un estado distinto: autoras leídas, por descubrir, o una mezcla.",
+    "filter": {
+      "all": "Todos",
+      "read": "Leídas",
+      "discoveries": "Descubrimientos"
+    },
+    "panel": {
+      "close": "Cerrar",
+      "empty": "Aún no hay autoras de este país. ¿Conoces a alguna?",
+      "suggest": "Sugerir una autora",
+      "booksLabel": "Libros"
+    },
+    "status": {
+      "read": "Leída",
+      "discovery": "Descubrimiento"
+    },
+    "view": {
+      "world": "Mundo",
+      "europe": "Europa",
+      "americas": "Américas",
+      "africa": "África",
+      "asia": "Asia",
+      "oceania": "Oceanía"
+    },
+    "zoom": {
+      "in": "Acercar",
+      "out": "Alejar",
+      "reset": "Restablecer vista"
+    }
   }
 }
