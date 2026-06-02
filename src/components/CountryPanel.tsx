@@ -134,13 +134,16 @@ function StatusBadge({
   labels: MapLabels["status"];
 }) {
   const isRead = status === "read";
+  // Mirrors the map encoding: read = penguin (the iconic paperback orange),
+  // discovery = oxblood (deep, anticipatory). Keeps the panel visually in
+  // sync with the country fill the user just clicked.
   return (
     <span
       className={
         "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider font-medium font-body shrink-0 " +
         (isRead
-          ? "bg-oxblood/10 text-oxblood"
-          : "bg-penguin/15 text-penguin")
+          ? "bg-penguin/15 text-penguin"
+          : "bg-oxblood/10 text-oxblood")
       }
     >
       {isRead ? labels.read : labels.discovery}

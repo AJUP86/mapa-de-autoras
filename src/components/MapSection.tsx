@@ -53,7 +53,7 @@ export default function MapSection({ labels }: Props) {
         />
       </div>
 
-      <div className="mx-auto max-w-5xl rounded-lg overflow-hidden">
+      <div className="mx-auto max-w-5xl rounded-2xl overflow-hidden border border-ink/10 shadow-[0_1px_2px_var(--c-shadow)]">
         <AuthorsMap
           countryStates={countryStates}
           filter={filter}

@@ -56,29 +56,60 @@ export function computeCountryStates(
   return result;
 }
 
+export interface CountryStyle {
+  fill: string;
+  stroke: string;
+}
+
+// Two-color hierarchy — Stage 4b refinement
+// The map uses exactly two fill colors: penguin (read) and oxblood (discovery).
+// There is no blended "mixed" fill. Countries with both kinds of authors are
+// resolved by the filter context:
+//
+//   filter   | mixed country shows as
+//   ─────────┼───────────────────────
+//   all      | penguin (read wins — the default hierarchy)
+//   read     | penguin (it has read authors)
+//   disc.    | oxblood (the "exception" — surfaces the discovery side)
+//
+// Each fill is paired with a darker stroke of itself, so adjacent same-state
+// countries (USA + Canada, ESP + FRA + DEU) keep a visible boundary against
+// the dusty-blue ocean.
+const READ_STYLE: CountryStyle = {
+  fill: "var(--c-penguin)",
+  stroke: "var(--c-penguin-line)",
+};
+const DISCOVERY_STYLE: CountryStyle = {
+  fill: "var(--c-oxblood)",
+  stroke: "var(--c-oxblood-line)",
+};
+const EMPTY_STYLE: CountryStyle = {
+  fill: "var(--c-parchment)",
+  stroke: "var(--c-paper-line)",
+};
+
 /**
- * Map a country's state + the active filter to a CSS fill.
- * Uses CSS variables so palette swaps in tokens.css propagate without a rebuild.
- * Returns `parchment` (the page background) for "faded" countries so they
- * recede visually but don't lose their shape.
+ * Resolve a country's {fill, stroke} from its state and the active filter.
+ * Mixed countries collapse to one color based on the filter context — see the
+ * table above the constants. Filtered-out countries adopt the empty style so
+ * they recede against the ocean without losing their shape.
  */
-export function fillFor(state: CountryState, filter: Filter): string {
-  if (state === "empty") return "var(--c-parchment)";
+export function fillFor(state: CountryState, filter: Filter): CountryStyle {
+  if (state === "empty") return EMPTY_STYLE;
 
   if (filter === "read") {
-    if (state === "read") return "var(--c-oxblood)";
-    if (state === "mixed") return "var(--c-oxblood-2)";
-    return "var(--c-parchment)";
+    if (state === "read" || state === "mixed") return READ_STYLE;
+    return EMPTY_STYLE; // pure discovery fades out
   }
 
   if (filter === "discoveries") {
-    if (state === "discovery") return "var(--c-oxblood-3)";
-    if (state === "mixed") return "var(--c-oxblood-2)";
-    return "var(--c-parchment)";
+    // The exception: mixed countries swap to oxblood here so the
+    // discovery-side surfaces. Pure read countries fade out.
+    if (state === "discovery" || state === "mixed") return DISCOVERY_STYLE;
+    return EMPTY_STYLE;
   }
 
-  // filter === "all"
-  if (state === "read") return "var(--c-oxblood)";
-  if (state === "mixed") return "var(--c-oxblood-2)";
-  return "var(--c-oxblood-3)"; // discovery
+  // filter === "all" — read wins for mixed countries
+  if (state === "read" || state === "mixed") return READ_STYLE;
+  return DISCOVERY_STYLE; // state === "discovery"
 }

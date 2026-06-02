@@ -15,6 +15,18 @@
   --c-sage: #7a9b82;
   --c-shadow: rgba(27, 42, 65, 0.1);
 
+  /* Map palette — Stage 4b
+   * The world map encodes read/discovery on a dusty-blue ocean using a
+   * two-color hierarchy: penguin (the strongest brand signal) for read,
+   * oxblood for discovery. Countries with both states pick a side based
+   * on the active filter — there is no blended middle color. Each fill is
+   * paired with a darker stroke of itself so adjacent same-state countries
+   * keep a visible boundary. */
+  --c-water: #b5cfd2;
+  --c-penguin-line: #9c4e10;
+  --c-oxblood-line: #4a0d18;
+  --c-paper-line: #7a5a3a;     /* sepia for empty-country borders */
+
   --font-display: "Fraunces Variable", Georgia, serif;
   --font-body: "Inter Variable", system-ui, sans-serif;
 }

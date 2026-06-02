@@ -17,22 +17,30 @@ The palette must also work in dense reading contexts (author bios, book descript
 | Token | Hex | Use |
 | --- | --- | --- |
 | `ink` | `#1B2A41` | Primary text; headings on light bg |
-| `parchment` | `#F5EFE6` | Page background |
+| `parchment` | `#F5EFE6` | Page background; empty-country fill on the map |
 | `bone` | `#FAF6EE` | Elevated surfaces (cards, panels) |
-| `oxblood` | `#7A1F2E` | Brand anchor — CTAs, link accents, "read" countries |
-| `oxblood-2` | `#9C3A47` | Mid-tint — "mixed" countries (both read + discoveries) |
-| `oxblood-3` | `#C97F87` | Light tint — "discoveries only" countries |
-| `ochre` | `#C68B3C` | Link underlines, subtle highlights |
-| `penguin` | `#E87722` | Discovery badges, "Featured" / "Editor's pick" spine bands, vintage-book accents |
-| `sage` | `#7A9B82` | Confirmed/success states, subtle dividers |
+| `oxblood` | `#7A1F2E` | Brand anchor — CTAs, link accents, **"discovery" country fill** (Stage 4b) |
+| `penguin` | `#E87722` | **"Read" country fill** (Stage 4b) · Featured / spine-band cards · vintage accents |
+| `water` | `#B5CFD2` | Map ocean — dusty desaturated teal, the warm/cool counter-tone to the parchment palette |
+| `ochre` | `#C68B3C` | Link underlines · subtle highlights · map hover state |
+| `sage` | `#7A9B82` | Confirmed/success states · subtle dividers |
 | `shadow` | `#1B2A41 @ 10%` | Soft elevation |
+| `oxblood-2` `oxblood-3` | — | **Deprecated** as of Stage 4b. Were the mid/light tints of the original 3-oxblood gradient. Kept in `tokens.css` for backwards-compatibility; do not reach for in new code. |
 
-The `penguin` token references the classic 1935 Penguin paperback orange and gives the brand its strongest "this is a books site" signal. **Use sparingly** — one accent per surface at most. Reserved roles:
+**Stroke tokens** — each map fill is paired with a darker-of-itself stroke so adjacent same-state countries (USA + Canada, ESP + FRA + DEU) keep a visible boundary. These are not for general UI use:
 
-- **Discovery badge** background (replaces the previous ochre badge — penguin reads more like a book sticker).
-- **Spine-band** strip across the top of a "Featured", "Editor's pick", "Penguin Classics edition", or "Translated to español" card. Mimics the iconic Penguin paperback spine.
-- **Not** allowed on map fills (the three oxblood tints already encode the read/mixed/discovery legend — adding orange would muddy it).
+| Token | Hex | Pairs with |
+| --- | --- | --- |
+| `penguin-line` | `#9C4E10` | `penguin` (read country) |
+| `oxblood-line` | `#4A0D18` | `oxblood` (discovery country) |
+| `paper-line` | `#7A5A3A` | `parchment` (empty country) |
+
+The `penguin` token references the classic 1935 Penguin paperback orange — the strongest "this is a books site" signal we have. **Use sparingly outside the map** — one accent per non-map surface at most. Reserved roles:
+
+- **Read-country fill on the map** (Stage 4b — promoted from "discovery badge" because read = brightest, most celebratory).
+- **Spine-band** strip across the top of a "Featured", "Editor's pick", or "Translated to español" card. Mimics the iconic Penguin paperback spine.
 - **Not** allowed on primary CTAs (`oxblood` keeps that role so buttons feel grounded).
+- **Not** allowed on hover or selection states (those use `ochre` and `ink` respectively, to stay visually distinct from the read-country fill).
 
 Contrast: `parchment` on `penguin` ≈ 4.0 : 1 — passes AA-large only. Use white/`parchment` text on penguin only at ≥ 14 pt bold or ≥ 18 pt regular; otherwise prefer `ink` on `penguin` (≈ 5.5 : 1, passes AA-normal).
 
@@ -68,16 +76,33 @@ A live `/styleguide` route renders every token as a swatch, plus the type scale 
 
 ### Map highlight scale
 
-The map filter (`All` / `Read` / `Discoveries`) uses three tints of `oxblood`:
+**Stage 4b** — the map encoding was reworked twice. The original three-tint oxblood gradient (`oxblood → oxblood-2 → oxblood-3`) had two problems in practice: (1) all three tints were close enough in hue that adjacent same-state countries blurred together (USA + Canada both read read as one shape); (2) the palette was monochromatic-warm, which read as "flat" / single-temperature. A first refactor introduced a Penguin → Terracotta → Oxblood gradient on a dusty-blue ocean — but mixed countries looking different from their read-only neighbours still introduced visual discontinuity at borders (e.g. Spain `mixed` next to France `read`).
 
-| Country state | Fill | When |
+The final design uses a **two-color hierarchy**, not a gradient. Only two fill colors are ever painted on the map; countries with both read and discovery authors collapse to one of the two based on the active filter.
+
+The map sits on a dusty-blue **water** backdrop (`#B5CFD2`) — a desaturated teal that creates a warm/cool counter-tone to the rest of the palette without feeling tech-flat.
+
+Fills (only two):
+
+| Color | Hex | Stroke | Used when |
+| --- | --- | --- | --- |
+| `penguin` (Read) | `#E87722` | `penguin-line` `#9C4E10` | Country has at least one read author — *celebratory, the iconic Penguin paperback* |
+| `oxblood` (Discovery) | `#7A1F2E` | `oxblood-line` `#4A0D18` | Country has only discoveries (or, in Discoveries-filter mode, is a mixed country surfacing its discovery side) |
+| `parchment` (Empty) | `#F5EFE6` | `paper-line` `#7A5A3A` | No authors yet, or the country fades because the active filter excludes it |
+
+Resolution of "mixed" countries (those with both kinds of authors):
+
+| Filter | Mixed country shows as | Rationale |
 | --- | --- | --- |
-| Read-only | `oxblood` (#7A1F2E) | Country has only read authors |
-| Mixed | `oxblood-2` (#9C3A47) | Country has both read + discovery authors |
-| Discoveries-only | `oxblood-3` (#C97F87) | Country has only discoveries |
-| Empty | `parchment` (#F5EFE6) | No authors yet |
+| `Todos` (all) | **`penguin`** (Read wins) | Default hierarchy — being "read" outranks being "discovery." |
+| `Leídas` (read) | **`penguin`** | The country has read authors, so it stays visible in this mode. |
+| `Descubrimientos` (discoveries) | **`oxblood`** *(the exception)* | The user is explicitly looking at the discovery layer, so mixed countries surface that side. |
 
-In `Read` filter mode, only read-only and mixed countries are highlighted (others fade to `parchment`). In `Discoveries` mode, only discoveries-only and mixed. In `All` (default) all three tints are visible.
+Pure read or pure discovery countries do not change color across filters — they fade to `parchment` when the active filter excludes them.
+
+Each fill pairs with a darker stroke of itself. This is what fixes the adjacency-blur — the border between two penguin-filled countries is always a darker penguin, never the same shade as the fill.
+
+**Brightness inversion is intentional**: read (penguin, brightest) → discovery (oxblood, deepest). The original gradient ran the other direction. The new mapping reads as "celebratory accomplishment → deep anticipation," which fits the editorial intent in the side panel ("I've read these" → bright; "still to come" → deep).
 
 ### Typography
 

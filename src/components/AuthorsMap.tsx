@@ -40,10 +40,8 @@ export default function AuthorsMap({
   onViewChange,
   onSelectCountry,
 }: Props) {
-  const strokeColor = "rgba(27, 42, 65, 0.18)";
-
   return (
-    <div className="w-full">
+    <div className="w-full bg-water">
       <ComposableMap
         projection="geoEqualEarth"
         projectionConfig={{ scale: 165 }}
@@ -100,7 +98,7 @@ export default function AuthorsMap({
                       ? countryStates[iso_a3]
                       : "empty";
                   const isSelected = iso_a3 && iso_a3 === selectedIso;
-                  const fill = fillFor(state, filter);
+                  const { fill, stroke } = fillFor(state, filter);
                   const name =
                     (geo.properties as { name?: string } | undefined)?.name ??
                     iso_a3 ??
@@ -114,8 +112,8 @@ export default function AuthorsMap({
                         iso_a3 && onSelectCountry(iso_a3, name)
                       }
                       fill={fill}
-                      stroke={isSelected ? "var(--c-ink)" : strokeColor}
-                      strokeWidth={isSelected ? 1 : 0.5}
+                      stroke={isSelected ? "var(--c-ink)" : stroke}
+                      strokeWidth={isSelected ? 1 : 0.6}
                       tabIndex={-1}
                       style={{
                         default: {
