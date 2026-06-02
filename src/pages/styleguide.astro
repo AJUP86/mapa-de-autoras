@@ -3,21 +3,21 @@ import Base from "../layouts/Base.astro";
 
 const swatches = [
   { name: "ink",       hex: "#1B2A41", use: "Primary text" },
-  { name: "parchment", hex: "#F5EFE6", use: "Page background" },
+  { name: "parchment", hex: "#F5EFE6", use: "Page background · empty country fill" },
   { name: "bone",      hex: "#FAF6EE", use: "Card surfaces" },
-  { name: "oxblood",   hex: "#7A1F2E", use: "Brand · Read country" },
-  { name: "oxblood-2", hex: "#9C3A47", use: "Mixed country" },
-  { name: "oxblood-3", hex: "#C97F87", use: "Discoveries country" },
-  { name: "ochre",     hex: "#C68B3C", use: "Link underlines · subtle highlights" },
-  { name: "penguin",   hex: "#E87722", use: "Discovery tag · vintage accents" },
+  { name: "oxblood",   hex: "#7A1F2E", use: "Brand anchor · CTAs · Discovery country fill" },
+  { name: "penguin",   hex: "#E87722", use: "Read country fill · Featured spine band" },
+  { name: "water",     hex: "#B5CFD2", use: "Map ocean" },
+  { name: "ochre",     hex: "#C68B3C", use: "Link underlines · map hover" },
   { name: "sage",      hex: "#7A9B82", use: "Confirmed · dividers" },
 ];
 
+// Stage 4b: two-color hierarchy. Mixed countries (read + discovery) pick a
+// side based on the active filter — no blended middle color. See ADR 0002.
 const mapStates = [
-  { label: "empty",       cls: "bg-parchment text-ink border border-ink/10" },
-  { label: "discoveries", cls: "bg-oxblood-3 text-ink" },
-  { label: "mixed",       cls: "bg-oxblood-2 text-parchment" },
-  { label: "read",        cls: "bg-oxblood text-parchment" },
+  { label: "empty",     cls: "bg-parchment text-ink border border-ink/10" },
+  { label: "discovery", cls: "bg-oxblood text-parchment" },
+  { label: "read",      cls: "bg-penguin text-parchment" },
 ];
 
 const penguinBands = [
@@ -51,7 +51,7 @@ const penguinBands = [
 
     <!-- Map highlight scale -->
     <h2 class="mt-16 mb-2 font-display text-2xl font-semibold border-b border-ink/10 pb-2">Map highlight scale</h2>
-    <p class="text-ink/70 max-w-prose font-body">Country fill: no authors → only discoveries → mixed → only read.</p>
+    <p class="text-ink/70 max-w-prose font-body">Two fill colors total. Countries with both read and discovery authors pick a side based on the active filter — read wins by default; the <em>Discoveries</em> filter is the exception that surfaces the discovery side. Each fill has a paired darker stroke so adjacent same-state countries keep a visible boundary. The map sits on a dusty-blue water backdrop.</p>
     <div class="mt-4 flex gap-1">
       {mapStates.map((s) => (
         <div class={`flex-1 h-16 rounded-md flex items-end px-2 py-1 text-xs font-semibold font-body ${s.cls}`}>{s.label}</div>
@@ -96,8 +96,8 @@ const penguinBands = [
 
       <div class="bg-bone rounded-xl p-5 shadow-sm">
         <h3 class="font-display text-lg opacity-70 mb-3">Badges</h3>
-        <span class="inline-block bg-oxblood text-parchment text-xs font-semibold rounded-full px-2.5 py-0.5 font-body">Read</span>
-        <span class="inline-block bg-penguin text-parchment text-xs font-semibold rounded-full px-2.5 py-0.5 ml-1 font-body">Discovery</span>
+        <span class="inline-block bg-penguin text-parchment text-xs font-semibold rounded-full px-2.5 py-0.5 font-body">Read</span>
+        <span class="inline-block bg-oxblood text-parchment text-xs font-semibold rounded-full px-2.5 py-0.5 ml-1 font-body">Discovery</span>
         <span class="inline-block bg-sage text-ink text-xs font-semibold rounded-full px-2.5 py-0.5 ml-1 font-body">Confirmed</span>
       </div>
 
@@ -112,7 +112,7 @@ const penguinBands = [
         <h3 class="font-display text-lg opacity-70 mb-3">Author entry</h3>
         <div class="font-display text-xl font-semibold">
           Selva Almada
-          <span class="inline-block align-middle bg-oxblood text-parchment text-xs font-semibold rounded-full px-2.5 py-0.5 ml-1 font-body">Read</span>
+          <span class="inline-block align-middle bg-penguin text-parchment text-xs font-semibold rounded-full px-2.5 py-0.5 ml-1 font-body">Read</span>
         </div>
         <div class="text-[13px] text-ink/70 mt-1 font-body">Argentina · 1973–</div>
         <ul class="mt-3 pl-5 list-disc space-y-1 font-body">
