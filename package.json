@@ -5,7 +5,11 @@
   "private": true,
   "scripts": {
     "dev": "astro dev",
-    "start": "astro dev",
+    "dev:db": "supabase start",
+    "dev:db:reset": "supabase db reset",
+    "dev:db:stop": "supabase stop",
+    "dev:functions": "supabase functions serve submit_suggestion --env-file .env",
+    "dev:types": "supabase gen types typescript --local > src/types/supabase.ts",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro"
