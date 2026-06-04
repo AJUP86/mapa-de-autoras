@@ -24,7 +24,8 @@ max_client_conn = 100
 
 [db.seed]
 enabled = true
-sql_paths = ["./seed.sql"]
+
+sql_paths = ["./seed.sql", "./seeds/dev-authors.sql"]
 
 [realtime]
 enabled = true
@@ -73,6 +74,14 @@ template = "Your code is {{ .Code }}"
 enabled = true
 policy = "oneshot"
 inspector_port = 8083
+
+# Function-level config. With `verify_jwt = false`, `supabase functions serve`
+# accepts anonymous POSTs to /functions/v1/submit_suggestion — Turnstile is
+# our gate, not JWT. Env vars (TURNSTILE_SECRET_KEY) still need to be passed
+# via `--env-file .env` because the CLI doesn't auto-load .env for functions.
+[functions.submit_suggestion]
+enabled = true
+verify_jwt = false
 
 # Disabled on Windows: Vector log collector requires Docker daemon exposed on
 # tcp://localhost:2375, which Docker Desktop doesn't enable by default. Without
