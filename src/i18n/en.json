@@ -47,5 +47,39 @@
       "out": "Zoom out",
       "reset": "Reset view"
     }
+  },
+  "suggest": {
+    "eyebrow": "Suggest a writer",
+    "title": "Tell us who we should read",
+    "intro": "If you know a woman writer who deserves a place on the map, write to us. Every suggestion is reviewed before it's published.",
+    "fields": {
+      "author_name_label": "Writer's name",
+      "author_name_placeholder": "e.g. Selva Almada",
+      "country_label": "Country",
+      "country_placeholder": "Pick a country",
+      "books_label": "Books (optional)",
+      "books_placeholder": "One per line: title, year, publisher if you have it",
+      "note_label": "Why should we read her? (optional)",
+      "note_placeholder": "Your reason, recommendation, or context",
+      "email_label": "Your email",
+      "email_placeholder": "you@email.com",
+      "email_hint": "Only used to reach you if we have questions. Never published.",
+      "submitter_name_label": "Your name (optional)",
+      "submitter_name_placeholder": "So we can credit you if she's added",
+      "newsletter_label": "Notify me when this writer or upcoming ones are published"
+    },
+    "submit": "Send suggestion",
+    "submitting": "Sending…",
+    "errors": {
+      "network": "Couldn't send the suggestion. Try again in a moment.",
+      "validation": "Check the highlighted fields.",
+      "turnstile": "Security check failed. Refresh the page and try again."
+    },
+    "required_mark": " *",
+    "thanks": {
+      "title": "Thank you",
+      "body": "Hayde will review your suggestion. If we publish her, we'll be in touch.",
+      "cta": "Back to the map"
+    }
   }
 }

@@ -45,7 +45,15 @@ const mapLabels = {
     <span class="text-xs uppercase tracking-[0.18em] text-ink/50 font-body">
       {t(lang, "nav.home")}
     </span>
-    <LanguageSwitch lang={lang} />
+    <nav class="flex items-center gap-4">
+      <a
+        href="/en/suggest"
+        class="text-xs uppercase tracking-[0.18em] text-ink/60 font-body hover:text-oxblood transition-colors"
+      >
+        {t(lang, "nav.suggest")}
+      </a>
+      <LanguageSwitch lang={lang} />
+    </nav>
   </header>
 
   <section class="mx-auto max-w-3xl px-6 pt-16 pb-12 sm:pt-24 sm:pb-16">
