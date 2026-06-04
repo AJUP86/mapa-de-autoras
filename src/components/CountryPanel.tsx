@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
-import type { MapLabels, MockAuthor } from "../lib/map-state";
+import type { MapLabels, Author } from "../lib/map-state";
 
 interface Props {
   countryName: string;
-  authors: ReadonlyArray<MockAuthor>;
+  authors: ReadonlyArray<Author>;
   labels: MapLabels;
   onClose: () => void;
 }
@@ -130,7 +130,7 @@ function StatusBadge({
   status,
   labels,
 }: {
-  status: MockAuthor["status"];
+  status: Author["status"];
   labels: MapLabels["status"];
 }) {
   const isRead = status === "read";

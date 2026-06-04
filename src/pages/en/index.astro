@@ -3,8 +3,10 @@ import Base from "../../layouts/Base.astro";
 import LanguageSwitch from "../../components/LanguageSwitch.astro";
 import MapSection from "../../components/MapSection";
 import { t } from "../../i18n/t";
+import { getCatalog } from "../../lib/authors";
 
 const lang = "en";
+const catalog = await getCatalog();
 
 const mapLabels = {
   filter: {
@@ -71,7 +73,7 @@ const mapLabels = {
       </p>
     </div>
 
-    <MapSection client:visible labels={mapLabels} />
+    <MapSection client:visible labels={mapLabels} catalog={catalog} />
   </section>
 
   <footer class="mx-auto max-w-3xl px-6 pb-12 text-center text-sm text-ink/55 font-body">
