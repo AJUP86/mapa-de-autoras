@@ -1,6 +1,7 @@
 // Domain types + pure helpers for the map.
-// Kept apart from the React components so they're easy to unit-test later
-// and so Stage 5 can swap `MockCountryEntry` for the live API shape.
+// Kept apart from the React components so they're easy to unit-test later.
+// The shapes match what `src/lib/authors.ts::getCatalog()` returns at build
+// time — same structure as the Stage-4 mock, just sourced from Postgres.
 
 export type AuthorStatus = "read" | "discovery";
 
@@ -8,23 +9,23 @@ export type Filter = "all" | "read" | "discoveries";
 
 export type CountryState = "read" | "mixed" | "discovery" | "empty";
 
-export interface MockBook {
+export interface Book {
   title: string;
   year?: number;
 }
 
-export interface MockAuthor {
+export interface Author {
   id: string;
   name: string;
   status: AuthorStatus;
   birth_year?: number;
   death_year?: number;
-  books: MockBook[];
+  books: Book[];
 }
 
-export interface MockCountryEntry {
+export interface CountryEntry {
   iso_a3: string;
-  authors: MockAuthor[];
+  authors: Author[];
 }
 
 export interface MapLabels {
@@ -38,7 +39,7 @@ export interface MapLabels {
  * O(n) over authors; safe to memoize at the caller.
  */
 export function computeCountryStates(
-  entries: ReadonlyArray<MockCountryEntry>,
+  entries: ReadonlyArray<CountryEntry>,
 ): Record<string, CountryState> {
   const result: Record<string, CountryState> = {};
   for (const entry of entries) {

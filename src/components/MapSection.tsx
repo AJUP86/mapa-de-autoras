@@ -5,9 +5,8 @@ import MapFilter from "./MapFilter";
 import CountryPanel from "./CountryPanel";
 import ContinentNav, { CONTINENT_VIEWS } from "./ContinentNav";
 import type { ContinentKey } from "./ContinentNav";
-import { mockCountries } from "../data/mock-countries";
 import { computeCountryStates } from "../lib/map-state";
-import type { Filter, MapLabels } from "../lib/map-state";
+import type { CountryEntry, Filter, MapLabels } from "../lib/map-state";
 
 interface MapSectionLabels extends MapLabels {
   view: Record<ContinentKey, string>;
@@ -16,9 +15,10 @@ interface MapSectionLabels extends MapLabels {
 
 interface Props {
   labels: MapSectionLabels;
+  catalog: CountryEntry[];
 }
 
-export default function MapSection({ labels }: Props) {
+export default function MapSection({ labels, catalog }: Props) {
   const [filter, setFilter] = useState<Filter>("all");
   const [view, setView] = useState<MapView>(CONTINENT_VIEWS.world);
   const [selected, setSelected] = useState<
@@ -26,17 +26,16 @@ export default function MapSection({ labels }: Props) {
   >(null);
 
   const countryStates = useMemo(
-    () => computeCountryStates(mockCountries),
-    [],
+    () => computeCountryStates(catalog),
+    [catalog],
   );
 
   const selectedAuthors = useMemo(() => {
     if (!selected) return [];
     return (
-      mockCountries.find((entry) => entry.iso_a3 === selected.iso_a3)
-        ?.authors ?? []
+      catalog.find((entry) => entry.iso_a3 === selected.iso_a3)?.authors ?? []
     );
-  }, [selected]);
+  }, [selected, catalog]);
 
   return (
     <div className="relative">
