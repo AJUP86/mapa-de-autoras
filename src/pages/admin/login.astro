@@ -1,0 +1,23 @@
+---
+// src/pages/admin/login.astro — Stage 7a
+import Base from "../../layouts/Base.astro";
+import AdminLoginForm from "../../components/AdminLoginForm";
+import { t } from "../../i18n/t";
+
+const lang = "es" as const;
+const labels = {
+  title: t(lang, "admin.login.title"),
+  subtitle: t(lang, "admin.login.subtitle"),
+  email_label: t(lang, "admin.login.email_label"),
+  submit: t(lang, "admin.login.submit"),
+  submitting: t(lang, "admin.login.submitting"),
+  success: t(lang, "admin.login.success"),
+  error_generic: t(lang, "admin.login.error_generic"),
+};
+---
+
+<Base lang={lang} title={labels.title}>
+  <main class="min-h-screen bg-parchment">
+    <AdminLoginForm client:load redirectTo="/admin" labels={labels} />
+  </main>
+</Base>

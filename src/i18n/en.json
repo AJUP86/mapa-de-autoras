@@ -81,5 +81,21 @@
       "body": "Hayde will review your suggestion. If we publish her, we'll be in touch.",
       "cta": "Back to the map"
     }
+  },
+  "admin": {
+    "login": {
+      "title": "",
+      "subtitle": "",
+      "email_label": "",
+      "submit": "",
+      "submitting": "",
+      "success": "",
+      "error_generic": "",
+      "error_not_admin": ""
+    },
+    "common": {
+      "sign_out": "",
+      "logged_in_as": ""
+    }
   }
 }

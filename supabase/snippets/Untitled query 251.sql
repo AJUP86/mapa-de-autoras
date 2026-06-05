@@ -1,3 +1,5 @@
-select email, status, locale, confirm_token, created_at
-from public.subscribers
-where email = 'osorio.danny@gmail.com';
+select email, email_confirmed_at, raw_app_meta_data
+from auth.users
+where email = 'alejandrourroz86@gmail.com';
+
+

@@ -48,8 +48,13 @@ file_size_limit = "50MiB"
 
 [auth]
 enabled = true
-site_url = "http://127.0.0.1:4321"
-additional_redirect_urls = ["https://127.0.0.1:4321"]
+site_url = "http://localhost:4321"
+additional_redirect_urls = [
+  "http://127.0.0.1:4321",
+  "http://127.0.0.1:4321/admin",
+  "http://localhost:4321",
+  "http://localhost:4321/admin",
+]
 jwt_expiry = 3600
 enable_refresh_token_rotation = true
 refresh_token_reuse_interval = 10
@@ -57,7 +62,12 @@ enable_signup = false
 enable_anonymous_sign_ins = false
 
 [auth.email]
-enable_signup = false
+# `enable_signup = true` is required for GoTrue to allow magic-link sign-in
+# AT ALL (signup and signin share the same flag). New-user creation is blocked
+# client-side via supabase.auth.signInWithOtp({ shouldCreateUser: false }) in
+# src/lib/admin-session.ts. Since the admin form is the only client that hits
+# this endpoint, the guarantee holds.
+enable_signup = true
 double_confirm_changes = true
 enable_confirmations = true
 secure_password_change = false

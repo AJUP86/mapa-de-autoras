@@ -1,0 +1,17 @@
+---
+// src/pages/admin/index.astro — Stage 7a (placeholder for Slice C)
+import Base from "../../layouts/Base.astro";
+import AdminGate from "../../components/AdminGate";
+import { t } from "../../i18n/t";
+
+const lang = "es" as const;
+const notAdminLabel = t(lang, "admin.login.error_not_admin");
+---
+
+<Base lang={lang} title="Admin">
+  <main class="min-h-screen bg-parchment p-6">
+    <AdminGate client:load loginUrl="/admin/login" notAdminLabel={notAdminLabel}>
+      <p class="text-ink">Sesión iniciada. (Bandeja en Slice C.)</p>
+    </AdminGate>
+  </main>
+</Base>
