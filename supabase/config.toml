@@ -83,6 +83,10 @@ inspector_port = 8083
 enabled = true
 verify_jwt = false
 
+[functions.notify_owner]
+enabled = true
+verify_jwt = false
+
 # Disabled on Windows: Vector log collector requires Docker daemon exposed on
 # tcp://localhost:2375, which Docker Desktop doesn't enable by default. Without
 # this flag the supabase_vector_* container restart-loops with no impact on
