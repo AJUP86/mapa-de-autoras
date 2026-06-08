@@ -31,7 +31,7 @@ First-run only: `npm run dev:db:reset` after the stack is up, to apply migration
 | `npm run dev:db` | `supabase start` — brings up the local stack |
 | `npm run dev:db:reset` | `supabase db reset` — replays migrations + seeds |
 | `npm run dev:db:stop` | `supabase stop` — tears the stack down |
-| `npm run dev:functions` | Serves the `submit_suggestion` Edge Function with `--env-file .env` |
+| `npm run dev:functions` | Serves all registered Edge Functions (`submit_suggestion` + `notify_owner`) with `--env-file .env` |
 | `npm run dev:types` | Regenerates `src/types/supabase.ts` from the running DB |
 | `npm run dev` | Astro dev server on `http://localhost:4321` |
 
@@ -71,6 +71,40 @@ npm run dev:functions
 Listens on `http://127.0.0.1:54321/functions/v1/submit_suggestion`. The function reads `TURNSTILE_SECRET_KEY` from your `.env` (passed via `--env-file`); `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are auto-injected by the runtime.
 
 `verify_jwt = false` is set in `config.toml`, so the function accepts anonymous POSTs — Cloudflare Turnstile is our gate, not JWT.
+
+## Suggestion notifications + admin auth (Stage 7a)
+
+### Notification trigger
+
+Migration `0003_notify_owner_trigger.sql` adds an AFTER INSERT trigger on `public.suggestions`. On each new row it calls `pg_net.http_post` to fire the `notify_owner` Edge Function asynchronously. A failed HTTP call does **not** block or roll back the INSERT — failures are logged to `net._http_response` and can be inspected there.
+
+### `notify_owner` modes
+
+| `RESEND_API_KEY` set? | Behaviour |
+| --- | --- |
+| No (default in dev) | Logs the suggestion payload to the `dev:functions` console — no email sent |
+| Yes | POSTs to Resend API using `RESEND_FROM_EMAIL` as sender and `OWNER_NOTIFICATION_EMAIL` as recipient |
+
+Both env vars are read from `.env` (passed via `--env-file`).
+
+### Serving both Edge Functions
+
+`npm run dev:functions` now starts the runtime without an explicit function name. The unnamed form serves every function registered in `supabase/config.toml` — currently `submit_suggestion` and `notify_owner`. Both listen under `http://127.0.0.1:54321/functions/v1/`.
+
+### Admin login (magic-link)
+
+- `/admin/login` calls `supabase.auth.signInWithOtp({ shouldCreateUser: false })` to request an OTP for an existing user.
+- In local dev, magic-link emails arrive in **Mailpit** at `http://127.0.0.1:54324`.
+- GoTrue requires `auth.email.enable_signup = true` in `config.toml` to process OTP at all — even for existing users. New-user creation is blocked client-side via `shouldCreateUser: false`; the admin login form is the only client that touches this endpoint.
+- `site_url` must match the Astro origin exactly (`http://localhost:4321`). `additional_redirect_urls` covers both `localhost` / `127.0.0.1` × root `/` / `/admin` permutations so the magic-link redirect lands cleanly.
+- `enabled = true` is **not** a valid key for the `[auth.email]` table in Supabase CLI v2.102; omit it or the stack fails to start.
+
+> **Re-bootstrap after every reset:** `npm run dev:db:reset` wipes `auth.users`, so the admin account must be recreated each time. See **Bootstrap an admin user** below.
+
+### Production notes (Stage 9)
+
+- `app.functions_url` must be set on hosted Postgres via `alter database postgres set "app.functions_url" = '<hosted-functions-url>'` so the trigger reaches the deployed Edge Function.
+- `notify_owner` currently runs with `verify_jwt = false` (MVP). Before going live, consider adding JWT verification or restricting the function to service-role callers only.
 
 ## Local URLs
 

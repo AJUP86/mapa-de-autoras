@@ -18,41 +18,43 @@ Running log of what's done, what's next, and any context a future-you (or contri
 | 4b — Two-color hierarchy map palette refinement | ✅ Merged | feature/04b-map-palette-penguin |
 | 5 — Map runs on live Supabase data + dev seed | ✅ Merged | feature/05-real-author-data |
 | **6 — Suggestion form + Turnstile + Edge Function** | ✅ Merged | feature/06-suggestion-flow |
-| 7 — Owner notification + admin auth + inbox + author CRUD | ⏳ Next | feature/07-admin-area *(may split into 7a/7b)* |
+| 7a — Owner notification + admin auth + read-only inbox | ✅ Done | feature/07a-notify-and-auth |
+| 7b — Promote suggestion + author CRUD + book CRUD | ⏳ Next | feature/07b-promote-and-crud |
 | 8 — Newsletter double-opt-in + Resend audience sync | ⏳ Pending | feature/08-newsletter-confirmation |
 | 9 — Deploy to Cloudflare Pages + Supabase heartbeat | ⏳ Pending | feature/09-deploy-and-heartbeat |
 | 10 — Launch content + checklist | ⏳ Pending | feature/10-launch-prep |
 
-**About ~55% of MVP shipped by stage count.** Most remaining work is service-wiring (admin UI, email, deploy) — less novel design than what's been done so far.
+**About ~60% of MVP shipped by stage count.** Most remaining work is service-wiring (admin UI, email, deploy) — less novel design than what's been done so far.
 
 ---
 
-## Last session — 2026-06-04 → 2026-06-05
+## Last session — 2026-06-05 (Stage 7a)
 
-**Branches landed:** `feature/05-real-author-data`, `feature/06-suggestion-flow` (each via its own PR, both merged to `development`).
+**Branch in progress:** `feature/07a-notify-and-auth` (not yet merged).
 
-### Stage 5 — map on live data
+### Notify path
 
-- Added `@supabase/supabase-js` client (`src/lib/supabase.ts`), DB types (`src/types/supabase.ts`, regenerated from the live schema after first hand-crafting).
-- `src/lib/authors.ts::getCatalog()` — one query, returns authors grouped by country, fetched at Astro build time and passed to MapSection as a prop. No Supabase JS in the browser bundle.
-- `supabase/seeds/dev-authors.sql` — 30 authors across 16 countries mirroring the Stage-4 mock. Idempotent on rerun (deletes `slug like 'dev-%'` first).
-- Deleted `src/data/mock-countries.ts`. The map is visually identical to before, just data-driven.
+- New migration `0003_notify_owner_trigger.sql` — AFTER INSERT trigger on `public.suggestions` fires `pg_net.http_post` to `notify_owner` asynchronously; failed POSTs do not block inserts.
+- New Edge Function `supabase/functions/notify_owner/index.ts` — env-var-toggled: no `RESEND_API_KEY` → logs payload to console (dev); key present → POSTs to Resend using `RESEND_FROM_EMAIL` → `OWNER_NOTIFICATION_EMAIL`.
+- `dev:functions` script now runs without an explicit function name, serving all functions registered in `config.toml`.
 
-### Stage 6 — public suggestion form
+### Auth shell
 
-- New routes: `/suggest`, `/en/suggest`, `/gracias`, `/en/thanks`.
-- New React island: `src/components/SuggestionForm.tsx`. Renders Turnstile widget via the vanilla CF JS API (no extra dep).
-- New helper: `src/lib/countries.ts::getCountries(lang)` — localized dropdown options.
-- New Edge Function: `supabase/functions/submit_suggestion/index.ts` — validates body, verifies Turnstile token server-side, inserts with service-role (RLS bypass), optionally upserts a pending subscriber.
-- New migration: `supabase/migrations/0002_tighten_submission_rls.sql` — drops anon's direct INSERT on `suggestions` + `subscribers`. The Edge Function is now the only write path.
-- i18n: new `suggest.*` namespace in both locales.
-- Header nav: `Sugerir / Suggest` link added on landing pages.
+- `/admin/login` — magic-link form using `signInWithOtp({ shouldCreateUser: false })`. Local emails land in Mailpit (`http://127.0.0.1:54324`).
+- `<AdminGate>` React component — wraps protected admin content; redirects unauthenticated users to `/admin/login`.
+- `<AdminLoginForm>` React component — handles OTP request + confirmation feedback.
 
-### DevX polish
+### Inbox
 
-- `supabase/config.toml` — auto-applies `dev-authors.sql` on `db reset`; registers `submit_suggestion` with `verify_jwt = false`.
-- `package.json` — new scripts: `dev:db`, `dev:db:reset`, `dev:db:stop`, `dev:functions`, `dev:types`. Onboarding shrank from 10 manual steps to 7.
-- `supabase/README.md` — rewritten with the 3-terminal quickstart, updated RLS table, accurate smoke tests.
+- `/admin` — lists `pending` suggestions newest-first (authenticated, service-role query).
+- `/admin/suggestions/[id]` — static placeholder; promote/reject actions deferred to Stage 7b.
+
+### Config gotchas surfaced
+
+- `auth.email.enable_signup = true` is required for OTP to work at all in GoTrue — even for existing users. `shouldCreateUser: false` blocks net-new signups client-side.
+- `site_url` must use `localhost` (not `127.0.0.1`); GoTrue rejects magic-link redirects that don't match exactly.
+- `additional_redirect_urls` needs explicit `/admin` paths listed alongside root paths.
+- `enabled = true` is **not** a valid key for `[auth.email]` in Supabase CLI v2.102 — omit it entirely.
 
 ---
 
@@ -65,12 +67,12 @@ Running log of what's done, what's next, and any context a future-you (or contri
 
 ---
 
-## Open items pending decision before Stage 7 starts
+## Open items pending decision before Stage 7b starts
 
-1. **Bilingual content strategy** — write `docs/adr/0004-translation-strategy.md`. Recommendation: LLM-assisted translation in the admin form, owner reviews/edits both versions before save.
+1. **Bilingual content strategy** — still pending; now actively blocking Stage 7b (the author CRUD form needs to handle `bio_es`/`bio_en`/`description_es`/`description_en`). Write `docs/adr/0004-translation-strategy.md`. Recommendation: LLM-assisted translation button in the admin form, owner reviews/edits both versions before save.
 2. **`book_links` shape** — the implementation plan flags this; recommendation (b) one link per book per locale.
-3. **Stage 7 split** — likely worth doing **7a (notification + auth + read-only inbox)** in one session and **7b (promote + author CRUD + book CRUD)** in the next, given size.
-4. **`SUPABASE_SERVICE_ROLE` env var rename** — currently in `.env.example` from Stage 3. Local Edge Function gets the right key (`SUPABASE_SERVICE_ROLE_KEY`) injected automatically. When Stage 7 needs server-side queries from Node/Astro, rename to match the canonical `SUPABASE_SERVICE_ROLE_KEY` and update consumers.
+3. **`/admin/suggestions/[id]` rendering strategy** — the current stub is a static Astro page. Decide whether it stays static (data fetched client-side via Supabase JS) or moves to SSR via the Cloudflare adapter (Stage 9 decision). Moving earlier may be worth it if Stage 7b's promote-form needs server-side data at request time.
+4. **`SUPABASE_SERVICE_ROLE` env var rename** — currently in `.env.example` from Stage 3. Local Edge Function gets the right key (`SUPABASE_SERVICE_ROLE_KEY`) injected automatically. When Stage 7b needs server-side queries from Astro, rename to match the canonical name and update consumers.
 
 ---
 
@@ -79,13 +81,15 @@ Running log of what's done, what's next, and any context a future-you (or contri
 ```sh
 git checkout development
 git pull
-git checkout -b feature/07-admin-area      # or feature/07a-notify-and-auth if pre-splitting
+git checkout -b feature/07b-promote-and-crud
 
 # Local stack — see supabase/README.md for full quickstart
 npm run dev:db
 npm run dev:db:reset      # one-shot, applies migrations + both seeds
-npm run dev:functions     # Edge Functions
+npm run dev:functions     # serves submit_suggestion + notify_owner
 npm run dev               # Astro
+
+# Re-bootstrap the admin user (reset wipes auth.users — see supabase/README.md)
 ```
 
-The translation-strategy ADR is the natural opening move for Stage 7. Then magic-link login + the inbox.
+The translation-strategy ADR (`docs/adr/0004-translation-strategy.md`) is the natural opening move for Stage 7b, then the promote/reject actions on `/admin/suggestions/[id]`.

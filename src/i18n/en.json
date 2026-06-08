@@ -96,6 +96,21 @@
     "common": {
       "sign_out": "",
       "logged_in_as": ""
+    },
+    "inbox": {
+      "title": "",
+      "empty": "",
+      "loading": "",
+      "error": "",
+      "col_date": "",
+      "col_author": "",
+      "col_country": "",
+      "col_email": "",
+      "view": ""
+    },
+    "detail": {
+      "placeholder_title": "",
+      "placeholder_body": ""
     }
   }
 }

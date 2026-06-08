@@ -96,6 +96,21 @@
     "common": {
       "sign_out": "Cerrar sesión",
       "logged_in_as": "Sesión iniciada como"
+    },
+    "inbox": {
+      "title": "Sugerencias pendientes",
+      "empty": "No hay sugerencias pendientes.",
+      "loading": "Cargando…",
+      "error": "No se pudieron cargar las sugerencias.",
+      "col_date": "Fecha",
+      "col_author": "Autora",
+      "col_country": "País",
+      "col_email": "Correo",
+      "view": "Revisar"
+    },
+    "detail": {
+      "placeholder_title": "Detalle de sugerencia",
+      "placeholder_body": "Próximamente — Stage 7b."
     }
   }
 }

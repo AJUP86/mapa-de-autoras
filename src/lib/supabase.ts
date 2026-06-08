@@ -1,8 +1,13 @@
-// Server-side Supabase client (used at build time by Astro front-matter).
+// Shared Supabase client for the site.
 //
-// We use the anon key intentionally — RLS already restricts what `anon` can
-// read (only `published = true` authors and their books). No service-role
-// secret is needed for read-only data fetching.
+// Used by:
+//   - Astro front-matter at build time (read-only catalog fetches; anon key
+//     + RLS gates everything to `published = true` authors).
+//   - React islands in the browser. Stage 7a's admin pages call
+//     supabase.auth.signInWithOtp / .getSession / .onAuthStateChange — those
+//     need the session to live across page reloads, so persistSession is on.
+//     In Node (build-time) it's a no-op (no localStorage), so the same client
+//     is safe in both environments.
 //
 // In dev, if the local Supabase stack is down, the client still constructs;
 // queries will fail at call-time, callers handle that (see authors.ts).
@@ -27,6 +32,10 @@ export const supabase = createClient<Database>(
   url ?? "http://127.0.0.1:54321",
   anonKey ?? "missing-anon-key",
   {
-    auth: { persistSession: false }, // server-side / build-time use only
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+    },
   },
 );
