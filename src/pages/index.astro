@@ -1,9 +1,9 @@
 ---
-import Base from "../layouts/Base.astro";
-import LanguageSwitch from "../components/LanguageSwitch.astro";
-import MapSection from "../components/MapSection";
-import { t } from "../i18n/t";
-import { getCatalog } from "../lib/authors";
+import Base from "~/layouts/Base.astro";
+import LanguageSwitch from "~/components/LanguageSwitch.astro";
+import MapSection from "~/components/MapSection";
+import { t } from "~/i18n/t";
+import { getCatalog } from "~/lib/authors";
 
 const lang = "es";
 const catalog = await getCatalog();

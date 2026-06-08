@@ -5,8 +5,8 @@ import MapFilter from "./MapFilter";
 import CountryPanel from "./CountryPanel";
 import ContinentNav, { CONTINENT_VIEWS } from "./ContinentNav";
 import type { ContinentKey } from "./ContinentNav";
-import { computeCountryStates } from "../lib/map-state";
-import type { CountryEntry, Filter, MapLabels } from "../lib/map-state";
+import { computeCountryStates } from "~/lib/map-state";
+import type { CountryEntry, Filter, MapLabels } from "~/lib/map-state";
 
 interface MapSectionLabels extends MapLabels {
   view: Record<ContinentKey, string>;

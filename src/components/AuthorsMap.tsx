@@ -6,9 +6,9 @@ import {
 } from "@vnedyalk0v/react19-simple-maps";
 import { feature } from "topojson-client";
 import worldData from "world-atlas/countries-110m.json";
-import { isoNumericToA3 } from "../data/iso-numeric-to-a3";
-import { fillFor } from "../lib/map-state";
-import type { CountryState, Filter } from "../lib/map-state";
+import { isoNumericToA3 } from "~/data/iso-numeric-to-a3";
+import { fillFor } from "~/lib/map-state";
+import type { CountryState, Filter } from "~/lib/map-state";
 
 export interface MapView {
   center: [number, number];

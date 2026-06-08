@@ -1,4 +1,4 @@
-import type { Filter, MapLabels } from "../lib/map-state";
+import type { Filter, MapLabels } from "~/lib/map-state";
 
 interface Props {
   value: Filter;

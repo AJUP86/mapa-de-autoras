@@ -81,5 +81,36 @@
       "body": "Hayde revisará tu sugerencia. Si la publicamos, te avisaremos.",
       "cta": "Volver al mapa"
     }
+  },
+  "admin": {
+    "login": {
+      "title": "Acceso",
+      "subtitle": "Entra con tu correo. Te enviaremos un enlace mágico.",
+      "email_label": "Correo electrónico",
+      "submit": "Enviar enlace",
+      "submitting": "Enviando…",
+      "success": "Revisa tu correo y haz clic en el enlace para entrar.",
+      "error_generic": "No se pudo enviar el enlace. Inténtalo de nuevo.",
+      "error_not_admin": "Esta cuenta no tiene acceso de administrador."
+    },
+    "common": {
+      "sign_out": "Cerrar sesión",
+      "logged_in_as": "Sesión iniciada como"
+    },
+    "inbox": {
+      "title": "Sugerencias pendientes",
+      "empty": "No hay sugerencias pendientes.",
+      "loading": "Cargando…",
+      "error": "No se pudieron cargar las sugerencias.",
+      "col_date": "Fecha",
+      "col_author": "Autora",
+      "col_country": "País",
+      "col_email": "Correo",
+      "view": "Revisar"
+    },
+    "detail": {
+      "placeholder_title": "Detalle de sugerencia",
+      "placeholder_body": "Próximamente — Stage 7b."
+    }
   }
 }

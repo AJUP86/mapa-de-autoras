@@ -1,0 +1,33 @@
+---
+// src/pages/admin/suggestion.astro — Stage 7a (placeholder for 7b)
+//
+// Single static page that reads the suggestion id from `?id=<uuid>` in the
+// query string. Static-friendly: no [id] dynamic route, no getStaticPaths.
+// Stage 7b replaces the placeholder body with the real review-and-promote
+// form. Stage 9 may move this to path-based routes (e.g. /admin/suggestions/[id])
+// once an SSR adapter lands.
+import Base from "~/layouts/Base.astro";
+import AdminGate from "~/components/AdminGate";
+import SuggestionDetailPlaceholder from "~/components/SuggestionDetailPlaceholder";
+import { t } from "~/i18n/t";
+
+const lang = "es" as const;
+const notAdminLabel = t(lang, "admin.login.error_not_admin");
+const detailTitle = t(lang, "admin.detail.placeholder_title");
+const detailBody = t(lang, "admin.detail.placeholder_body");
+const backLabel = t(lang, "admin.inbox.title");
+---
+
+<Base lang={lang} title={detailTitle}>
+  <main class="min-h-screen bg-parchment p-6">
+    <AdminGate client:load loginUrl="/admin/login" notAdminLabel={notAdminLabel}>
+      <SuggestionDetailPlaceholder
+        client:load
+        labels={{ title: detailTitle, body: detailBody }}
+      />
+      <div class="mx-auto max-w-2xl">
+        <a href="/admin" class="mt-6 inline-block text-oxblood underline">← {backLabel}</a>
+      </div>
+    </AdminGate>
+  </main>
+</Base>
