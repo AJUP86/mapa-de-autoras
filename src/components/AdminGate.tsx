@@ -8,8 +8,8 @@
 
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import { readSession, signOut, type AdminSessionState } from "../lib/admin-session";
-import { supabase } from "../lib/supabase";
+import { readSession, signOut, type AdminSessionState } from "~/lib/admin-session";
+import { supabase } from "~/lib/supabase";
 
 interface Props {
   loginUrl: string;

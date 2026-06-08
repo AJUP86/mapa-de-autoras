@@ -6,10 +6,10 @@
 // Stage 7b replaces the placeholder body with the real review-and-promote
 // form. Stage 9 may move this to path-based routes (e.g. /admin/suggestions/[id])
 // once an SSR adapter lands.
-import Base from "../../layouts/Base.astro";
-import AdminGate from "../../components/AdminGate";
-import SuggestionDetailPlaceholder from "../../components/SuggestionDetailPlaceholder";
-import { t } from "../../i18n/t";
+import Base from "~/layouts/Base.astro";
+import AdminGate from "~/components/AdminGate";
+import SuggestionDetailPlaceholder from "~/components/SuggestionDetailPlaceholder";
+import { t } from "~/i18n/t";
 
 const lang = "es" as const;
 const notAdminLabel = t(lang, "admin.login.error_not_admin");

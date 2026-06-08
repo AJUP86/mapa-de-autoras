@@ -13,7 +13,7 @@
 // queries will fail at call-time, callers handle that (see authors.ts).
 
 import { createClient } from "@supabase/supabase-js";
-import type { Database } from "../types/supabase";
+import type { Database } from "~/types/supabase";
 
 const url = import.meta.env.PUBLIC_SUPABASE_URL;
 const anonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;

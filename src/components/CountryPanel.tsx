@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import type { MapLabels, Author } from "../lib/map-state";
+import type { MapLabels, Author } from "~/lib/map-state";
 
 interface Props {
   countryName: string;

@@ -5,7 +5,7 @@
 // email doesn't match an existing user, no email is sent (silent, by design).
 
 import { useState, type FormEvent } from "react";
-import { requestMagicLink } from "../lib/admin-session";
+import { requestMagicLink } from "~/lib/admin-session";
 
 interface Labels {
   title: string;

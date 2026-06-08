@@ -5,7 +5,7 @@
 // suggestion. Clicking a row navigates to /admin/suggestions/:id.
 
 import { useEffect, useState } from "react";
-import { listPendingSuggestions, type PendingSuggestion } from "../lib/suggestions";
+import { listPendingSuggestions, type PendingSuggestion } from "~/lib/suggestions";
 
 interface Labels {
   title: string;

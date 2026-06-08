@@ -1,9 +1,9 @@
 ---
 // src/pages/admin/index.astro — Stage 7a (Slice C)
-import Base from "../../layouts/Base.astro";
-import AdminGate from "../../components/AdminGate";
-import AdminInbox from "../../components/AdminInbox";
-import { t } from "../../i18n/t";
+import Base from "~/layouts/Base.astro";
+import AdminGate from "~/components/AdminGate";
+import AdminInbox from "~/components/AdminInbox";
+import { t } from "~/i18n/t";
 
 const lang = "es" as const;
 const notAdminLabel = t(lang, "admin.login.error_not_admin");

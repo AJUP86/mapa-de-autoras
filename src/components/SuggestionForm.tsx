@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { CountryOption } from "../lib/countries";
+import type { CountryOption } from "~/lib/countries";
 
 // Turnstile is loaded via <script> on the suggest page; declare its API here.
 declare global {

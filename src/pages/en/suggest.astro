@@ -1,9 +1,9 @@
 ---
-import Base from "../../layouts/Base.astro";
-import LanguageSwitch from "../../components/LanguageSwitch.astro";
-import SuggestionForm from "../../components/SuggestionForm";
-import { t } from "../../i18n/t";
-import { getCountries } from "../../lib/countries";
+import Base from "~/layouts/Base.astro";
+import LanguageSwitch from "~/components/LanguageSwitch.astro";
+import SuggestionForm from "~/components/SuggestionForm";
+import { t } from "~/i18n/t";
+import { getCountries } from "~/lib/countries";
 
 const lang = "en";
 const countries = await getCountries(lang);
