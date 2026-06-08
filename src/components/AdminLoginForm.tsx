@@ -32,7 +32,14 @@ export default function AdminLoginForm({ redirectTo, labels }: Props) {
     if (!email.trim() || status === "sending") return;
     setStatus("sending");
     setError(null);
-    const result = await requestMagicLink(email.trim(), redirectTo);
+    // GoTrue requires an absolute redirect URL; relative paths silently
+    // fall back to site_url. Compose the absolute target from the page's
+    // origin so the magic-link always returns to the same host that
+    // requested it.
+    const absoluteRedirect = redirectTo.startsWith("http")
+      ? redirectTo
+      : `${window.location.origin}${redirectTo}`;
+    const result = await requestMagicLink(email.trim(), absoluteRedirect);
     if (result.ok) {
       setStatus("sent");
     } else {
