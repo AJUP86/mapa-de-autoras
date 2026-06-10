@@ -31,7 +31,7 @@ First-run only: `npm run dev:db:reset` after the stack is up, to apply migration
 | `npm run dev:db` | `supabase start` — brings up the local stack |
 | `npm run dev:db:reset` | `supabase db reset` — replays migrations + seeds |
 | `npm run dev:db:stop` | `supabase stop` — tears the stack down |
-| `npm run dev:functions` | Serves all registered Edge Functions (`submit_suggestion` + `notify_owner`) with `--env-file .env` |
+| `npm run dev:functions` | Serves all registered Edge Functions (`submit_suggestion` + `notify_owner` + `translate`) with `--env-file .env` |
 | `npm run dev:types` | Regenerates `src/types/supabase.ts` from the running DB |
 | `npm run dev` | Astro dev server on `http://localhost:4321` |
 
@@ -87,9 +87,9 @@ Migration `0003_notify_owner_trigger.sql` adds an AFTER INSERT trigger on `publi
 
 Both env vars are read from `.env` (passed via `--env-file`).
 
-### Serving both Edge Functions
+### Serving every Edge Function
 
-`npm run dev:functions` now starts the runtime without an explicit function name. The unnamed form serves every function registered in `supabase/config.toml` — currently `submit_suggestion` and `notify_owner`. Both listen under `http://127.0.0.1:54321/functions/v1/`.
+`npm run dev:functions` starts the runtime without an explicit function name. The unnamed form serves every function registered in `supabase/config.toml` — currently `submit_suggestion`, `notify_owner`, and `translate`. All listen under `http://127.0.0.1:54321/functions/v1/`. After editing `.env`, restart this process so the new env vars are picked up.
 
 ### Admin login (magic-link)
 
@@ -106,26 +106,44 @@ Both env vars are read from `.env` (passed via `--env-file`).
 - `app.functions_url` must be set on hosted Postgres via `alter database postgres set "app.functions_url" = '<hosted-functions-url>'` so the trigger reaches the deployed Edge Function.
 - `notify_owner` currently runs with `verify_jwt = false` (MVP). Before going live, consider adding JWT verification or restricting the function to service-role callers only.
 
-## Translate (Stage 7b-i)
+## Promote + currently_reading + translate (Stage 7b-i)
 
-Admin-only Edge Function proxying to DeepL. Lives at `supabase/functions/translate/index.ts`.
+### Migrations
+
+- `0004_promote_prep.sql` — installs `unaccent`, adds `public.slugify(text)` helper, extends the `author_status` enum with `currently_reading`.
+- `0005_promote_suggestion_rpc.sql` — adds `promote_suggestion(p_suggestion_id uuid, p_author jsonb, p_books jsonb[]) returns uuid`. `SECURITY DEFINER` + `is_admin()` gate; one Postgres transaction wraps the whole body (any raise rolls back author + book inserts + suggestion update). Slug is server-generated; the caller never supplies it.
+
+### Translate Edge Function
+
+Admin-only DeepL proxy. Lives at `supabase/functions/translate/index.ts`.
 
 - **Auth:** `verify_jwt = true` in `config.toml`. Supabase validates the bearer JWT before the handler runs; the handler then asserts `app_metadata.role === 'admin'` as defence in depth.
 - **Env:** `DEEPL_API_KEY` (free tier from https://www.deepl.com/pro-api). When unset, the function returns 502 — the UI surfaces a graceful error and manual entry still works.
 - **Free-tier limit:** 500,000 characters/month. Sufficient for ~12× MVP volume.
 
-Smoke test (PowerShell):
+Smoke test (PowerShell — note that `curl.exe` mangles single-quoted JSON bodies on Windows, so use `Invoke-RestMethod` or file-based body):
 
 ```powershell
+# Option A — Invoke-RestMethod
 $jwt = "<paste an admin JWT from devtools localStorage>"
+$headers = @{ Authorization = "Bearer $jwt" }
+$body = @{ text = "Hola mundo"; target_lang = "EN" } | ConvertTo-Json
+Invoke-RestMethod -Method POST -Uri "http://127.0.0.1:54321/functions/v1/translate" `
+  -Headers $headers -ContentType "application/json" -Body $body
+
+# Option B — curl with body file
+'{"text":"Hola mundo","target_lang":"EN"}' | Set-Content body.json
 curl.exe -X POST http://127.0.0.1:54321/functions/v1/translate `
   -H "Authorization: Bearer $jwt" `
   -H "Content-Type: application/json" `
-  -d '{"text":"Hola mundo","target_lang":"EN"}'
+  --data-binary "@body.json"
+Remove-Item body.json
 ```
 
 Expected with a valid `DEEPL_API_KEY`: `{"text":"Hello world"}` (or close).
 Expected without a key: `{"error":"translation_failed"}`.
+
+See [docs/specs/2026-06-09-stage-7b-i-design.md](../docs/specs/2026-06-09-stage-7b-i-design.md) for the full Stage 7b-i design, and [docs/plans/2026-06-09-stage-7b-i-implementation.md](../docs/plans/2026-06-09-stage-7b-i-implementation.md) for the slice-by-slice plan.
 
 ## Local URLs
 
@@ -141,7 +159,7 @@ Expected without a key: `{"error":"translation_failed"}`.
 See [docs/adr/0003-data-model.md](../docs/adr/0003-data-model.md) for the canonical reference. Six tables:
 
 1. `countries` — ISO 3166-1 seeded (~249 rows).
-2. `authors` — female writers; `status` = `read` | `discovery`; `published` gates visibility.
+2. `authors` — female writers; `status` = `read` | `currently_reading` | `discovery`; `published` gates visibility.
 3. `books` — per author.
 4. `book_links` — retailer links per book per locale.
 5. `suggestions` — public suggestion queue. Anon **cannot** INSERT directly (migration 0002); the `submit_suggestion` Edge Function uses service-role after verifying Turnstile. Admin manages the inbox.
