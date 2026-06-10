@@ -95,6 +95,11 @@
       "error_generic": "No se pudo enviar el enlace. Inténtalo de nuevo.",
       "error_not_admin": "Esta cuenta no tiene acceso de administrador."
     },
+    "nav": {
+      "sugerencias": "Sugerencias pendientes",
+      "anadir": "Añadir autora",
+      "salir": "Cerrar sesión"
+    },
     "common": {
       "sign_out": "Cerrar sesión",
       "logged_in_as": "Sesión iniciada como"
@@ -110,9 +115,26 @@
       "col_email": "Correo",
       "view": "Revisar"
     },
-    "detail": {
-      "placeholder_title": "Detalle de sugerencia",
-      "placeholder_body": "Próximamente — Stage 7b."
+    "review": {
+      "title": "Revisar sugerencia",
+      "not_found": "Sugerencia no encontrada.",
+      "proposed_author": "Autora propuesta",
+      "country": "País",
+      "books_text": "Libros (texto del usuario)",
+      "note": "Nota",
+      "submitter": "Enviado por",
+      "submitted_on": "Recibida",
+      "status": "Estado",
+      "status_pending": "Pendiente",
+      "status_approved": "Aprobada",
+      "status_rejected": "Rechazada",
+      "promote": "Promotar",
+      "reject": "Rechazar",
+      "reject_reason_label": "Motivo (opcional)",
+      "reject_confirm": "Confirmar rechazo",
+      "reject_cancel": "Cancelar",
+      "reject_success": "Sugerencia rechazada.",
+      "back_to_inbox": "Volver a sugerencias pendientes"
     }
   }
 }

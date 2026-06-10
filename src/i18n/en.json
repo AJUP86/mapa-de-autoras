@@ -95,6 +95,11 @@
       "error_generic": "",
       "error_not_admin": ""
     },
+    "nav": {
+      "sugerencias": "",
+      "anadir": "",
+      "salir": ""
+    },
     "common": {
       "sign_out": "",
       "logged_in_as": ""
@@ -110,9 +115,26 @@
       "col_email": "",
       "view": ""
     },
-    "detail": {
-      "placeholder_title": "",
-      "placeholder_body": ""
+    "review": {
+      "title": "",
+      "not_found": "",
+      "proposed_author": "",
+      "country": "",
+      "books_text": "",
+      "note": "",
+      "submitter": "",
+      "submitted_on": "",
+      "status": "",
+      "status_pending": "",
+      "status_approved": "",
+      "status_rejected": "",
+      "promote": "",
+      "reject": "",
+      "reject_reason_label": "",
+      "reject_confirm": "",
+      "reject_cancel": "",
+      "reject_success": "",
+      "back_to_inbox": ""
     }
   }
 }

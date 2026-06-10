@@ -1,29 +1,23 @@
 ---
-// src/pages/admin/index.astro — Stage 7a (Slice C)
+// src/pages/admin/index.astro — Stage 7b-i (login form; was admin/login.astro in 7a)
 import Base from "~/layouts/Base.astro";
-import AdminGate from "~/components/AdminGate";
-import AdminInbox from "~/components/AdminInbox";
+import AdminLoginForm from "~/components/AdminLoginForm";
 import { t } from "~/i18n/t";
 
 const lang = "es" as const;
-const notAdminLabel = t(lang, "admin.login.error_not_admin");
-const inboxLabels = {
-  title: t(lang, "admin.inbox.title"),
-  empty: t(lang, "admin.inbox.empty"),
-  loading: t(lang, "admin.inbox.loading"),
-  error: t(lang, "admin.inbox.error"),
-  col_date: t(lang, "admin.inbox.col_date"),
-  col_author: t(lang, "admin.inbox.col_author"),
-  col_country: t(lang, "admin.inbox.col_country"),
-  col_email: t(lang, "admin.inbox.col_email"),
-  view: t(lang, "admin.inbox.view"),
+const labels = {
+  title: t(lang, "admin.login.title"),
+  subtitle: t(lang, "admin.login.subtitle"),
+  email_label: t(lang, "admin.login.email_label"),
+  submit: t(lang, "admin.login.submit"),
+  submitting: t(lang, "admin.login.submitting"),
+  success: t(lang, "admin.login.success"),
+  error_generic: t(lang, "admin.login.error_generic"),
 };
 ---
 
-<Base lang={lang} title={inboxLabels.title}>
-  <main class="min-h-screen bg-parchment p-6">
-    <AdminGate client:load loginUrl="/admin/login" notAdminLabel={notAdminLabel}>
-      <AdminInbox client:load labels={inboxLabels} />
-    </AdminGate>
+<Base lang={lang} title={labels.title}>
+  <main class="min-h-screen bg-parchment">
+    <AdminLoginForm client:load redirectTo="/" labels={labels} />
   </main>
 </Base>
