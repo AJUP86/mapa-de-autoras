@@ -106,6 +106,27 @@ Both env vars are read from `.env` (passed via `--env-file`).
 - `app.functions_url` must be set on hosted Postgres via `alter database postgres set "app.functions_url" = '<hosted-functions-url>'` so the trigger reaches the deployed Edge Function.
 - `notify_owner` currently runs with `verify_jwt = false` (MVP). Before going live, consider adding JWT verification or restricting the function to service-role callers only.
 
+## Translate (Stage 7b-i)
+
+Admin-only Edge Function proxying to DeepL. Lives at `supabase/functions/translate/index.ts`.
+
+- **Auth:** `verify_jwt = true` in `config.toml`. Supabase validates the bearer JWT before the handler runs; the handler then asserts `app_metadata.role === 'admin'` as defence in depth.
+- **Env:** `DEEPL_API_KEY` (free tier from https://www.deepl.com/pro-api). When unset, the function returns 502 — the UI surfaces a graceful error and manual entry still works.
+- **Free-tier limit:** 500,000 characters/month. Sufficient for ~12× MVP volume.
+
+Smoke test (PowerShell):
+
+```powershell
+$jwt = "<paste an admin JWT from devtools localStorage>"
+curl.exe -X POST http://127.0.0.1:54321/functions/v1/translate `
+  -H "Authorization: Bearer $jwt" `
+  -H "Content-Type: application/json" `
+  -d '{"text":"Hola mundo","target_lang":"EN"}'
+```
+
+Expected with a valid `DEEPL_API_KEY`: `{"text":"Hello world"}` (or close).
+Expected without a key: `{"error":"translation_failed"}`.
+
 ## Local URLs
 
 | Service | URL |
