@@ -280,6 +280,25 @@ with a as (
 insert into public.books (author_id, title, year, display_order)
 select a.id, 'La amiga estupenda', 2011, 0 from a;
 
+-- PRT — currently_reading (Stage 7b-i smoke test for the new state)
+with a as (
+  insert into public.authors (name, slug, country_iso_a3, birth_year, status, published)
+  values ('Lídia Jorge', 'dev-lidia-jorge', 'PRT', 1946, 'currently_reading', true)
+  returning id
+)
+insert into public.books (author_id, title, year, display_order)
+select a.id, 'Misericordia', 2022, 0 from a;
+
+-- USA already mixed (read + discovery). Add a currently_reading author to
+-- make it three-state mixed for the priority-rule smoke test.
+with a as (
+  insert into public.authors (name, slug, country_iso_a3, birth_year, status, published)
+  values ('Tara Westover', 'dev-tara-westover', 'USA', 1986, 'currently_reading', true)
+  returning id
+)
+insert into public.books (author_id, title, year, display_order)
+select a.id, 'Educated', 2018, 0 from a;
+
 commit;
 
 -- ─── verify ────────────────────────────────────────────────────────────

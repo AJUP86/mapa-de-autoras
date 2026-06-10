@@ -133,20 +133,29 @@ function StatusBadge({
   status: Author["status"];
   labels: MapLabels["status"];
 }) {
-  const isRead = status === "read";
-  // Mirrors the map encoding: read = penguin (the iconic paperback orange),
-  // discovery = oxblood (deep, anticipatory). Keeps the panel visually in
-  // sync with the country fill the user just clicked.
+  // Mirrors the map encoding: read = penguin, currently_reading = sage,
+  // discovery = oxblood. Keeps the panel visually in sync with the country
+  // fill the user just clicked.
+  const palette =
+    status === "read"
+      ? "bg-penguin/15 text-penguin"
+      : status === "currently_reading"
+        ? "bg-sage/15 text-sage"
+        : "bg-oxblood/10 text-oxblood";
+  const label =
+    status === "read"
+      ? labels.read
+      : status === "currently_reading"
+        ? labels.currently_reading
+        : labels.discovery;
   return (
     <span
       className={
         "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider font-medium font-body shrink-0 " +
-        (isRead
-          ? "bg-penguin/15 text-penguin"
-          : "bg-oxblood/10 text-oxblood")
+        palette
       }
     >
-      {isRead ? labels.read : labels.discovery}
+      {label}
     </span>
   );
 }

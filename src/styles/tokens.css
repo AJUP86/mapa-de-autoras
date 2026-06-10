@@ -16,16 +16,28 @@
   --c-shadow: rgba(27, 42, 65, 0.1);
 
   /* Map palette — Stage 4b
-   * The world map encodes read/discovery on a dusty-blue ocean using a
-   * two-color hierarchy: penguin (the strongest brand signal) for read,
-   * oxblood for discovery. Countries with both states pick a side based
-   * on the active filter — there is no blended middle color. Each fill is
-   * paired with a darker stroke of itself so adjacent same-state countries
-   * keep a visible boundary. */
+   * The world map encodes read/discovery/currently_reading on a dusty-blue
+   * ocean using three brand colors. Countries with multiple states pick a
+   * single side based on the priority hierarchy (read > currently_reading >
+   * discovery), or based on the active filter. Each fill is paired with a
+   * darker stroke of itself so adjacent same-state countries keep a visible
+   * boundary against the ocean. */
   --c-water: #b5cfd2;
   --c-penguin-line: #9c4e10;
   --c-oxblood-line: #4a0d18;
-  --c-paper-line: #7a5a3a; /* sepia for empty-country borders */
+  --c-sage-line: #4d6651;       /* Stage 7b-i — darker sage for currently_reading strokes */
+  --c-paper-line: #7a5a3a;      /* sepia for empty-country borders */
+
+  /* Map state aliases — Stage 7b-i.
+   * Change the right-hand side here to repaint the map without touching
+   * any TS/component code. The state-driven fills in src/lib/map-state.ts
+   * reference these aliases, never the base palette directly. */
+  --c-state-read:                   var(--c-penguin);
+  --c-state-read-line:              var(--c-penguin-line);
+  --c-state-currently-reading:      var(--c-sage);
+  --c-state-currently-reading-line: var(--c-sage-line);
+  --c-state-discovery:              var(--c-oxblood);
+  --c-state-discovery-line:         var(--c-oxblood-line);
 
   --font-display: "Fraunces Variable", Georgia, serif;
   --font-body: "Inter Variable", system-ui, sans-serif;
