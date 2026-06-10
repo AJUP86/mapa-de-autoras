@@ -1,14 +1,25 @@
-// Localized country list for the suggestion form's country picker.
+// countries.ts — Stage 7b-i (extended from Stage 6)
 //
-// Fetched at Astro build time from the seeded `countries` table — the same
-// 249 ISO 3166-1 rows. Sorted alphabetically by the locale's display name
-// so the dropdown is intuitive in whichever language the user is in.
+// Loads the ISO-3166-1 country list from public.countries (seeded in Stage 3).
+// RLS allows anon read.
+//
+// Two consumer shapes:
+//   - getCountries(lang) → CountryOption[]   — single localized name; used by
+//     the public suggest form (Stage 6).
+//   - getCountriesBilingual() → CountryRow[] — both names; used by the admin
+//     PromoteForm (Stage 7b-i E1) which renders ES labels but stores ISO.
 
 import { supabase } from "./supabase";
 
 export interface CountryOption {
   iso_a3: string;
   name: string;
+}
+
+export interface CountryRow {
+  iso_a3: string;
+  name_es: string;
+  name_en: string;
 }
 
 export async function getCountries(
@@ -32,4 +43,20 @@ export async function getCountries(
       name: row[nameCol],
     }),
   );
+}
+
+let bilingualCache: CountryRow[] | null = null;
+
+export async function getCountriesBilingual(): Promise<CountryRow[]> {
+  if (bilingualCache) return bilingualCache;
+  const { data, error } = await supabase
+    .from("countries")
+    .select("iso_a3, name_es, name_en")
+    .order("name_es", { ascending: true });
+  if (error) {
+    console.error("[countries] getCountriesBilingual() failed:", error.message);
+    throw error;
+  }
+  bilingualCache = (data ?? []) as CountryRow[];
+  return bilingualCache;
 }
