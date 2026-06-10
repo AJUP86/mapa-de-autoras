@@ -1,5 +1,12 @@
 ---
-// src/pages/admin/promote.astro — Stage 7b-i (E1: empty form only; E2 adds suggestion mode)
+// src/pages/admin/promote.astro — Stage 7b-i (E2: handles both modes)
+//
+// This single page covers both `/admin/promote` (empty form, promote
+// from scratch) and `/admin/promote?suggestion=<uuid>` (prefilled from
+// a pending suggestion + reviewer-notes capture). We do NOT parse
+// `?suggestion=` here — Astro static output can't reliably surface
+// arbitrary query strings at build time. The form reads
+// `window.location.search` itself on mount.
 import Base from "~/layouts/Base.astro";
 import AdminGate from "~/components/AdminGate";
 import PromoteForm from "~/components/PromoteForm";
@@ -21,6 +28,7 @@ const txEs = { ...tx, button: t(lang, "admin.promote.translate.button_to_es") };
 
 const labels = {
   title_new: t(lang, "admin.promote.title_new"),
+  title_review: t(lang, "admin.promote.title_review"),
   name_label: t(lang, "admin.promote.name_label"),
   country_label: t(lang, "admin.promote.country_label"),
   status_label: t(lang, "admin.promote.status_label"),
@@ -53,6 +61,14 @@ const labels = {
     description_en_label: t(lang, "admin.promote.book.description_en_label"),
     remove: t(lang, "admin.promote.book.remove"),
   },
+  // Context column (E2)
+  context_submitted_on: t(lang, "admin.promote.context.submitted_on"),
+  context_proposed_author: t(lang, "admin.promote.context.proposed_author"),
+  context_country: t(lang, "admin.promote.context.country"),
+  context_books_text: t(lang, "admin.promote.context.books_text"),
+  context_note: t(lang, "admin.promote.context.note"),
+  context_submitter: t(lang, "admin.promote.context.submitter"),
+  reviewer_notes_label: t(lang, "admin.promote.reviewer_notes_label"),
 };
 ---
 

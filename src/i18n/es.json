@@ -160,6 +160,15 @@
       "error_duplicate": "Ya existe una autora con este nombre en este país. Edita su perfil para añadir más libros.",
       "error_validation": "Revisa los campos marcados.",
       "error_unknown": "No se pudo guardar. Inténtalo de nuevo.",
+      "reviewer_notes_label": "Notas del review (opcional)",
+      "context": {
+        "submitted_on": "Recibida",
+        "proposed_author": "Autora propuesta",
+        "country": "País",
+        "books_text": "Libros (texto del usuario)",
+        "note": "Nota",
+        "submitter": "Enviado por"
+      },
       "translate": {
         "button_to_en": "Traducir a EN →",
         "button_to_es": "← Traducir a ES",

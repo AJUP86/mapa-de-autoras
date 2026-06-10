@@ -1,14 +1,18 @@
 // PromoteForm.tsx — Stage 7b-i
 //
 // The form that promotes a suggestion (or creates an author from scratch).
-// In E1 this slice is "promote-from-scratch" only — no suggestion context
-// column, no reviewer notes. E2 extends with suggestionId prefill.
+// E1: promote-from-scratch (no suggestion context). E2: when the URL
+// contains `?suggestion=<uuid>`, the form fetches the suggestion, prefills
+// name + country, renders a read-only context aside + reviewer-notes
+// textarea on the left, and passes both `suggestionId` and
+// `reviewer_notes` to the RPC. On save → redirect to /admin/inbox.
 
 import { useEffect, useState } from "react";
 import TranslateButton from "./TranslateButton";
 import BookFields, { EMPTY_BOOK, type BookValue } from "./BookFields";
 import { getCountriesBilingual, type CountryRow } from "~/lib/countries";
 import { promoteSuggestion, type PromoteError } from "~/lib/promote";
+import { getSuggestion, type SuggestionDetail } from "~/lib/suggestions-detail";
 import type { AuthorStatus } from "~/lib/map-state";
 
 interface TranslateLabels {
@@ -23,6 +27,7 @@ interface TranslateLabels {
 
 export interface PromoteFormLabels {
   title_new: string;
+  title_review: string;
   name_label: string;
   country_label: string;
   status_label: string;
@@ -55,6 +60,14 @@ export interface PromoteFormLabels {
     description_en_label: string;
     remove: string;
   };
+  // Suggestion context column (only used when suggestionId is set)
+  context_submitted_on: string;
+  context_proposed_author: string;
+  context_country: string;
+  context_books_text: string;
+  context_note: string;
+  context_submitter: string;
+  reviewer_notes_label: string;
 }
 
 interface Props {
@@ -92,11 +105,64 @@ export default function PromoteForm({ labels }: Props) {
   const [status, setStatus] = useState<"idle" | "saving" | "error">("idle");
   const [error, setError] = useState<PromoteError | null>(null);
 
+  // E2: the suggestion id is read from window.location.search on mount.
+  // We keep it as state (not a prop) so this same component works for both
+  // /admin/promote and /admin/promote?suggestion=<uuid> without the Astro
+  // page needing to parse the query string (which is awkward with static
+  // output).
+  const [suggestionId, setSuggestionId] = useState<string | undefined>(
+    undefined,
+  );
+  const [suggestion, setSuggestion] = useState<SuggestionDetail | null>(null);
+  const [suggestionLoading, setSuggestionLoading] = useState<boolean>(
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).has("suggestion")
+      : false,
+  );
+  const [reviewerNotes, setReviewerNotes] = useState<string>("");
+
   useEffect(() => {
     getCountriesBilingual()
       .then(setCountries)
       .catch((e) => console.error(e));
   }, []);
+
+  // Hydrate suggestionId from the URL on mount.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("suggestion");
+    if (id) {
+      setSuggestionId(id);
+    } else {
+      setSuggestionLoading(false);
+    }
+  }, []);
+
+  // Fetch the suggestion when we have an id.
+  useEffect(() => {
+    if (!suggestionId) return;
+    let cancelled = false;
+    getSuggestion(suggestionId)
+      .then((s) => {
+        if (cancelled) return;
+        if (s) {
+          setSuggestion(s);
+          setAuthor((a) => ({
+            ...a,
+            name: s.proposed_author_name,
+            country_iso_a3: s.proposed_country_iso_a3,
+          }));
+        }
+        setSuggestionLoading(false);
+      })
+      .catch((e) => {
+        console.error("[PromoteForm] load suggestion failed:", e);
+        if (!cancelled) setSuggestionLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [suggestionId]);
 
   function update<K extends keyof AuthorValue>(key: K, val: AuthorValue[K]) {
     setAuthor((a) => ({ ...a, [key]: val }));
@@ -117,7 +183,7 @@ export default function PromoteForm({ labels }: Props) {
     setStatus("saving");
     setError(null);
     const result = await promoteSuggestion(
-      null,
+      suggestionId ?? null,
       {
         name: author.name.trim(),
         country_iso_a3: author.country_iso_a3,
@@ -128,6 +194,9 @@ export default function PromoteForm({ labels }: Props) {
         birth_year: author.birth_year ? Number(author.birth_year) : undefined,
         death_year: author.death_year ? Number(author.death_year) : undefined,
         published: author.published,
+        reviewer_notes: suggestionId
+          ? reviewerNotes.trim() || undefined
+          : undefined,
       },
       books.map((b) => ({
         title: b.title.trim(),
@@ -139,18 +208,28 @@ export default function PromoteForm({ labels }: Props) {
       })),
     );
     if (result.ok) {
-      window.location.href = "/";
-    } else {
-      setStatus("error");
-      setError(result.error);
+      window.location.href = suggestionId ? "/admin/inbox" : "/";
+      return;
     }
+    setStatus("error");
+    setError(result.error);
   }
 
-  return (
+  // E2: while the suggestion is fetching, render a small loading message
+  // instead of the empty form (which would flash the unprefilled defaults).
+  if (suggestionLoading) {
+    return (
+      <p className="mx-auto max-w-2xl p-6 text-ink/60">{labels.saving}</p>
+    );
+  }
+
+  const formMarkup = (
     <form onSubmit={onSubmit} className="mx-auto max-w-3xl space-y-6 p-6">
       <div>
         <a href="/" className="text-sm text-ink/70 underline">← {labels.back}</a>
-        <h1 className="mt-2 font-serif text-2xl text-ink">{labels.title_new}</h1>
+        <h1 className="mt-2 font-serif text-2xl text-ink">
+          {suggestionId ? labels.title_review : labels.title_new}
+        </h1>
       </div>
 
       <fieldset className="space-y-4">
@@ -327,5 +406,65 @@ export default function PromoteForm({ labels }: Props) {
         <a href="/" className="text-sm text-ink/70 underline">{labels.cancel}</a>
       </div>
     </form>
+  );
+
+  // Standalone mode (promote-from-scratch): just the form.
+  if (!suggestionId || !suggestion) {
+    return formMarkup;
+  }
+
+  // Promote-from-suggestion mode: two-column layout with a read-only
+  // suggestion context aside + reviewer notes on the left.
+  return (
+    <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 p-6 md:grid-cols-[1fr_2fr]">
+      <aside className="rounded border border-ink/10 bg-bone/60 p-4 text-sm">
+        <h2 className="font-medium text-ink">Sugerencia (lectura)</h2>
+        <dl className="mt-3 space-y-2">
+          <div>
+            <dt className="text-ink/60">{labels.context_submitted_on}</dt>
+            <dd className="text-ink">
+              {new Date(suggestion.created_at).toISOString().slice(0, 10)}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-ink/60">{labels.context_proposed_author}</dt>
+            <dd className="text-ink">{suggestion.proposed_author_name}</dd>
+          </div>
+          <div>
+            <dt className="text-ink/60">{labels.context_country}</dt>
+            <dd className="text-ink">{suggestion.proposed_country_iso_a3}</dd>
+          </div>
+          <div>
+            <dt className="text-ink/60">{labels.context_books_text}</dt>
+            <dd className="whitespace-pre-wrap text-ink">
+              {suggestion.proposed_books_text ?? "—"}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-ink/60">{labels.context_note}</dt>
+            <dd className="whitespace-pre-wrap text-ink">
+              {suggestion.note ?? "—"}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-ink/60">{labels.context_submitter}</dt>
+            <dd className="text-ink">
+              {suggestion.submitter_name ?? "—"} &lt;{suggestion.submitter_email}&gt;
+            </dd>
+          </div>
+        </dl>
+        <label className="mt-4 block text-sm">
+          <span className="text-ink/80">{labels.reviewer_notes_label}</span>
+          <textarea
+            rows={3}
+            maxLength={2000}
+            value={reviewerNotes}
+            onChange={(e) => setReviewerNotes(e.target.value)}
+            className="mt-1 block w-full rounded border border-ink/20 bg-parchment p-2"
+          />
+        </label>
+      </aside>
+      <div>{formMarkup}</div>
+    </div>
   );
 }

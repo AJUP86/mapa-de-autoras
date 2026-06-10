@@ -160,6 +160,15 @@
       "error_duplicate": "",
       "error_validation": "",
       "error_unknown": "",
+      "reviewer_notes_label": "",
+      "context": {
+        "submitted_on": "",
+        "proposed_author": "",
+        "country": "",
+        "books_text": "",
+        "note": "",
+        "submitter": ""
+      },
       "translate": {
         "button_to_en": "",
         "button_to_es": "",
