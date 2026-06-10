@@ -18,11 +18,12 @@
   "map": {
     "eyebrow": "Explore the map",
     "title": "Tap a country",
-    "subhead": "Each tint marks a different state: authors I've read, discoveries to make, or a mix.",
+    "subhead": "Each tint marks a different state: authors I've read, currently reading, suggestions to discover, or a mix.",
     "filter": {
       "all": "All",
       "read": "Read",
-      "discoveries": "Discoveries"
+      "currently_reading": "Currently reading",
+      "discoveries": "Suggestions"
     },
     "panel": {
       "close": "Close",
@@ -32,7 +33,8 @@
     },
     "status": {
       "read": "Read",
-      "discovery": "Discovery"
+      "currently_reading": "Currently reading",
+      "discovery": "Suggestion"
     },
     "view": {
       "world": "World",
@@ -93,6 +95,11 @@
       "error_generic": "",
       "error_not_admin": ""
     },
+    "nav": {
+      "sugerencias": "",
+      "anadir": "",
+      "salir": ""
+    },
     "common": {
       "sign_out": "",
       "logged_in_as": ""
@@ -108,9 +115,79 @@
       "col_email": "",
       "view": ""
     },
-    "detail": {
-      "placeholder_title": "",
-      "placeholder_body": ""
+    "review": {
+      "title": "",
+      "not_found": "",
+      "proposed_author": "",
+      "country": "",
+      "books_text": "",
+      "note": "",
+      "submitter": "",
+      "submitted_on": "",
+      "status": "",
+      "status_pending": "",
+      "status_approved": "",
+      "status_rejected": "",
+      "promote": "",
+      "reject": "",
+      "reject_reason_label": "",
+      "reject_confirm": "",
+      "reject_cancel": "",
+      "reject_success": "",
+      "back_to_inbox": ""
+    },
+    "promote": {
+      "title_new": "",
+      "title_review": "",
+      "name_label": "",
+      "country_label": "",
+      "status_label": "",
+      "status_read": "",
+      "status_currently_reading": "",
+      "status_discovery": "",
+      "birth_year_label": "",
+      "death_year_label": "",
+      "photo_label": "",
+      "bio_es_label": "",
+      "bio_en_label": "",
+      "books_section": "",
+      "add_book": "",
+      "publish_now_label": "",
+      "save": "",
+      "saving": "",
+      "cancel": "",
+      "back": "",
+      "error_duplicate": "",
+      "error_validation": "",
+      "error_unknown": "",
+      "reviewer_notes_label": "",
+      "context": {
+        "submitted_on": "",
+        "proposed_author": "",
+        "country": "",
+        "books_text": "",
+        "note": "",
+        "submitter": ""
+      },
+      "translate": {
+        "button_to_en": "",
+        "button_to_es": "",
+        "confirm_title": "",
+        "confirm_body": "",
+        "confirm_ok": "",
+        "confirm_cancel": "",
+        "translating": "",
+        "error": ""
+      },
+      "book": {
+        "title_label": "",
+        "year_label": "",
+        "language_label": "",
+        "cover_label": "",
+        "description_es_label": "",
+        "description_en_label": "",
+        "remove": ""
+      }
     }
   }
 }

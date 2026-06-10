@@ -12,12 +12,14 @@ const swatches = [
   { name: "sage",      hex: "#7A9B82", use: "Confirmed · dividers" },
 ];
 
-// Stage 4b: two-color hierarchy. Mixed countries (read + discovery) pick a
-// side based on the active filter — no blended middle color. See ADR 0002.
+// Stage 7b-i: three-color hierarchy. Mixed countries pick one side based on
+// the priority hierarchy (read > currently_reading > discovery) or the active
+// filter — no blended middle color. See ADR 0002 + Stage 7b-i spec.
 const mapStates = [
-  { label: "empty",     cls: "bg-parchment text-ink border border-ink/10" },
-  { label: "discovery", cls: "bg-oxblood text-parchment" },
-  { label: "read",      cls: "bg-penguin text-parchment" },
+  { label: "empty",             cls: "bg-parchment text-ink border border-ink/10" },
+  { label: "discovery",         cls: "bg-oxblood text-parchment" },
+  { label: "currently_reading", cls: "bg-sage text-parchment" },
+  { label: "read",              cls: "bg-penguin text-parchment" },
 ];
 
 const penguinBands = [
@@ -51,7 +53,7 @@ const penguinBands = [
 
     <!-- Map highlight scale -->
     <h2 class="mt-16 mb-2 font-display text-2xl font-semibold border-b border-ink/10 pb-2">Map highlight scale</h2>
-    <p class="text-ink/70 max-w-prose font-body">Two fill colors total. Countries with both read and discovery authors pick a side based on the active filter — read wins by default; the <em>Discoveries</em> filter is the exception that surfaces the discovery side. Each fill has a paired darker stroke so adjacent same-state countries keep a visible boundary. The map sits on a dusty-blue water backdrop.</p>
+    <p class="text-ink/70 max-w-prose font-body">Three fill colors total. Countries with multiple states pick one side based on the priority hierarchy (read &gt; currently_reading &gt; discovery) or the active filter. Each fill has a paired darker stroke so adjacent same-state countries keep a visible boundary. The map sits on a dusty-blue water backdrop.</p>
     <div class="mt-4 flex gap-1">
       {mapStates.map((s) => (
         <div class={`flex-1 h-16 rounded-md flex items-end px-2 py-1 text-xs font-semibold font-body ${s.cls}`}>{s.label}</div>

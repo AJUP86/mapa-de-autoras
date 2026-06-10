@@ -18,11 +18,12 @@
   "map": {
     "eyebrow": "Explora el mapa",
     "title": "Toca un país",
-    "subhead": "Cada tinte marca un estado distinto: autoras leídas, por descubrir, o una mezcla.",
+    "subhead": "Cada tinte marca un estado distinto: autoras leídas, las que está leyendo, sugerencias por descubrir, o una mezcla.",
     "filter": {
-      "all": "Todos",
+      "all": "Todas",
       "read": "Leídas",
-      "discoveries": "Descubrimientos"
+      "currently_reading": "Leyendo",
+      "discoveries": "Sugerencias"
     },
     "panel": {
       "close": "Cerrar",
@@ -32,7 +33,8 @@
     },
     "status": {
       "read": "Leída",
-      "discovery": "Descubrimiento"
+      "currently_reading": "Leyendo",
+      "discovery": "Sugerencia"
     },
     "view": {
       "world": "Mundo",
@@ -93,6 +95,11 @@
       "error_generic": "No se pudo enviar el enlace. Inténtalo de nuevo.",
       "error_not_admin": "Esta cuenta no tiene acceso de administrador."
     },
+    "nav": {
+      "sugerencias": "Sugerencias pendientes",
+      "anadir": "Añadir autora",
+      "salir": "Cerrar sesión"
+    },
     "common": {
       "sign_out": "Cerrar sesión",
       "logged_in_as": "Sesión iniciada como"
@@ -108,9 +115,79 @@
       "col_email": "Correo",
       "view": "Revisar"
     },
-    "detail": {
-      "placeholder_title": "Detalle de sugerencia",
-      "placeholder_body": "Próximamente — Stage 7b."
+    "review": {
+      "title": "Revisar sugerencia",
+      "not_found": "Sugerencia no encontrada.",
+      "proposed_author": "Autora propuesta",
+      "country": "País",
+      "books_text": "Libros (texto del usuario)",
+      "note": "Nota",
+      "submitter": "Enviado por",
+      "submitted_on": "Recibida",
+      "status": "Estado",
+      "status_pending": "Pendiente",
+      "status_approved": "Aprobada",
+      "status_rejected": "Rechazada",
+      "promote": "Promotar",
+      "reject": "Rechazar",
+      "reject_reason_label": "Motivo (opcional)",
+      "reject_confirm": "Confirmar rechazo",
+      "reject_cancel": "Cancelar",
+      "reject_success": "Sugerencia rechazada.",
+      "back_to_inbox": "Volver a sugerencias pendientes"
+    },
+    "promote": {
+      "title_new": "Añadir autora",
+      "title_review": "Promotar sugerencia",
+      "name_label": "Nombre",
+      "country_label": "País",
+      "status_label": "Estado",
+      "status_read": "Leída",
+      "status_currently_reading": "Leyendo",
+      "status_discovery": "Sugerencia",
+      "birth_year_label": "Año de nacimiento",
+      "death_year_label": "Año de defunción",
+      "photo_label": "URL de foto",
+      "bio_es_label": "Bio (ES)",
+      "bio_en_label": "Bio (EN)",
+      "books_section": "Libros (mínimo uno)",
+      "add_book": "+ Añadir otro libro",
+      "publish_now_label": "Publicar inmediatamente",
+      "save": "Guardar y publicar",
+      "saving": "Guardando…",
+      "cancel": "Cancelar",
+      "back": "Volver",
+      "error_duplicate": "Ya existe una autora con este nombre en este país. Edita su perfil para añadir más libros.",
+      "error_validation": "Revisa los campos marcados.",
+      "error_unknown": "No se pudo guardar. Inténtalo de nuevo.",
+      "reviewer_notes_label": "Notas del review (opcional)",
+      "context": {
+        "submitted_on": "Recibida",
+        "proposed_author": "Autora propuesta",
+        "country": "País",
+        "books_text": "Libros (texto del usuario)",
+        "note": "Nota",
+        "submitter": "Enviado por"
+      },
+      "translate": {
+        "button_to_en": "Traducir a EN →",
+        "button_to_es": "← Traducir a ES",
+        "confirm_title": "Reemplazar texto",
+        "confirm_body": "Esto reemplazará el texto actual.",
+        "confirm_ok": "Reemplazar",
+        "confirm_cancel": "Cancelar",
+        "translating": "Traduciendo…",
+        "error": "Error al traducir"
+      },
+      "book": {
+        "title_label": "Título",
+        "year_label": "Año",
+        "language_label": "Idioma original",
+        "cover_label": "URL de portada",
+        "description_es_label": "Descripción (ES)",
+        "description_en_label": "Description (EN)",
+        "remove": "Eliminar"
+      }
     }
   }
 }

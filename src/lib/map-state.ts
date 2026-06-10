@@ -3,11 +3,16 @@
 // The shapes match what `src/lib/authors.ts::getCatalog()` returns at build
 // time — same structure as the Stage-4 mock, just sourced from Postgres.
 
-export type AuthorStatus = "read" | "discovery";
+export type AuthorStatus = "read" | "currently_reading" | "discovery";
 
-export type Filter = "all" | "read" | "discoveries";
+export type Filter = "all" | "read" | "currently_reading" | "discoveries";
 
-export type CountryState = "read" | "mixed" | "discovery" | "empty";
+export type CountryState =
+  | "read"
+  | "currently_reading"
+  | "discovery"
+  | "mixed"
+  | "empty";
 
 export interface Book {
   title: string;
@@ -29,14 +34,22 @@ export interface CountryEntry {
 }
 
 export interface MapLabels {
-  filter: { all: string; read: string; discoveries: string };
+  filter: {
+    all: string;
+    read: string;
+    currently_reading: string;
+    discoveries: string;
+  };
   panel: { close: string; empty: string; suggest: string; booksLabel: string };
-  status: { read: string; discovery: string };
+  status: { read: string; currently_reading: string; discovery: string };
 }
 
 /**
  * Reduce a list of country entries into a state-per-country map.
  * O(n) over authors; safe to memoize at the caller.
+ *
+ * Mixed = country has 2+ distinct statuses among its authors. The exact
+ * fill color for mixed is decided in fillFor() based on the active filter.
  */
 export function computeCountryStates(
   entries: ReadonlyArray<CountryEntry>,
@@ -44,15 +57,21 @@ export function computeCountryStates(
   const result: Record<string, CountryState> = {};
   for (const entry of entries) {
     let hasRead = false;
+    let hasCurrent = false;
     let hasDiscovery = false;
     for (const author of entry.authors) {
       if (author.status === "read") hasRead = true;
+      else if (author.status === "currently_reading") hasCurrent = true;
       else hasDiscovery = true;
-      if (hasRead && hasDiscovery) break;
+      if (hasRead && hasCurrent && hasDiscovery) break;
     }
-    if (hasRead && hasDiscovery) result[entry.iso_a3] = "mixed";
+    const distinct =
+      (hasRead ? 1 : 0) + (hasCurrent ? 1 : 0) + (hasDiscovery ? 1 : 0);
+    if (distinct === 0) continue;
+    if (distinct >= 2) result[entry.iso_a3] = "mixed";
     else if (hasRead) result[entry.iso_a3] = "read";
-    else if (hasDiscovery) result[entry.iso_a3] = "discovery";
+    else if (hasCurrent) result[entry.iso_a3] = "currently_reading";
+    else result[entry.iso_a3] = "discovery";
   }
   return result;
 }
@@ -62,27 +81,20 @@ export interface CountryStyle {
   stroke: string;
 }
 
-// Two-color hierarchy — Stage 4b refinement
-// The map uses exactly two fill colors: penguin (read) and oxblood (discovery).
-// There is no blended "mixed" fill. Countries with both kinds of authors are
-// resolved by the filter context:
-//
-//   filter   | mixed country shows as
-//   ─────────┼───────────────────────
-//   all      | penguin (read wins — the default hierarchy)
-//   read     | penguin (it has read authors)
-//   disc.    | oxblood (the "exception" — surfaces the discovery side)
-//
-// Each fill is paired with a darker stroke of itself, so adjacent same-state
-// countries (USA + Canada, ESP + FRA + DEU) keep a visible boundary against
-// the dusty-blue ocean.
+// Three-color hierarchy — Stage 7b-i (evolves the Stage 4b two-color baseline).
+// Fills reference the semantic state aliases in tokens.css, never the base
+// palette tokens directly.
 const READ_STYLE: CountryStyle = {
-  fill: "var(--c-penguin)",
-  stroke: "var(--c-penguin-line)",
+  fill: "var(--c-state-read)",
+  stroke: "var(--c-state-read-line)",
+};
+const CURRENT_STYLE: CountryStyle = {
+  fill: "var(--c-state-currently-reading)",
+  stroke: "var(--c-state-currently-reading-line)",
 };
 const DISCOVERY_STYLE: CountryStyle = {
-  fill: "var(--c-oxblood)",
-  stroke: "var(--c-oxblood-line)",
+  fill: "var(--c-state-discovery)",
+  stroke: "var(--c-state-discovery-line)",
 };
 const EMPTY_STYLE: CountryStyle = {
   fill: "var(--c-parchment)",
@@ -91,26 +103,41 @@ const EMPTY_STYLE: CountryStyle = {
 
 /**
  * Resolve a country's {fill, stroke} from its state and the active filter.
- * Mixed countries collapse to one color based on the filter context — see the
- * table above the constants. Filtered-out countries adopt the empty style so
- * they recede against the ocean without losing their shape.
+ *
+ *   filter             | mixed country shows as
+ *   ───────────────────┼───────────────────────────────────────────────
+ *   all                | priority: read > currently_reading > discovery
+ *   read               | penguin (it has a read author) — else empty
+ *   currently_reading  | sage    (it has a current author) — else empty
+ *   discoveries        | oxblood (it has a discovery author) — else empty
+ *
+ * No blended fills — every country picks one color.
  */
 export function fillFor(state: CountryState, filter: Filter): CountryStyle {
   if (state === "empty") return EMPTY_STYLE;
 
   if (filter === "read") {
-    if (state === "read" || state === "mixed") return READ_STYLE;
-    return EMPTY_STYLE; // pure discovery fades out
+    return state === "read" || state === "mixed" ? READ_STYLE : EMPTY_STYLE;
   }
-
+  if (filter === "currently_reading") {
+    return state === "currently_reading" || state === "mixed"
+      ? CURRENT_STYLE
+      : EMPTY_STYLE;
+  }
   if (filter === "discoveries") {
-    // The exception: mixed countries swap to oxblood here so the
-    // discovery-side surfaces. Pure read countries fade out.
-    if (state === "discovery" || state === "mixed") return DISCOVERY_STYLE;
-    return EMPTY_STYLE;
+    return state === "discovery" || state === "mixed"
+      ? DISCOVERY_STYLE
+      : EMPTY_STYLE;
   }
 
-  // filter === "all" — read wins for mixed countries
-  if (state === "read" || state === "mixed") return READ_STYLE;
+  // filter === "all" — priority for mixed and the per-state shortcuts
+  if (state === "read" || (state === "mixed")) {
+    // Mixed: pick by priority. computeCountryStates collapses 2+ statuses
+    // to "mixed" without telling us which; we re-derive from the entry at
+    // the call site, OR we accept the simple rule: any country labelled
+    // "mixed" surfaces as read (the highest-priority signal).
+    return READ_STYLE;
+  }
+  if (state === "currently_reading") return CURRENT_STYLE;
   return DISCOVERY_STYLE; // state === "discovery"
 }

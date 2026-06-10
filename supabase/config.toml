@@ -51,9 +51,13 @@ enabled = true
 site_url = "http://localhost:4321"
 additional_redirect_urls = [
   "http://127.0.0.1:4321",
+  "http://127.0.0.1:4321/",
   "http://127.0.0.1:4321/admin",
+  "http://127.0.0.1:4321/admin/inbox",
   "http://localhost:4321",
+  "http://localhost:4321/",
   "http://localhost:4321/admin",
+  "http://localhost:4321/admin/inbox",
 ]
 jwt_expiry = 3600
 enable_refresh_token_rotation = true
@@ -96,6 +100,13 @@ verify_jwt = false
 [functions.notify_owner]
 enabled = true
 verify_jwt = false
+
+# Stage 7b-i — admin-only translate proxy to DeepL. `verify_jwt = true`
+# means Supabase validates the bearer JWT before our handler runs. The
+# function then double-checks the role inside the JWT.
+[functions.translate]
+enabled = true
+verify_jwt = true
 
 # Disabled on Windows: Vector log collector requires Docker daemon exposed on
 # tcp://localhost:2375, which Docker Desktop doesn't enable by default. Without

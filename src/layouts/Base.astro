@@ -1,5 +1,7 @@
 ---
 import "../styles/global.css";
+import AdminAwareNav from "~/components/AdminAwareNav";
+import { t } from "~/i18n/t";
 
 interface Props {
   title?: string;
@@ -20,6 +22,14 @@ const enPath = esPath === "/" ? "/en/" : `/en${esPath}`;
 const site = Astro.site ?? new URL("http://localhost:4321/");
 const esUrl = new URL(esPath, site).href;
 const enUrl = new URL(enPath, site).href;
+
+const navLabels = {
+  mapa: t(lang, "nav.home"),
+  sugerir: t(lang, "nav.suggest"),
+  sugerencias: t(lang, "admin.nav.sugerencias"),
+  anadir: t(lang, "admin.nav.anadir"),
+  salir: t(lang, "admin.nav.salir"),
+};
 ---
 
 <!doctype html>
@@ -36,6 +46,7 @@ const enUrl = new URL(enPath, site).href;
     <link rel="alternate" hreflang="x-default" href={esUrl} />
   </head>
   <body class="font-body bg-parchment text-ink">
+    <AdminAwareNav client:load labels={navLabels} />
     <slot />
   </body>
 </html>

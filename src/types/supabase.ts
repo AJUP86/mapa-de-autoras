@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -282,9 +282,14 @@ export type Database = {
     }
     Functions: {
       is_admin: { Args: never; Returns: boolean }
+      promote_suggestion: {
+        Args: { p_author: Json; p_books: Json[]; p_suggestion_id: string }
+        Returns: string
+      }
+      slugify: { Args: { input: string }; Returns: string }
     }
     Enums: {
-      author_status: "read" | "discovery"
+      author_status: "read" | "discovery" | "currently_reading"
       retailer: "amazon" | "bookshop" | "kobo" | "other"
       subscriber_status: "pending" | "confirmed" | "unsubscribed"
       suggestion_status: "pending" | "approved" | "rejected"
@@ -418,7 +423,7 @@ export const Constants = {
   },
   public: {
     Enums: {
-      author_status: ["read", "discovery"],
+      author_status: ["read", "discovery", "currently_reading"],
       retailer: ["amazon", "bookshop", "kobo", "other"],
       subscriber_status: ["pending", "confirmed", "unsubscribed"],
       suggestion_status: ["pending", "approved", "rejected"],
