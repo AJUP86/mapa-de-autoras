@@ -4,7 +4,7 @@
 
 **Goal:** Bring `staging.mapadeautoras.com` live, auto-deploying every push to `development` from a hosted Cloudflare Pages + Supabase stack. Production deploy is deferred to a separate Stage 9b.
 
-**Architecture:** Single hosted Supabase project (`mapa-staging`, region `eu-west-2`) holds the DB + Edge Functions + magic-link auth. Cloudflare Pages auto-builds the Astro static output on every push to `development` and serves it via the global CDN, with the staging Supabase URL + anon key baked in as build-time env vars. A GitHub Actions cron pings a no-op SQL function weekly to prevent the free-tier 7-day auto-pause.
+**Architecture:** Single hosted Supabase project (`mapa-staging`, region `eu-west-1`) holds the DB + Edge Functions + magic-link auth. Cloudflare Pages auto-builds the Astro static output on every push to `development` and serves it via the global CDN, with the staging Supabase URL + anon key baked in as build-time env vars. A GitHub Actions cron pings a no-op SQL function weekly to prevent the free-tier 7-day auto-pause.
 
 **Tech Stack:** Astro 5 (static output), React 19 islands, Supabase (Postgres 15 + GoTrue + Deno Edge Runtime), Cloudflare Pages, Cloudflare Registrar + DNS, GitHub Actions.
 
@@ -117,7 +117,7 @@ Go to https://supabase.com/dashboard → **New project**:
 
 - Name: `mapa-staging`
 - Database password: generate + save to your password manager
-- Region: **`eu-west-2` (London)** — per spec decision #12; matches the future production region
+- Region: **`eu-west-1` (Ireland)** — per spec decision #12; matches the future production region
 - Pricing plan: **Free**
 
 Wait ~2 minutes for provisioning.
@@ -632,7 +632,7 @@ Run it again. Same result.
 
 | Resource | Provider | Region | Console URL |
 |---|---|---|---|
-| Hosted DB + Auth + Edge Functions | Supabase | `eu-west-2` (London) | `https://supabase.com/dashboard/project/<staging-ref>` |
+| Hosted DB + Auth + Edge Functions | Supabase | `eu-west-1` (Ireland) | `https://supabase.com/dashboard/project/<staging-ref>` |
 | Static site hosting | Cloudflare Pages | global edge | Cloudflare dashboard → Workers & Pages → `mapa-de-autoras` |
 | Domain | Cloudflare Registrar | n/a | Cloudflare dashboard → Domain Registration |
 | Heartbeat cron | GitHub Actions | GitHub-hosted | `https://github.com/AJUP86/mapa-de-autoras/actions/workflows/heartbeat.yml` |
@@ -721,7 +721,7 @@ If the heartbeat fails to fire (e.g., GitHub Actions outage) and the project pau
 ## Adding production (9b) — what changes
 
 When Stage 9b lands:
-- Create `mapa-prod` Supabase project in same region (`eu-west-2`).
+- Create `mapa-prod` Supabase project in same region (`eu-west-1`).
 - Create production runbook at `docs/30-ops/production-deploy.md` (copy this file, swap values).
 - Update this runbook's matrix in `.github/workflows/heartbeat.yml` to add `production` entry.
 - Add `PROD_SUPABASE_URL` + `PROD_SUPABASE_ANON_KEY` to GitHub Actions secrets.
@@ -774,7 +774,7 @@ b. **New "Last session — 2026-06-12 (Stage 9a)" entry** at the top of the sess
 **Branch in progress:** `feature/09a-staging-deploy`.
 
 ### Hosted Supabase
-- Provisioned `mapa-staging` in region `eu-west-2`. All six migrations applied + 249-country seed. Admin user bootstrapped via Studio SQL.
+- Provisioned `mapa-staging` in region `eu-west-1`. All six migrations applied + 249-country seed. Admin user bootstrapped via Studio SQL.
 - Three edge functions deployed: `submit_suggestion`, `notify_owner`, `translate`.
 - `TURNSTILE_SECRET_KEY` + `DEEPL_API_KEY` set in function settings. `RESEND_API_KEY` intentionally unset → `notify_owner` stays console-log on staging.
 - `app.functions_url` set so the notify trigger reaches the deployed function.
@@ -843,7 +843,7 @@ Add a "Hosted (staging)" section after the existing "Promote + currently_reading
 ```markdown
 ## Hosted environments — staging (Stage 9a)
 
-`staging.mapadeautoras.com` runs against a hosted Supabase project (`mapa-staging`, region `eu-west-2`) and auto-deploys from every push to `development` via Cloudflare Pages.
+`staging.mapadeautoras.com` runs against a hosted Supabase project (`mapa-staging`, region `eu-west-1`) and auto-deploys from every push to `development` via Cloudflare Pages.
 
 See [docs/30-ops/staging-deploy.md](../docs/30-ops/staging-deploy.md) for env-var inventory, key rotation, rollback steps, and gotchas.
 
@@ -913,7 +913,7 @@ Stage 9b starts in a separate session; this plan is closed at that point.
 | Decision #9 (runbook at `docs/30-ops/staging-deploy.md`) | Slice C Task C4 ✓ |
 | Decision #10 (no committed secrets) | All `[Manual]` tasks set values in dashboards; only env-var keys documented in `.env.example` ✓ |
 | Decision #11 (three slices, end-to-end verifiable) | Plan structure ✓ |
-| Decision #12 (`eu-west-2` region) | Slice A Task A2 ✓ |
+| Decision #12 (`eu-west-1` region) | Slice A Task A2 ✓ |
 | Risk #1 (magic-link redirect mismatch) | Slice A Task A8 + Slice B Task B6 Step 5 verify ✓ |
 | Risk #2 (`app.functions_url` typo) | Slice A Task A7 + Slice B Task B6 Step 4 verify ✓ |
 | Risk #3 (Pages env vars wrong) | Slice B Task B4 Step 3 + B6 ✓ |

@@ -56,7 +56,7 @@ Stage 9 was scheduled after 7b-ii + 8 in the original roadmap. We're pulling sta
 | 9 | Runbook location | `docs/30-ops/staging-deploy.md` | Matches original Stage 9 plan's path; introduces the `30-ops/` folder for future runbooks (deploy, key rotation, incident response) |
 | 10 | Secrets management | All actual values live in Cloudflare Pages env vars + Supabase function settings + GitHub Actions secrets. Repo only documents what's needed (extends `.env.example`) | Never commit hosted secrets |
 | 11 | Slice structure | Three functional bundles (Supabase env / Cloudflare env / heartbeat + docs) | Each slice end-to-end verifiable; matches 7b-i cadence |
-| 12 | Supabase region (staging + production) | `eu-west-2` (London) | Static site assets ship from Cloudflare Pages' 300+ edge POPs, so Supabase region only affects dynamic calls (~50 KB initial fetch + low-frequency admin actions). London is optimal for Spain + NL (admin + client) at ~30 ms; Latin-American users pay ~200 ms on the initial fetch, acceptable for a mostly-static site. Free tier = one region per project, no read replicas — same region must be used for production in 9b |
+| 12 | Supabase region (staging + production) | `eu-west-1` (Ireland) | Static site assets ship from Cloudflare Pages' 300+ edge POPs, so Supabase region only affects dynamic calls (~50 KB initial fetch + low-frequency admin actions). London is optimal for Spain + NL (admin + client) at ~30 ms; Latin-American users pay ~200 ms on the initial fetch, acceptable for a mostly-static site. Free tier = one region per project, no read replicas — same region must be used for production in 9b |
 
 ---
 
@@ -106,7 +106,7 @@ Stage 9 was scheduled after 7b-ii + 8 in the original roadmap. We're pulling sta
   grant execute on function public.heartbeat() to anon, authenticated;
   ```
   (Written first so the `supabase db push` below applies it. Also runs locally on next `npm run dev:db:reset`.)
-- Provision `mapa-staging` project in Supabase dashboard (region: `eu-west-2` to match the user's locale).
+- Provision `mapa-staging` project in Supabase dashboard (region: `eu-west-1` to match the user's locale).
 - `supabase link --project-ref <staging-id>` + `supabase db push` — replays all six migrations.
 - Bootstrap admin user via Studio SQL Editor: create user via Authentication UI, then run the existing `update auth.users ... set raw_app_meta_data ...` snippet from `supabase/README.md`.
 - Deploy edge functions: `supabase functions deploy submit_suggestion notify_owner translate --project-ref <staging-id>`.
