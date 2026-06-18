@@ -1,0 +1,41 @@
+name: Supabase heartbeat
+
+# Free-tier Supabase projects auto-pause after 7 days of inactivity. This cron
+# pings public.heartbeat() (a no-op SQL function) weekly to keep them warm.
+#
+# Matrix-ready: 9b adds a second entry for production. The secret-name strings
+# resolve dynamically via `secrets[matrix.env.<name>]`.
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # Monday 06:00 UTC weekly
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        env:
+          - name: staging
+            url_secret: STAGING_SUPABASE_URL
+            key_secret: STAGING_SUPABASE_ANON_KEY
+          # 9b: add { name: production, url_secret: PROD_SUPABASE_URL, key_secret: PROD_SUPABASE_ANON_KEY }
+    steps:
+      - name: Ping ${{ matrix.env.name }}
+        env:
+          SUPABASE_URL: ${{ secrets[matrix.env.url_secret] }}
+          SUPABASE_ANON_KEY: ${{ secrets[matrix.env.key_secret] }}
+        run: |
+          response=$(curl -sf -X POST \
+            "$SUPABASE_URL/rest/v1/rpc/heartbeat" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}')
+          if [ "$response" != '"ok"' ]; then
+            echo "Heartbeat failed for ${{ matrix.env.name }}: $response"
+            exit 1
+          fi
+          echo "Heartbeat OK for ${{ matrix.env.name }}"
