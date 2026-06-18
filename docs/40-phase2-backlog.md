@@ -22,6 +22,10 @@ Each item names where it was discussed and why it's not in MVP. When picking one
 **Why deferred:** Volume too low at launch.
 **Where to add it later:** Checkboxes on `<AdminInbox>` rows + bulk-action toolbar.
 
+### Reply-in-email actions on notify_owner
+**Why deferred:** Adds signed-token security surface (expiry, single-use, RLS check). Owner login + click-through to admin inbox is fine for MVP volume.
+**Where to add it later:** Magic-token links inside notification email — Approve / Reject buttons hit a new Edge Function that validates the one-time token and calls `promote_suggestion()` or `update suggestions set status='rejected'`.
+
 ### Suggestion consolidation
 **Discussed in:** Stage 7b-i brainstorming.
 **Why deferred:** Manual rejection is fine until painful (Danny rejects sibling suggestions one-by-one for now).
@@ -83,6 +87,14 @@ Each item names where it was discussed and why it's not in MVP. When picking one
 
 ### Capacitor native wrapper
 **Why deferred:** Per `00-mvp-plan.md`; phase 2.
+
+### HTML email template for `notify_owner`
+**Why deferred:** MVP-internal — owner gets plain-text suggestion payloads via Resend (Stage 9b). HTML template with deeplink to `/admin/inbox?focus=<id>`, country flag, formatted submitter info adds polish but isn't launch-blocking.
+**Where to add it later:** `supabase/functions/notify_owner/index.ts` — branch on `RESEND_API_KEY` presence, send HTML body via Resend's `html` field instead of `text`. Template can be inline JSX-like template literals or a small `template.ts` helper.
+
+### Multi-channel notification sinks (Slack, Telegram)
+**Why deferred:** Email-only is sufficient at MVP volume. Adding sinks is a config flag + parallel POST; only worth doing if email proves unreliable.
+**Where to add it later:** `supabase/functions/notify_owner/index.ts` — branch on env vars (`SLACK_WEBHOOK_URL`, `TELEGRAM_BOT_TOKEN`) and POST in parallel with the Resend email.
 
 ### SSR via Cloudflare adapter
 **Discussed in:** Stage 7b-i brainstorming.

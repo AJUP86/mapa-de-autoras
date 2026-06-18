@@ -246,23 +246,52 @@ git push -u origin development
 
 ---
 
-## Stage 9 — Deploy to Cloudflare Pages + Supabase heartbeat
+## Stage 9a — Staging deployment (Cloudflare Pages + Supabase staging)
 
-**Branch:** `feature/09-deploy-and-heartbeat`
+**Branch:** `feature/09a-staging-deploy`
 
-**Goal:** production site reachable; free-tier pause neutralised.
+**Goal:** `staging.mapadeautoras.com` reachable, auto-deploying every push to `development`. Internal-only QA + client demo environment.
 
 **Build:**
-- Cloudflare Pages connected to `master`; environment variables configured.
-- `.github/workflows/deploy.yml` — optional, if not using Pages auto-deploy.
-- `.github/workflows/heartbeat.yml` — weekly cron pinging Supabase RPC `select 1`.
-- `supabase/migrations/0002_heartbeat_rpc.sql` — a no-op function the heartbeat calls.
-- `docs/30-ops/deploy.md` — runbook (where envs are stored, how to rotate keys, how to roll back).
+- Hosted Supabase project `mapa-staging` in `eu-west-1`. All migrations applied + 249-country seed + admin user bootstrapped. Edge Functions deployed (`submit_suggestion`, `notify_owner`, `translate`). Function env vars set (TURNSTILE_SECRET_KEY, DEEPL_API_KEY — NOT RESEND_*).
+- Migration `0006_heartbeat_rpc.sql` — `public.heartbeat()` no-op for free-tier auto-pause prevention.
+- Migration `0007_fix_notify_url_setting.sql` — namespace fix for notify trigger.
+- Cloudflare Pages project connected to GitHub, production branch = `development`. Env vars in Production scope (PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, PUBLIC_TURNSTILE_SITE_KEY, NODE_VERSION=22).
+- `staging.mapadeautoras.com` mapped as custom domain.
+- Real Cloudflare Turnstile widget covering localhost + staging + future production.
+- `.github/workflows/heartbeat.yml` — weekly cron pinging the heartbeat RPC; matrix-ready for 9b.
+- `docs/30-ops/staging-deploy.md` — operational runbook.
 
 **Verify:**
-1. `master` → Pages build → site live on `*.pages.dev`.
-2. Heartbeat workflow runs successfully on schedule.
-3. End-to-end Stage-1-through-8 verification passes against production.
+1. `https://staging.mapadeautoras.com` loads, map renders, real Supabase calls in devtools Network.
+2. Suggestion form submits, lands in staging Studio.
+3. Admin magic-link login works end-to-end (email arrives in real inbox).
+4. Promote-from-suggestion flow saves an author; reflected on the map.
+5. Translate function returns DeepL output.
+
+**Pause for review.**
+
+---
+
+## Stage 9b — Production deployment (apex + www + Resend)
+
+**Branch:** `feature/09b-production-deploy`
+
+**Goal:** `mapadeautoras.com` + `www.mapadeautoras.com` live on Cloudflare Pages backed by `mapa-prod` Supabase project. Real notification emails via Resend.
+
+**Build:**
+- New hosted Supabase project `mapa-prod` (same region as staging). Migrations + admin bootstrap + functions deploy.
+- SEPARATE Cloudflare Pages project pointed at `master`, custom domains apex + www.
+- Resend domain auth on `mapadeautoras.com` (SPF/DKIM/DMARC). `RESEND_API_KEY` + `RESEND_FROM_EMAIL` + `OWNER_NOTIFICATION_EMAIL` set on prod Supabase function settings.
+- Pivot notify trigger from pg_net trigger to Supabase Database Webhooks (UI-configured per environment; works around the GUC restriction).
+- HTML email template for `notify_owner` (deeplink to admin inbox, country flag, submitter info).
+- Heartbeat workflow matrix updated to include production env.
+
+**Verify:**
+1. `https://mapadeautoras.com` + `https://www.mapadeautoras.com` resolve, serve HTTPS.
+2. Submitting a real suggestion triggers a Resend email to `OWNER_NOTIFICATION_EMAIL`.
+3. Magic-link login works on production URL.
+4. Heartbeat workflow includes production deployment.
 
 **Pause for review.**
 
