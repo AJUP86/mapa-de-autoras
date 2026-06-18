@@ -145,6 +145,22 @@ Expected without a key: `{"error":"translation_failed"}`.
 
 See [docs/specs/2026-06-09-stage-7b-i-design.md](../docs/specs/2026-06-09-stage-7b-i-design.md) for the full Stage 7b-i design, and [docs/plans/2026-06-09-stage-7b-i-implementation.md](../docs/plans/2026-06-09-stage-7b-i-implementation.md) for the slice-by-slice plan.
 
+## Hosted environments — staging (Stage 9a)
+
+`staging.mapadeautoras.com` runs against the hosted Supabase project `mapa-staging` (region `eu-west-1`, project ref `kkdjrzuewnwrlokhemnl`) and auto-deploys from every push to `development` via Cloudflare Pages.
+
+Operating procedures (env vars, key rotation, rollback, auto-pause recovery, gotchas) live in [docs/30-ops/staging-deploy.md](../docs/30-ops/staging-deploy.md).
+
+Production deployment to `mapadeautoras.com` is deferred to Stage 9b.
+
+### Key differences from local
+
+- Migrations: `supabase db push` applies migrations but does NOT run `[db.seed].sql_paths`. Run `supabase/seed.sql` manually in Studio after first push.
+- Auth `site_url` + Redirect URLs must be set in the Auth → URL Configuration dashboard (no equivalent in `config.toml`).
+- Edge function env vars: set in Supabase dashboard → Functions → Secrets (not `.env`).
+- `verify_jwt = false` is REQUIRED on hosted to keep CORS preflight working — the function does its own admin check via JWT decoding.
+- `notify_owner` trigger writes harmless failures to `net._http_response` on staging (intentional; Database Webhooks pivot in 9b).
+
 ## Local URLs
 
 | Service | URL |

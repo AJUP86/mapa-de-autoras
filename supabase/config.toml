@@ -101,12 +101,14 @@ verify_jwt = false
 enabled = true
 verify_jwt = false
 
-# Stage 7b-i — admin-only translate proxy to DeepL. `verify_jwt = true`
-# means Supabase validates the bearer JWT before our handler runs. The
-# function then double-checks the role inside the JWT.
+# Stage 7b-i — admin-only translate proxy to DeepL. `verify_jwt = false`
+# because Supabase's platform-level JWT check rejects CORS preflight (OPTIONS
+# strips Authorization) on hosted, blocking the actual POST. The function
+# itself decodes the bearer JWT and asserts app_metadata.role === 'admin' —
+# same security posture, gate just moved from platform to function code.
 [functions.translate]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 
 # Disabled on Windows: Vector log collector requires Docker daemon exposed on
 # tcp://localhost:2375, which Docker Desktop doesn't enable by default. Without
