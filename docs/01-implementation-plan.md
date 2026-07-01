@@ -273,6 +273,31 @@ git push -u origin development
 
 ---
 
+## Stage 9a-ii — Realtime map data (client-side fetch + Supabase Realtime)
+
+**Branch:** `feature/09a-ii-realtime-map`
+
+**Goal:** Flip the public map from build-time Astro fetch to a static shell + client-side fetch + Supabase Realtime subscription, so promoted authors appear on open tabs within ~1s without a rebuild. See [adr/0005-realtime-map-data.md](adr/0005-realtime-map-data.md).
+
+**Build:**
+- Migration `0008_realtime_authors.sql` — add `authors` + `books` to the `supabase_realtime` publication.
+- Migration `0009_iso_columns_to_text.sql` — convert ISO code columns `char(3)` → `text`. Supabase Realtime truncates `bpchar` to one character in `postgres_changes` payloads, so `country_iso_a3` arrived as `"A"` not `"AUS"` and live authors never matched a map country (REST/`getCatalog` decoded them correctly, so only reloads worked).
+- `src/lib/realtime-reducers.ts` — pure INSERT/UPDATE/DELETE catalog patchers (granular patching, no refetch-on-event).
+- `src/components/MapSection.tsx` — owns the catalog: fetch on mount, subscribe to changes, resync via `getCatalog()` on reconnect.
+- `src/pages/index.astro` + `src/pages/en/index.astro` — drop the build-time `getCatalog()` call and the `catalog` prop.
+- `supabase/config.toml` — local Postgres `major_version` 15 → 17 (matches Supabase CLI ≥ 2.102 and staging PG 17.6).
+- **Test baseline (first automated tests in the repo):** Vitest + unit tests for the pure logic — `src/lib/map-state.test.ts` and `src/lib/realtime-reducers.test.ts` (28 tests). Scripts: `npm test` (run once) and `npm run test:watch`.
+
+**Verify:**
+1. `npm test` — all unit tests pass.
+2. `npm run build` — no `[authors] getCatalog() failed` lines (the build is data-independent).
+3. Two-tab demo: promote/insert a published author in one tab → the country paints live in another open tab within ~1s, no reload.
+4. Realtime payload delivers the full 3-letter `country_iso_a3` (regression guard for the `char(3)` bug).
+
+**Pause for review.**
+
+---
+
 ## Stage 9b — Production deployment (apex + www + Resend)
 
 **Branch:** `feature/09b-production-deploy`
