@@ -12,7 +12,9 @@
     "dev:types": "supabase gen types typescript --local > src/types/supabase.ts",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.9",
@@ -36,6 +38,7 @@
     "@types/topojson-client": "^3.1.5",
     "prettier": "^3",
     "prettier-plugin-astro": "^0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^3"
   }
 }
