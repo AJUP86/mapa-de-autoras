@@ -13,7 +13,12 @@ max_rows = 1000
 [db]
 port = 54322
 shadow_port = 54320
-major_version = 15
+# Local Postgres major version. Bumped 15 → 17 on 2026-07-01: the Supabase CLI
+# (>= 2.102) initialises local volumes with PostgreSQL 17.x, so a PG15 pin left
+# a stale PG15 data dir that a PG17 server refused to open. Keep this aligned
+# with the hosted staging/prod Postgres major version (verify in the Supabase
+# dashboard → Project Settings → Infrastructure) to preserve local↔prod parity.
+major_version = 17
 
 [db.pooler]
 enabled = false
