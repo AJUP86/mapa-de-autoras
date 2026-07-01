@@ -23,10 +23,40 @@ Running log of what's done, what's next, and any context a future-you (or contri
 | 7b-ii — CRUD on existing authors (edit, add more books, delete) | ⏳ Next | feature/07b-ii-author-crud |
 | 8 — Newsletter double-opt-in + Resend audience sync | ⏳ Pending | feature/08-newsletter-confirmation |
 | 9a — Staging deployment (Cloudflare Pages + Supabase staging) | ✅ Done | feature/09a-staging-deploy |
+| 9a-ii — Realtime map data (client-side fetch + Supabase Realtime) | ✅ Done | feature/09a-ii-realtime-map |
 | 9b — Production deployment (apex + www + Resend) | ⏳ Pending | feature/09b-production-deploy |
 | 10 — Launch content + checklist | ⏳ Pending | feature/10-launch-prep |
 
-**About ~75% of MVP shipped by stage count.** Remaining work: author CRUD (7b-ii), newsletter (8), production deploy (9b), launch prep (10).
+**About ~77% of MVP shipped by stage count.** Remaining work: author CRUD (7b-ii), newsletter (8), production deploy (9b), launch prep (10).
+
+---
+
+## Last session — 2026-07-01 (Stage 9a-ii — realtime map data)
+
+**Branch in progress:** `feature/09a-ii-realtime-map` (not yet merged).
+
+### Architecture flip
+- Public map data flow changed from Astro build-time fetch to client-side fetch + Supabase Realtime subscription with granular patching. See [ADR 0005](adr/0005-realtime-map-data.md).
+- `<MapSection>` now owns the catalog: fetches on mount, subscribes to `postgres_changes` on `public.authors` + `public.books`, patches local state in place (reducers in `src/lib/realtime-reducers.ts`), resyncs via `getCatalog()` on reconnect.
+- `src/pages/index.astro` + `src/pages/en/index.astro` no longer call `getCatalog()` at build time — the build is data-independent (no more `[authors] getCatalog() failed` noise when local Supabase is off).
+
+### Migrations
+- `0008_realtime_authors.sql` — add `authors` + `books` to the `supabase_realtime` publication.
+- `0009_iso_columns_to_text.sql` — **bug fix.** Supabase Realtime truncates `char(3)`/`bpchar` columns to one character in `postgres_changes` payloads, so `country_iso_a3` arrived as `"A"` not `"AUS"` and live-promoted authors never matched a map country (REST/`getCatalog` decoded correctly, so only reloads worked). Converted the three ISO columns to `text`. Confirmed with an anon Realtime probe.
+
+### Tests (first in the repo)
+- Added Vitest. `src/lib/map-state.test.ts` (13) + `src/lib/realtime-reducers.test.ts` (15) = **28 passing**. Scripts: `npm test`, `npm run test:watch`.
+
+### Env / local
+- `supabase/config.toml` `[db].major_version` 15 → 17. The Supabase CLI (≥ 2.102) initialises local volumes with PG 17.x; a leftover PG15 volume made `supabase start` crash-loop. Fix: `supabase stop --no-backup` → `npm run dev:db` → `npm run dev:db:reset` (wipes local data; re-bootstrap admin). Staging is PG `17.6.1.127` — **parity confirmed**; dashboard offers a patch upgrade to `.141`, deferred to 9b.
+
+### Verified
+- Two-tab browser demo: insert/promote a published author → the country paints live on another open tab within ~1s, no reload.
+
+### Out of scope / next
+- **Staging (Task A2):** `supabase db push` applies 0008 + 0009, then merge → `development` auto-deploys, then run the staging two-tab demo.
+- Realtime admin inbox + pending-count badge → **Stage 9a-iii** (design brainstormed; spec pending).
+- `notify_owner` deep-link points at `/admin/suggestions/:id` (404); should be `/admin/suggestion?id=` — small separate fix.
 
 ---
 

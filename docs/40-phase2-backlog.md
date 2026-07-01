@@ -70,10 +70,10 @@ Each item names where it was discussed and why it's not in MVP. When picking one
 **Why deferred:** Single-admin laptop; default 30-day refresh window acceptable for MVP.
 **Where to add it later:** Small React component watching `mousemove`/`keydown` events, calls `supabase.auth.signOut()` after N idle hours.
 
-### Realtime pending-count badge
-**Discussed in:** Stage 7b-i brainstorming.
-**Why deferred:** 60-second polling is good enough for MVP and avoids a Realtime subscription.
-**Where to add it later:** `supabase.channel('suggestions').on('postgres_changes', ...)` in `<AdminAwareNav>`.
+### Realtime pending-count badge + live inbox
+**Discussed in:** Stage 7b-i brainstorming. Design drafted as **Stage 9a-iii** after 9a-ii wired Realtime for the public map.
+**Why deferred (still):** 60-second polling is fine for MVP; the live version is queued as Stage 9a-iii, not yet built.
+**Where to add it later:** reuse the 9a-ii plumbing — `<AdminInbox>` + `<AdminAwareNav>` subscribe to `postgres_changes` on `public.suggestions` (admin JWT + RLS) and refetch-on-change, replacing the 60s poll; a migration adds `suggestions` to the `supabase_realtime` publication.
 
 ### i18n maintenance UI
 **Discussed in:** Stage 7b-i brainstorming.
@@ -97,9 +97,9 @@ Each item names where it was discussed and why it's not in MVP. When picking one
 **Where to add it later:** `supabase/functions/notify_owner/index.ts` — branch on env vars (`SLACK_WEBHOOK_URL`, `TELEGRAM_BOT_TOKEN`) and POST in parallel with the Resend email.
 
 ### SSR via Cloudflare adapter
-**Discussed in:** Stage 7b-i brainstorming.
-**Why deferred:** Static output + client-side auth check works for MVP. The cost is a brief `<AdminAwareNav>` skeleton (~150ms) which the skeleton mitigates.
-**Where to add it later:** `astro.config.mjs` switches to `output: 'server'`, add Cloudflare adapter, move session-check to server-side cookie reading. Removes the skeleton entirely.
+**Discussed in:** Stage 7b-i brainstorming. Revisited in Stage 9a-ii.
+**Why deferred:** Stage 9a-ii's "static shell + client-side fetch + Realtime" pattern resolved the build-time-vs-runtime-data tension that originally motivated SSR. Static output stays (speed + CDN); data is live via Realtime. SSR is now only worth revisiting if server-rendered HTML is specifically needed — e.g. per-author detail pages for SEO indexing of bios — or to remove the brief `<AdminAwareNav>` auth-check skeleton.
+**Where to add it later:** `astro.config.mjs` → `output: 'server'` (or `'hybrid'` for per-route opt-in) + `@astrojs/cloudflare` adapter; move data-fetching / session-check server-side.
 
 ---
 
