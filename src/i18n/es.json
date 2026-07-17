@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "mapa de autoras",
-    "description": "Un mapa mundial de escritoras: autoras leídas y descubrimientos por descubrir."
+    "description": "Un mapa mundial de escritoras: las que leo y las que quiero descubrir."
   },
   "nav": {
     "home": "Inicio",
@@ -11,14 +11,14 @@
     "eyebrow": "mapa de autoras",
     "headlineA": "Mujeres que escriben",
     "headlineB": "el mundo.",
-    "subhead": "Un mapa interactivo de escritoras. Toca un país para descubrir las autoras de ese rincón del mundo, sus libros leídos y los pendientes por leer.",
+    "subhead": "Un mapa interactivo de escritoras. Toca un país para descubrir sus autoras, los libros que he leído y los que espero leer.",
     "construction": "Sitio en construcción. Mientras tanto, explora la",
     "styleguideLink": "guía de estilo"
   },
   "map": {
     "eyebrow": "Explora el mapa",
     "title": "Toca un país",
-    "subhead": "Cada tinte marca un estado distinto: autoras leídas, las que está leyendo, sugerencias por descubrir, o una mezcla.",
+    "subhead": "Cada color marca un estado distinto: autoras que he leído, las que estoy leyendo, sugerencias por descubrir, o una mezcla.",
     "filter": {
       "all": "Todas",
       "read": "Leídas",
@@ -52,8 +52,8 @@
   },
   "suggest": {
     "eyebrow": "Sugiere una autora",
-    "title": "Cuéntanos a quién deberíamos leer",
-    "intro": "Si conoces a una escritora que merece estar en el mapa, escríbenos. Revisamos cada sugerencia antes de publicarla.",
+    "title": "Cuéntame a quién debería leer",
+    "intro": "Si conoces a una escritora que merece estar en el mapa, escríbeme. Reviso cada sugerencia antes de publicarla.",
     "fields": {
       "author_name_label": "Nombre de la autora",
       "author_name_placeholder": "Ej. Selva Almada",
@@ -65,10 +65,10 @@
       "note_placeholder": "Tu razón, recomendación o contexto",
       "email_label": "Tu email",
       "email_placeholder": "tu@email.com",
-      "email_hint": "Solo para responderte si surgen dudas. No se publica.",
+      "email_hint": "Solo lo uso para responderte si surgen dudas. No se publica.",
       "submitter_name_label": "Tu nombre (opcional)",
-      "submitter_name_placeholder": "Para acreditarte si la añadimos",
-      "newsletter_label": "Avísame cuando publiquemos esta autora o las próximas"
+      "submitter_name_placeholder": "Para acreditarte si la añado",
+      "newsletter_label": "Avísame cuando publique esta autora o las próximas"
     },
     "submit": "Enviar sugerencia",
     "submitting": "Enviando…",
@@ -80,7 +80,7 @@
     "required_mark": " *",
     "thanks": {
       "title": "Gracias por escribir",
-      "body": "Hayde revisará tu sugerencia. Si la publicamos, te avisaremos.",
+      "body": "Revisaré tu sugerencia. Si la publico, te avisaré.",
       "cta": "Volver al mapa"
     }
   },
@@ -128,7 +128,7 @@
       "status_pending": "Pendiente",
       "status_approved": "Aprobada",
       "status_rejected": "Rechazada",
-      "promote": "Promotar",
+      "promote": "Promover",
       "reject": "Rechazar",
       "reject_reason_label": "Motivo (opcional)",
       "reject_confirm": "Confirmar rechazo",
@@ -138,7 +138,7 @@
     },
     "promote": {
       "title_new": "Añadir autora",
-      "title_review": "Promotar sugerencia",
+      "title_review": "Promover sugerencia",
       "name_label": "Nombre",
       "country_label": "País",
       "status_label": "Estado",

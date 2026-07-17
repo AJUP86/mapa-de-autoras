@@ -18,7 +18,7 @@
   "map": {
     "eyebrow": "Explore the map",
     "title": "Tap a country",
-    "subhead": "Each tint marks a different state: authors I've read, currently reading, suggestions to discover, or a mix.",
+    "subhead": "Each color marks a different state: authors I've read, currently reading, suggestions to discover, or a mix.",
     "filter": {
       "all": "All",
       "read": "Read",
@@ -52,8 +52,8 @@
   },
   "suggest": {
     "eyebrow": "Suggest a writer",
-    "title": "Tell us who we should read",
-    "intro": "If you know a woman writer who deserves a place on the map, write to us. Every suggestion is reviewed before it's published.",
+    "title": "Tell me who I should read",
+    "intro": "If you know a woman writer who deserves a place on the map, write to me. I review every suggestion before publishing.",
     "fields": {
       "author_name_label": "Writer's name",
       "author_name_placeholder": "e.g. Selva Almada",
@@ -65,10 +65,10 @@
       "note_placeholder": "Your reason, recommendation, or context",
       "email_label": "Your email",
       "email_placeholder": "you@email.com",
-      "email_hint": "Only used to reach you if we have questions. Never published.",
+      "email_hint": "Only used to reach you if I have questions. Never published.",
       "submitter_name_label": "Your name (optional)",
-      "submitter_name_placeholder": "So we can credit you if she's added",
-      "newsletter_label": "Notify me when this writer or upcoming ones are published"
+      "submitter_name_placeholder": "So I can credit you if I add her",
+      "newsletter_label": "Notify me when I publish this writer or upcoming ones"
     },
     "submit": "Send suggestion",
     "submitting": "Sending…",
@@ -80,7 +80,7 @@
     "required_mark": " *",
     "thanks": {
       "title": "Thank you",
-      "body": "Hayde will review your suggestion. If we publish her, we'll be in touch.",
+      "body": "I'll review your suggestion. If I publish her, I'll be in touch.",
       "cta": "Back to the map"
     }
   },
