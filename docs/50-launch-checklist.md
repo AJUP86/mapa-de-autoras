@@ -99,8 +99,9 @@ Full 9b spec lives in `docs/01-implementation-plan.md`. Checklist form here:
 - [ ] `public/site.webmanifest` — name, short_name, theme_color, background_color, icons array.
 - [ ] Update `src/layouts/Base.astro` to include OG meta tags (`og:title`, `og:description`, `og:image`, `og:url`, `og:type`, `twitter:card`) per locale.
 - [ ] Meta descriptions per page — new i18n keys `meta.description.home`, `meta.description.suggest`, `meta.description.about`.
-- [ ] Privacy policy — `src/pages/privacidad.astro` + `src/pages/en/privacy.astro`. Minimal GDPR: what data (email for suggestions + newsletter), lawful basis (consent), retention, contact for GDPR requests.
-- [ ] `public/robots.txt` — allow all, point to sitemap.
+- [x] Privacy policy — `src/pages/privacy.astro` + `src/pages/en/privacy.astro`. Minimal GDPR: what data, lawful basis, retention, third-party processors (Supabase / Cloudflare / DeepL / Resend), rights, contact (`hola@mapadeautoras.com` placeholder — wire once Resend domain auth is live), changes clause. **Danny should review before launch; contents are a starter template.**
+- [x] `public/robots.txt` — allow all, sitemap URL set to `https://mapadeautoras.com/sitemap-index.xml`.
+- [x] `astro.config.mjs` `site` set to `https://mapadeautoras.com` (was `https://mapadeautoras.example` placeholder — fixed).
 - [ ] Sitemap: `@astrojs/sitemap` already generates it. Verify it includes the new About + privacy pages after they land.
 - [ ] Lighthouse audit on production URL — target ≥90 on Performance, Accessibility, Best Practices, SEO.
 - [ ] Mobile QA on real device (Danny's iPhone or equivalent).
@@ -151,7 +152,7 @@ Full 9b spec lives in `docs/01-implementation-plan.md`. Checklist form here:
 - [ ] `/styleguide` returns 404.
 - [ ] `/about` (ES) + `/en/about` render correctly with Danny's content.
 - [ ] Newsletter opt-in flow works end-to-end (submit → confirmation email → click link → subscribed).
-- [ ] Privacy policy pages exist at `/privacidad` + `/en/privacy`.
+- [ ] Privacy policy pages exist at `/privacy` + `/en/privacy` and have been reviewed by Danny.
 - [ ] OG image renders correctly when the site URL is pasted into WhatsApp / Instagram DM / Twitter compose.
 - [ ] Favicons appear correctly in browser tabs + iOS "Add to Home Screen".
 - [ ] Lighthouse ≥90 on Performance, Accessibility, Best Practices, SEO.
@@ -172,6 +173,7 @@ Moved out of "MVP roadmap" — not launch-blocking; addressed once the site is l
 - **Multi-channel notifications** — Slack / Telegram webhook alongside email. Only needed if email proves unreliable.
 - **Basic analytics** — Plausible ($9/mo) or Cloudflare Web Analytics (free, less detailed). Danny will want visitor numbers.
 - **Error monitoring** — Sentry free tier. Catches runtime errors on the public site that would otherwise go unnoticed.
+- **Refactor page pairs to shared components** — currently each public route has two nearly-identical `.astro` files (one at `src/pages/foo.astro` for ES, one at `src/pages/en/foo.astro` for EN) that differ only in the `lang` constant. The URL-prefix routing (`/en/`) is necessary for static + SEO reasons and stays; the code duplication is not. Extract each page's markup into a shared `<FooPage lang={lang} />` component in `src/components/`, then let each `.astro` file be a 3-line delegate. ~2h across the 4 page pairs (`/`, `/about`, `/suggest`, `/thanks`). Removes ~200 lines of duplication, no user-facing change.
 
 ---
 
