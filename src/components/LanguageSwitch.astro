@@ -8,30 +8,14 @@ interface Props {
 const { lang } = Astro.props;
 const path = Astro.url.pathname;
 
-// Locale route aliases — pages whose ES + EN slugs differ.
-// Keep this list in sync when adding new pages with translated URLs.
-const esToEn: Record<string, string> = {
-  "/conoceme": "/en/about",
-  "/gracias": "/en/thanks",
-};
-const enToEs: Record<string, string> = Object.fromEntries(
-  Object.entries(esToEn).map(([es, en]) => [en, es]),
-);
-
+// Route paths are English on both locales (ES at /, EN at /en/), so we
+// just swap the /en prefix on or off.
 let target: string;
 if (lang === "es") {
-  if (path in esToEn) {
-    target = esToEn[path];
-  } else {
-    target = path === "/" ? "/en/" : `/en${path}`;
-  }
+  target = path === "/" ? "/en/" : `/en${path}`;
 } else {
-  if (path in enToEs) {
-    target = enToEs[path];
-  } else {
-    const stripped = path.replace(/^\/en(\/|$)/, "/");
-    target = stripped === "" ? "/" : stripped;
-  }
+  const stripped = path.replace(/^\/en(\/|$)/, "/");
+  target = stripped === "" ? "/" : stripped;
 }
 
 const otherLabel = lang === "es" ? "ENGLISH" : "ESPAÑOL";

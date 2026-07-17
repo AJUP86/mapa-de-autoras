@@ -24,12 +24,14 @@ const esUrl = new URL(esPath, site).href;
 const enUrl = new URL(enPath, site).href;
 
 const isEn = lang === "en";
+const localePrefix = isEn ? "/en" : "";
 const navLabels = {
   mapa: t(lang, "nav.home"),
+  mapaHref: `${localePrefix}/`,
   sugerir: t(lang, "nav.suggest"),
-  sugerirHref: isEn ? "/en/suggest" : "/suggest",
+  sugerirHref: `${localePrefix}/suggest`,
   about: t(lang, "nav.about"),
-  aboutHref: isEn ? "/en/about" : "/conoceme",
+  aboutHref: `${localePrefix}/about`,
   sugerencias: t(lang, "admin.nav.sugerencias"),
   anadir: t(lang, "admin.nav.anadir"),
   salir: t(lang, "admin.nav.salir"),

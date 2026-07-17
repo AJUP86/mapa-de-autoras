@@ -15,6 +15,7 @@ import AdminNavIcon from "./AdminNavIcon";
 
 interface Labels {
   mapa: string;
+  mapaHref: string;
   sugerir: string;
   sugerirHref: string;
   about: string;
@@ -79,7 +80,7 @@ export default function AdminAwareNav({ labels }: Props) {
   return (
     <nav className="flex items-center justify-between gap-4 px-6 py-3 border-b border-ink/10 bg-parchment">
       <a
-        href="/"
+        href={labels.mapaHref}
         className="font-display text-lg font-semibold text-ink no-underline"
       >
         {labels.mapa}

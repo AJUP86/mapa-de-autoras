@@ -33,7 +33,7 @@ Complementary to:
 
 ### 2. About page — "Conóceme"
 
-- [ ] Create `src/pages/conoceme.astro` (ES).
+- [ ] Create `src/pages/about.astro` (ES, served at `/about`).
 - [ ] Create `src/pages/en/about.astro` (EN).
 - [ ] Add i18n keys under a new `about.*` namespace: `about.title`, `about.eyebrow`, `about.body`, `nav.about`.
 - [ ] Add "Conóceme" / "About" link to `<AdminAwareNav>` public-nav variant (next to Suggerir / Sugerir).
@@ -143,13 +143,13 @@ Full 9b spec lives in `docs/01-implementation-plan.md`. Checklist form here:
 ## Definition of done — launch-ready
 
 - [ ] `https://mapadeautoras.com` loads over HTTPS with valid cert.
-- [ ] Danny logged in as admin on production; her real bio is on `/conoceme`.
+- [ ] Danny logged in as admin on production; her real bio is on `/about`.
 - [ ] 5-10 real authors promoted, visible on the map.
 - [ ] Suggestion form submits, triggers real Resend email to Danny's inbox (not spam).
 - [ ] Admin magic-link login works end-to-end on production URL.
 - [ ] All Spanish copy uses "Promover" not "Promotar", "color" not "tinte", first-person voice.
 - [ ] `/styleguide` returns 404.
-- [ ] `/conoceme` (ES) + `/en/about` render correctly with Danny's content.
+- [ ] `/about` (ES) + `/en/about` render correctly with Danny's content.
 - [ ] Newsletter opt-in flow works end-to-end (submit → confirmation email → click link → subscribed).
 - [ ] Privacy policy pages exist at `/privacidad` + `/en/privacy`.
 - [ ] OG image renders correctly when the site URL is pasted into WhatsApp / Instagram DM / Twitter compose.
