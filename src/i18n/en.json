@@ -5,7 +5,16 @@
   },
   "nav": {
     "home": "Home",
-    "suggest": "Suggest"
+    "suggest": "Suggest",
+    "about": "About"
+  },
+  "about": {
+    "eyebrow": "About me",
+    "title": "Behind the map",
+    "body": "Danny replaces this text with her bio.\n\nThis second paragraph is also a placeholder — you can write several sections separated by blank lines and they'll render as separate paragraphs on the page.\n\nWhen ready, edit `about.body` in `src/i18n/en.json` and save. The page updates itself.",
+    "connect_label": "Find me here",
+    "instagram_url": "https://www.instagram.com/",
+    "instagram_label": "Instagram"
   },
   "hero": {
     "eyebrow": "map of women writers",

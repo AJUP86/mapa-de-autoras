@@ -23,9 +23,13 @@ const site = Astro.site ?? new URL("http://localhost:4321/");
 const esUrl = new URL(esPath, site).href;
 const enUrl = new URL(enPath, site).href;
 
+const isEn = lang === "en";
 const navLabels = {
   mapa: t(lang, "nav.home"),
   sugerir: t(lang, "nav.suggest"),
+  sugerirHref: isEn ? "/en/suggest" : "/suggest",
+  about: t(lang, "nav.about"),
+  aboutHref: isEn ? "/en/about" : "/conoceme",
   sugerencias: t(lang, "admin.nav.sugerencias"),
   anadir: t(lang, "admin.nav.anadir"),
   salir: t(lang, "admin.nav.salir"),

@@ -1,0 +1,58 @@
+---
+import Base from "~/layouts/Base.astro";
+import LanguageSwitch from "~/components/LanguageSwitch.astro";
+import { t } from "~/i18n/t";
+
+const lang = "en";
+
+const paragraphs = t(lang, "about.body")
+  .split("\n\n")
+  .map((p) => p.trim())
+  .filter(Boolean);
+
+const instagramUrl = t(lang, "about.instagram_url");
+const instagramLabel = t(lang, "about.instagram_label");
+const connectLabel = t(lang, "about.connect_label");
+---
+
+<Base
+  lang={lang}
+  title={`${t(lang, "about.title")} · ${t(lang, "meta.title")}`}
+  description={t(lang, "about.title")}
+>
+  <header class="mx-auto max-w-5xl px-6 pt-8 flex items-center justify-between">
+    <a href="/en/" class="text-xs uppercase tracking-[0.18em] text-ink/50 font-body hover:text-oxblood">
+      ← {t(lang, "nav.home")}
+    </a>
+    <LanguageSwitch lang={lang} />
+  </header>
+
+  <main class="mx-auto max-w-2xl px-6 py-12 sm:py-16">
+    <p class="text-sm uppercase tracking-[0.18em] text-ink/60 font-body mb-3">
+      {t(lang, "about.eyebrow")}
+    </p>
+    <h1 class="font-display text-4xl sm:text-5xl font-semibold leading-[1.1] tracking-tight">
+      {t(lang, "about.title")}
+    </h1>
+
+    <div class="mt-8 space-y-5 text-lg text-ink/80 font-body max-w-prose">
+      {paragraphs.map((p) => <p>{p}</p>)}
+    </div>
+
+    {instagramUrl && instagramUrl !== "https://www.instagram.com/" && (
+      <section class="mt-12 pt-8 border-t border-ink/10">
+        <p class="text-sm uppercase tracking-[0.18em] text-ink/60 font-body mb-3">
+          {connectLabel}
+        </p>
+        <a
+          href={instagramUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-oxblood underline decoration-ochre decoration-2 underline-offset-4 font-body"
+        >
+          {instagramLabel}
+        </a>
+      </section>
+    )}
+  </main>
+</Base>

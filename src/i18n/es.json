@@ -5,7 +5,16 @@
   },
   "nav": {
     "home": "Inicio",
-    "suggest": "Sugerir"
+    "suggest": "Sugerir",
+    "about": "Conóceme"
+  },
+  "about": {
+    "eyebrow": "Conóceme",
+    "title": "Detrás del mapa",
+    "body": "Danny reemplaza este texto con su bio.\n\nEste segundo párrafo también es un placeholder — puedes escribir varias partes separadas por líneas en blanco y aparecerán como párrafos independientes en la página.\n\nCuando estés lista, edita `about.body` en `src/i18n/es.json` y guarda. La página se actualiza sola.",
+    "connect_label": "Encuéntrame aquí",
+    "instagram_url": "https://www.instagram.com/",
+    "instagram_label": "Instagram"
   },
   "hero": {
     "eyebrow": "mapa de autoras",

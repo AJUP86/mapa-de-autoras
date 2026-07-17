@@ -16,6 +16,9 @@ import AdminNavIcon from "./AdminNavIcon";
 interface Labels {
   mapa: string;
   sugerir: string;
+  sugerirHref: string;
+  about: string;
+  aboutHref: string;
   sugerencias: string;
   anadir: string;
   salir: string;
@@ -100,12 +103,20 @@ export default function AdminAwareNav({ labels }: Props) {
           </AdminNavIcon>
         </div>
       ) : (
-        <a
-          href="/suggest"
-          className="text-sm text-ink/80 underline hover:text-oxblood"
-        >
-          {labels.sugerir}
-        </a>
+        <div className="flex items-center gap-4">
+          <a
+            href={labels.aboutHref}
+            className="text-sm text-ink/80 hover:text-oxblood"
+          >
+            {labels.about}
+          </a>
+          <a
+            href={labels.sugerirHref}
+            className="text-sm text-ink/80 underline hover:text-oxblood"
+          >
+            {labels.sugerir}
+          </a>
+        </div>
       )}
     </nav>
   );
