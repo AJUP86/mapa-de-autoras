@@ -48,6 +48,16 @@ Complementary to:
 - [ ] Uses the same Resend account provisioned in Stage 9b (single account, shared audience).
 - [ ] Note: Stage 8 was originally standalone; can now share Resend infra with 9b.
 
+### 3.5. Consolidate the double nav bar
+
+Currently every page renders TWO nav bars stacked: `<AdminAwareNav>` (site-wide, top) + a per-page `<header>` (Stage 1 leftover with duplicated Home/Suggest + the LanguageSwitch).
+
+- [ ] Move LanguageSwitch's target-URL computation into `Base.astro`; pass `languageSwitchHref` + `languageSwitchLabel` + `languageSwitchAriaLabel` to `<AdminAwareNav>` as props.
+- [ ] Render the language-switch pill inside `<AdminAwareNav>` (both public and admin variants).
+- [ ] Delete the per-page `<header>` block from all 10 pages: `src/pages/{index,about,suggest,thanks,privacy}.astro` + `src/pages/en/{index,about,suggest,thanks,privacy}.astro`.
+- [ ] Delete `src/components/LanguageSwitch.astro` once no page imports it.
+- [ ] Verify all pages: single nav bar with `mapa` logo + `About` + `Suggest` + `ES/EN` pill. No stacked bars.
+
 ### 4. Remove `/styleguide` from production
 
 - [ ] Delete `src/pages/styleguide.astro` (simplest — reversible via git if we ever want it back).

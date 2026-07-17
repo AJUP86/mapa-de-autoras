@@ -1,6 +1,5 @@
 ---
 import Base from "~/layouts/Base.astro";
-import LanguageSwitch from "~/components/LanguageSwitch.astro";
 import MapSection from "~/components/MapSection";
 import { t } from "~/i18n/t";
 
@@ -41,21 +40,6 @@ const mapLabels = {
 ---
 
 <Base lang={lang} title={t(lang, "meta.title")} description={t(lang, "meta.description")}>
-  <header class="mx-auto max-w-5xl px-6 pt-8 flex items-center justify-between">
-    <span class="text-xs uppercase tracking-[0.18em] text-ink/50 font-body">
-      {t(lang, "nav.home")}
-    </span>
-    <nav class="flex items-center gap-4">
-      <a
-        href="/suggest"
-        class="text-xs uppercase tracking-[0.18em] text-ink/60 font-body hover:text-oxblood transition-colors"
-      >
-        {t(lang, "nav.suggest")}
-      </a>
-      <LanguageSwitch lang={lang} />
-    </nav>
-  </header>
-
   <section class="mx-auto max-w-3xl px-6 pt-16 pb-12 sm:pt-24 sm:pb-16">
     <p class="text-sm uppercase tracking-[0.18em] text-ink/60 mb-4 font-body">
       {t(lang, "hero.eyebrow")}
