@@ -124,6 +124,7 @@ Deno.serve(async (req: Request) => {
     note: body.note?.trim() || null,
     accepted_newsletter: body.newsletterOptIn === true,
     turnstile_verified: true,
+    locale: body.locale,
   });
 
   if (insertErr) {
