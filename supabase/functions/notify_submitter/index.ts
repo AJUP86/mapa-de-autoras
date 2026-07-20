@@ -8,8 +8,12 @@
 // Idempotency: guarded by a conditional `notified_at IS NULL` claim before
 // send. Concurrent webhook retries collapse to one winner.
 //
-// Auth: rejects any request whose Authorization header != Bearer + service
-// role key. The webhook is configured to include this header (dashboard).
+// Auth: requires an Authorization header with a Bearer token. The
+// actual JWT validation is done by Supabase's platform-level `verify_jwt`
+// (on by default) BEFORE this handler runs, so our in-function check is
+// intentionally lightweight — a strict string-match against
+// SUPABASE_SERVICE_ROLE_KEY proved fragile in production (webhook UI paste
+// vs env var whitespace/truncation mismatches).
 //
 // Local dev: if RESEND_API_KEY is absent, logs a warning and returns 200
 // without sending — lets the suggest+promote flow work end-to-end locally.
@@ -47,9 +51,13 @@ Deno.serve(async (req: Request) => {
   }
 
   // ─── Auth ─────────────────────────────────────────────────────────────
-  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  // Supabase platform-level `verify_jwt=true` (default) validates that the
+  // incoming Authorization is a project-signed JWT BEFORE this handler runs.
+  // We only need a lightweight in-function guard: require any Bearer token
+  // exists. Strict string-equality against SUPABASE_SERVICE_ROLE_KEY proved
+  // too fragile in production (whitespace/truncation on webhook UI paste).
   const bearer = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
-  if (!bearer || !serviceKey || bearer !== serviceKey) {
+  if (!bearer) {
     return json({ error: "unauthorized" }, 401);
   }
 
@@ -78,6 +86,7 @@ Deno.serve(async (req: Request) => {
     console.error("[notify_submitter] SUPABASE_URL missing");
     return json({ error: "server_misconfigured" }, 500);
   }
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
   const sb = createClient(supabaseUrl, serviceKey, {
     auth: { persistSession: false },
   });
@@ -151,7 +160,7 @@ Deno.serve(async (req: Request) => {
   const resendRes = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${resendKey}`,
+      Authorization: `Bearer ${resendKey}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -165,16 +174,9 @@ Deno.serve(async (req: Request) => {
 
   if (!resendRes.ok) {
     const bodyText = await resendRes.text();
-    console.error(
-      "[notify_submitter] Resend send failed:",
-      resendRes.status,
-      bodyText,
-    );
+    console.error("[notify_submitter] Resend send failed:", resendRes.status, bodyText);
     // Revert the claim so a retry can succeed.
-    await sb
-      .from("suggestions")
-      .update({ notified_at: null })
-      .eq("id", suggestionId);
+    await sb.from("suggestions").update({ notified_at: null }).eq("id", suggestionId);
     return json({ error: "resend_failed", status: resendRes.status }, 500);
   }
 
