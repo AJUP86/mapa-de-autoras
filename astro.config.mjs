@@ -5,7 +5,7 @@ import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  site: "https://mapadeautoras.example",
+  site: "https://mapadeautoras.com",
   output: "static",
   i18n: {
     locales: ["es", "en"],

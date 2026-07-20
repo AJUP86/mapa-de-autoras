@@ -1,7 +1,7 @@
 // SuggestionReview.tsx — Stage 7b-i (replaces SuggestionDetailPlaceholder)
 //
-// Renders one suggestion's full data, plus Promotar / Rechazar actions.
-// Promotar navigates to /admin/promote?suggestion=<id> (the form handles
+// Renders one suggestion's full data, plus Promover / Rechazar actions.
+// Promover navigates to /admin/promote?suggestion=<id> (the form handles
 // prefilling + the RPC call in Slice E2). Rechazar opens an inline reason
 // form right here and writes status=rejected via PostgREST.
 

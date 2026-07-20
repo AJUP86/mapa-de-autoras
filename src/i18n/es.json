@@ -1,24 +1,54 @@
 {
   "meta": {
     "title": "mapa de autoras",
-    "description": "Un mapa mundial de escritoras: autoras leídas y descubrimientos por descubrir."
+    "description": "Un mapa mundial de escritoras: las que leo y las que quiero descubrir."
   },
   "nav": {
     "home": "Inicio",
-    "suggest": "Sugerir"
+    "suggest": "Sugerir",
+    "about": "Conóceme"
+  },
+  "about": {
+    "eyebrow": "Conóceme",
+    "title": "Detrás del mapa",
+    "body": "Danny reemplaza este texto con su bio.\n\nEste segundo párrafo también es un placeholder — puedes escribir varias partes separadas por líneas en blanco y aparecerán como párrafos independientes en la página.\n\nCuando estés lista, edita `about.body` en `src/i18n/es.json` y guarda. La página se actualiza sola.",
+    "connect_label": "Encuéntrame aquí",
+    "instagram_url": "https://www.instagram.com/",
+    "instagram_label": "Instagram"
+  },
+  "privacy": {
+    "eyebrow": "Privacidad",
+    "title": "Política de privacidad",
+    "last_updated_label": "Última actualización:",
+    "last_updated": "2026-06-18",
+    "intro": "Este sitio recopila la mínima cantidad de datos personales necesaria para funcionar. Aquí explico qué recopilo, por qué, cómo lo guardo y qué derechos tienes sobre esa información. Si algo no está claro, escríbeme al correo de contacto al final de esta página.",
+    "collect_title": "Qué datos recopilo",
+    "collect_body": "**Email:** cuando envías una sugerencia de autora o te suscribes al newsletter.\n\n**Nombre (opcional):** si lo incluyes al enviar una sugerencia, para acreditarte si publico esa autora.\n\n**Datos técnicos transitorios:** las direcciones IP y user-agents pasan por los registros de mis proveedores de hosting (Cloudflare, Supabase) durante 24-72 horas para prevenir abuso. No los almaceno yo directamente.",
+    "legal_basis_title": "Base legal",
+    "legal_basis_body": "El tratamiento se basa en tu **consentimiento** (para envío del newsletter y para responder tus sugerencias). Puedes retirar el consentimiento en cualquier momento contactándome — más abajo.",
+    "retention_title": "Cuánto tiempo lo guardo",
+    "retention_body": "**Sugerencias:** hasta que las procese (publico la autora o la rechazo). Después mantengo el registro para evitar sugerencias duplicadas.\n\n**Suscriptores del newsletter:** hasta que canceles la suscripción (cada correo incluye un enlace para hacerlo).\n\n**Cuentas de administrador:** solo la mía; el sitio no permite registro público de cuentas.",
+    "thirdparties_title": "Con quién comparto los datos",
+    "thirdparties_body": "El sitio se apoya en estos servicios como encargados de tratamiento:\n\n**Supabase** (base de datos, autenticación) — región `eu-west-1` (Irlanda), sujeta a GDPR.\n\n**Cloudflare** (hosting web, DNS, Turnstile bot defense) — infraestructura global; DPA firmada.\n\n**DeepL** (traducción en el panel admin, solo la uso yo) — EU, sujeta a GDPR.\n\n**Resend** (envío de emails de confirmación y newsletter) — DPA firmada.",
+    "cookies_title": "Cookies",
+    "cookies_body": "Este sitio no usa cookies de seguimiento ni de analítica. La única cookie que se establece es la de sesión del panel de administración, y solo se crea si tú (Danny) inicias sesión en `/admin`. No hay banner de cookies porque no hay nada que consentir.",
+    "rights_title": "Tus derechos",
+    "rights_body": "Bajo GDPR tienes derecho a:\n\n- Acceder a los datos que tengo sobre ti\n- Rectificarlos si son incorrectos\n- Solicitar su borrado\n- Portabilidad de los datos\n- Oponerte al tratamiento\n- Retirar el consentimiento en cualquier momento\n\nPara ejercer cualquiera de estos derechos, escríbeme al correo de contacto y responderé en un plazo de 30 días.",
+    "contact_title": "Contacto",
+    "contact_body": "Para cualquier consulta sobre privacidad o para ejercer tus derechos, escríbeme a **hola@mapadeautoras.com**.",
+    "changes_title": "Cambios en esta política",
+    "changes_body": "Si actualizo esta política, cambiaré la fecha al principio de la página. Los cambios sustanciales se anunciarán a los suscriptores del newsletter."
   },
   "hero": {
     "eyebrow": "mapa de autoras",
     "headlineA": "Mujeres que escriben",
     "headlineB": "el mundo.",
-    "subhead": "Un mapa interactivo de escritoras. Toca un país para descubrir las autoras de ese rincón del mundo, sus libros leídos y los pendientes por leer.",
-    "construction": "Sitio en construcción. Mientras tanto, explora la",
-    "styleguideLink": "guía de estilo"
+    "subhead": "Un mapa interactivo de escritoras. Toca un país para descubrir sus autoras, los libros que he leído y los que espero leer."
   },
   "map": {
     "eyebrow": "Explora el mapa",
     "title": "Toca un país",
-    "subhead": "Cada tinte marca un estado distinto: autoras leídas, las que está leyendo, sugerencias por descubrir, o una mezcla.",
+    "subhead": "Cada color marca un estado distinto: autoras que he leído, las que estoy leyendo, sugerencias por descubrir, o una mezcla.",
     "filter": {
       "all": "Todas",
       "read": "Leídas",
@@ -52,8 +82,8 @@
   },
   "suggest": {
     "eyebrow": "Sugiere una autora",
-    "title": "Cuéntanos a quién deberíamos leer",
-    "intro": "Si conoces a una escritora que merece estar en el mapa, escríbenos. Revisamos cada sugerencia antes de publicarla.",
+    "title": "Cuéntame a quién debería leer",
+    "intro": "Si conoces a una escritora que merece estar en el mapa, escríbeme. Reviso cada sugerencia antes de publicarla.",
     "fields": {
       "author_name_label": "Nombre de la autora",
       "author_name_placeholder": "Ej. Selva Almada",
@@ -65,10 +95,10 @@
       "note_placeholder": "Tu razón, recomendación o contexto",
       "email_label": "Tu email",
       "email_placeholder": "tu@email.com",
-      "email_hint": "Solo para responderte si surgen dudas. No se publica.",
+      "email_hint": "Solo lo uso para responderte si surgen dudas. No se publica.",
       "submitter_name_label": "Tu nombre (opcional)",
-      "submitter_name_placeholder": "Para acreditarte si la añadimos",
-      "newsletter_label": "Avísame cuando publiquemos esta autora o las próximas"
+      "submitter_name_placeholder": "Para acreditarte si la añado",
+      "newsletter_label": "Avísame cuando publique esta autora o las próximas"
     },
     "submit": "Enviar sugerencia",
     "submitting": "Enviando…",
@@ -80,7 +110,7 @@
     "required_mark": " *",
     "thanks": {
       "title": "Gracias por escribir",
-      "body": "Hayde revisará tu sugerencia. Si la publicamos, te avisaremos.",
+      "body": "Revisaré tu sugerencia. Si la publico, te avisaré.",
       "cta": "Volver al mapa"
     }
   },
@@ -128,7 +158,7 @@
       "status_pending": "Pendiente",
       "status_approved": "Aprobada",
       "status_rejected": "Rechazada",
-      "promote": "Promotar",
+      "promote": "Promover",
       "reject": "Rechazar",
       "reject_reason_label": "Motivo (opcional)",
       "reject_confirm": "Confirmar rechazo",
@@ -138,7 +168,7 @@
     },
     "promote": {
       "title_new": "Añadir autora",
-      "title_review": "Promotar sugerencia",
+      "title_review": "Promover sugerencia",
       "name_label": "Nombre",
       "country_label": "País",
       "status_label": "Estado",

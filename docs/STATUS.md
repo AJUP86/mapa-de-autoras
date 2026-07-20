@@ -23,7 +23,7 @@ Running log of what's done, what's next, and any context a future-you (or contri
 | 7b-ii — CRUD on existing authors (edit, add more books, delete) | ⏳ Next | feature/07b-ii-author-crud |
 | 8 — Newsletter double-opt-in + Resend audience sync | ⏳ Pending | feature/08-newsletter-confirmation |
 | 9a — Staging deployment (Cloudflare Pages + Supabase staging) | ✅ Done | feature/09a-staging-deploy |
-| 9a-ii — Realtime map data (client-side fetch + Supabase Realtime) | ✅ Done | feature/09a-ii-realtime-map |
+| 9a-ii — Realtime map data (client-side fetch + Supabase Realtime) | ✅ Merged | feature/09a-ii-realtime-map |
 | 9b — Production deployment (apex + www + Resend) | ⏳ Pending | feature/09b-production-deploy |
 | 10 — Launch content + checklist | ⏳ Pending | feature/10-launch-prep |
 
@@ -33,7 +33,7 @@ Running log of what's done, what's next, and any context a future-you (or contri
 
 ## Last session — 2026-07-01 (Stage 9a-ii — realtime map data)
 
-**Branch in progress:** `feature/09a-ii-realtime-map` (not yet merged).
+**Status:** Merged into `development` on 2026-07-01; migrations 0008 + 0009 pushed to staging; verified live (two-tab realtime demo) on `staging.mapadeautoras.com`.
 
 ### Architecture flip
 - Public map data flow changed from Astro build-time fetch to client-side fetch + Supabase Realtime subscription with granular patching. See [ADR 0005](adr/0005-realtime-map-data.md).
@@ -204,21 +204,28 @@ Running log of what's done, what's next, and any context a future-you (or contri
 
 ## How to resume tomorrow
 
+**Next up: Stage 9a-iii — realtime admin inbox + pending-count badge.** Design brainstormed (spec not yet written). Locked decisions:
+- **Scope:** inbox list (`<AdminInbox>`) + nav badge (`<AdminAwareNav>`).
+- **Approach:** refetch-on-change (admin-only, low volume — not granular patching).
+- **Migration 0010:** `alter publication supabase_realtime add table public.suggestions;`
+- **Shared hook** `src/lib/use-suggestions-realtime.ts` (subscribe + `onChange` + reconnect resync); replaces the 60s poll in `<AdminAwareNav>`.
+- **DE-RISK FIRST:** probe that an *admin-JWT* subscriber receives `postgres_changes` on the RLS-gated `suggestions` table (the map used anon/public rows; this is admin-only). If not, call `supabase.realtime.setAuth(session.access_token)` before subscribing.
+- **First move:** write `docs/specs/2026-07-02-stage-9a-iii-realtime-inbox-design.md`, then the plan.
+
 ```sh
-# After merging feature/09a-staging-deploy into development:
 git checkout development
 git pull
-# Optionally for 9b:
-# git checkout -b feature/09b-production-deploy
-# Or for 7b-ii (CRUD on existing authors — different deferred stage):
-# git checkout -b feature/07b-ii-author-crud
+git checkout -b feature/09a-iii-realtime-inbox
 
 # Local stack — see supabase/README.md for full quickstart
 npm run dev:db
-npm run dev:db:reset
+npm run dev:db:reset      # applies 0001-0009 + seeds
 npm run dev:functions
 npm run dev
-
+npm test                 # 28-test baseline (map-state + realtime-reducers)
 # Re-bootstrap the admin user locally (reset wipes auth.users — see supabase/README.md)
-# Verify staging at https://staging.mapadeautoras.com
 ```
+
+**Loose ends (small, optional, any time):**
+- Cloudflare Pages: disable preview deployments OR add Preview-scope env vars — stops the red preview check on every PR.
+- `notify_owner` deep-link: `/admin/suggestions/:id` → `/admin/suggestion?id=` (the owner email's "Revisar" link 404s).

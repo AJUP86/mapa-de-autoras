@@ -15,7 +15,15 @@ import AdminNavIcon from "./AdminNavIcon";
 
 interface Labels {
   mapa: string;
+  mapaHref: string;
   sugerir: string;
+  sugerirHref: string;
+  about: string;
+  aboutHref: string;
+  languageSwitchHref: string;
+  languageSwitchLabel: string;
+  languageSwitchAriaLabel: string;
+  languageSwitchHreflang: string;
   sugerencias: string;
   anadir: string;
   salir: string;
@@ -76,7 +84,7 @@ export default function AdminAwareNav({ labels }: Props) {
   return (
     <nav className="flex items-center justify-between gap-4 px-6 py-3 border-b border-ink/10 bg-parchment">
       <a
-        href="/"
+        href={labels.mapaHref}
         className="font-display text-lg font-semibold text-ink no-underline"
       >
         {labels.mapa}
@@ -100,12 +108,28 @@ export default function AdminAwareNav({ labels }: Props) {
           </AdminNavIcon>
         </div>
       ) : (
-        <a
-          href="/suggest"
-          className="text-sm text-ink/80 underline hover:text-oxblood"
-        >
-          {labels.sugerir}
-        </a>
+        <div className="flex items-center gap-4">
+          <a
+            href={labels.aboutHref}
+            className="text-sm text-ink/80 hover:text-oxblood"
+          >
+            {labels.about}
+          </a>
+          <a
+            href={labels.sugerirHref}
+            className="text-sm text-ink/80 underline hover:text-oxblood"
+          >
+            {labels.sugerir}
+          </a>
+          <a
+            href={labels.languageSwitchHref}
+            hrefLang={labels.languageSwitchHreflang}
+            aria-label={labels.languageSwitchAriaLabel}
+            className="inline-flex items-center justify-center rounded-full border border-ink/15 bg-bone px-3 py-1 text-xs font-medium tracking-wider text-ink/80 transition-colors hover:border-oxblood/40 hover:text-oxblood"
+          >
+            {labels.languageSwitchLabel}
+          </a>
+        </div>
       )}
     </nav>
   );

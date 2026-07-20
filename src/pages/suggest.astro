@@ -1,6 +1,5 @@
 ---
 import Base from "~/layouts/Base.astro";
-import LanguageSwitch from "~/components/LanguageSwitch.astro";
 import SuggestionForm from "~/components/SuggestionForm";
 import { t } from "~/i18n/t";
 import { getCountries } from "~/lib/countries";
@@ -40,13 +39,6 @@ const formLabels = {
 ---
 
 <Base lang={lang} title={`${t(lang, "suggest.title")} · ${t(lang, "meta.title")}`} description={t(lang, "suggest.intro")}>
-  <header class="mx-auto max-w-5xl px-6 pt-8 flex items-center justify-between">
-    <a href="/" class="text-xs uppercase tracking-[0.18em] text-ink/50 font-body hover:text-oxblood">
-      ← {t(lang, "nav.home")}
-    </a>
-    <LanguageSwitch lang={lang} />
-  </header>
-
   <main class="mx-auto max-w-2xl px-6 py-12 sm:py-16">
     <p class="text-sm uppercase tracking-[0.18em] text-ink/60 font-body mb-3">
       {t(lang, "suggest.eyebrow")}
@@ -66,7 +58,7 @@ const formLabels = {
         locale={lang}
         turnstileSiteKey={turnstileSiteKey}
         submitUrl={submitUrl}
-        thanksUrl="/gracias"
+        thanksUrl="/thanks"
       />
     </section>
   </main>

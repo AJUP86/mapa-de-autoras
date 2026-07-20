@@ -23,9 +23,32 @@ const site = Astro.site ?? new URL("http://localhost:4321/");
 const esUrl = new URL(esPath, site).href;
 const enUrl = new URL(enPath, site).href;
 
+const isEn = lang === "en";
+const localePrefix = isEn ? "/en" : "";
+
+// Language-switch target: mirror the current path in the other locale.
+// Route paths are English on both locales, so we just swap the /en prefix
+// on or off (same logic that used to live in the deleted LanguageSwitch.astro).
+const pathname = Astro.url.pathname;
+let languageSwitchHref: string;
+if (isEn) {
+  const stripped = pathname.replace(/^\/en(\/|$)/, "/");
+  languageSwitchHref = stripped === "" ? "/" : stripped;
+} else {
+  languageSwitchHref = pathname === "/" ? "/en/" : `/en${pathname}`;
+}
+
 const navLabels = {
   mapa: t(lang, "nav.home"),
+  mapaHref: `${localePrefix}/`,
   sugerir: t(lang, "nav.suggest"),
+  sugerirHref: `${localePrefix}/suggest`,
+  about: t(lang, "nav.about"),
+  aboutHref: `${localePrefix}/about`,
+  languageSwitchHref,
+  languageSwitchLabel: isEn ? "ESPAÑOL" : "ENGLISH",
+  languageSwitchAriaLabel: isEn ? "Cambiar a español" : "Switch to English",
+  languageSwitchHreflang: isEn ? "es" : "en",
   sugerencias: t(lang, "admin.nav.sugerencias"),
   anadir: t(lang, "admin.nav.anadir"),
   salir: t(lang, "admin.nav.salir"),
