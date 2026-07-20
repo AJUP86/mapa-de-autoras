@@ -23,13 +23,13 @@
     "last_updated": "2026-06-18",
     "intro": "This site collects the minimum personal data needed to work. Below I explain what I collect, why, how I store it, and what rights you have over that information. If anything is unclear, email me at the contact address at the end of this page.",
     "collect_title": "What data I collect",
-    "collect_body": "**Email:** when you submit a writer suggestion or subscribe to the newsletter.\n\n**Name (optional):** if you include it when submitting a suggestion, so I can credit you if I publish that writer.\n\n**Transient technical data:** IP addresses and user-agents flow through my hosting providers' logs (Cloudflare, Supabase) for 24-72 hours to prevent abuse. I don't store them directly.",
+    "collect_body": "**Email:** when you submit a writer suggestion, and optionally to let you know when I publish your suggestion.\n\n**Name (optional):** if you include it when submitting a suggestion, so I can credit you if I publish that writer.\n\n**Transient technical data:** IP addresses and user-agents flow through my hosting providers' logs (Cloudflare, Supabase) for 24-72 hours to prevent abuse. I don't store them directly.",
     "legal_basis_title": "Legal basis",
-    "legal_basis_body": "Processing is based on your **consent** (for newsletter delivery and to reply to your suggestions). You can withdraw consent at any time by contacting me — details below.",
+    "legal_basis_body": "Processing is based on your **consent** (to let you know about your suggestion and to reply to you). You can withdraw consent at any time by contacting me — details below.",
     "retention_title": "How long I keep it",
-    "retention_body": "**Suggestions:** until I process them (publish the writer or reject the suggestion). After that I keep the record to avoid duplicate suggestions.\n\n**Newsletter subscribers:** until you unsubscribe (every email includes a link).\n\n**Admin accounts:** only mine; the site doesn't allow public account registration.",
+    "retention_body": "**Suggestions:** until I process them (publish the writer or reject the suggestion). After that I keep the record to avoid duplicate suggestions.\n\n**Admin accounts:** only mine; the site doesn't allow public account registration.",
     "thirdparties_title": "Who I share data with",
-    "thirdparties_body": "The site relies on these services as data processors:\n\n**Supabase** (database, authentication) — region `eu-west-1` (Ireland), GDPR-compliant.\n\n**Cloudflare** (web hosting, DNS, Turnstile bot defense) — global infrastructure; DPA signed.\n\n**DeepL** (translation in the admin panel, used only by me) — EU-based, GDPR-compliant.\n\n**Resend** (confirmation and newsletter email delivery) — DPA signed.",
+    "thirdparties_body": "The site relies on these services as data processors:\n\n**Supabase** (database, authentication) — region `eu-west-1` (Ireland), GDPR-compliant.\n\n**Cloudflare** (web hosting, DNS, Turnstile bot defense) — global infrastructure; DPA signed.\n\n**DeepL** (translation in the admin panel, used only by me) — EU-based, GDPR-compliant.\n\n**Resend** (transactional email delivery) — DPA signed.",
     "cookies_title": "Cookies",
     "cookies_body": "This site does not use tracking or analytics cookies. The only cookie set is the admin session cookie, and it's only created if you (Danny) log in at `/admin`. There is no cookie banner because there is nothing to consent to.",
     "rights_title": "Your rights",
@@ -37,7 +37,7 @@
     "contact_title": "Contact",
     "contact_body": "For any privacy question or to exercise your rights, email **hola@mapadeautoras.com**.",
     "changes_title": "Changes to this policy",
-    "changes_body": "If I update this policy, I'll change the date at the top of the page. Substantial changes will be announced to newsletter subscribers."
+    "changes_body": "If I update this policy, I'll change the date at the top of the page."
   },
   "hero": {
     "eyebrow": "map of women writers",
@@ -98,7 +98,7 @@
       "email_hint": "Only used to reach you if I have questions. Never published.",
       "submitter_name_label": "Your name (optional)",
       "submitter_name_placeholder": "So I can credit you if I add her",
-      "newsletter_label": "Notify me when I publish this writer or upcoming ones"
+      "newsletter_label": "Let me know when I add this writer to the map"
     },
     "submit": "Send suggestion",
     "submitting": "Sending…",
