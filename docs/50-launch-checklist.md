@@ -78,16 +78,17 @@ Currently every page renders TWO nav bars stacked: `<AdminAwareNav>` (site-wide,
 - [ ] Danny promotes real authors via `/admin/promote` after 9b deploy. Nothing tracked in code.
 - [ ] Before launch: verify no test/dev rows leaked into `mapa-prod` (check via Studio table editor).
 
-### 5.5. Stage 8.4 — Page-pair DRY refactor
+### 5.5. Stage 8.4 — Page-pair DRY + always-prefix locale URLs — SHIPPED
 
 Cleanup of duplicated ES/EN page files. Purely structural — no user-visible change, no data change. Halves the per-page diff cost of every subsequent stage that touches routing/layout (including Stage 8.5).
 
-- [ ] Extract markup from each ES/EN page pair into a shared component at `src/components/pages/<Name>Page.astro`.
-- [ ] Rewrite each of the 10 route files (`src/pages/{index,about,suggest,thanks,privacy}.astro` + `src/pages/en/{index,about,suggest,thanks,privacy}.astro`) as a 3-line delegate passing `lang` as a prop.
-- [ ] Preserve React-island props (SuggestionForm, MapSection, AdminAwareNav) exactly.
-- [ ] Preserve `privacy.astro`'s inline `renderBlock()` markdown helper (move into the shared component).
-- [ ] Verify `npm run build` produces the same 14 pages; visual QA each route matches pre-refactor.
-- [ ] Vitest suite (28 tests from 9a-ii) stays green.
+- [x] Extract markup from each ES/EN page pair into a shared component at `src/components/pages/<Name>Page.astro`.
+- [x] Rewrite each of the 10 route files (`src/pages/{index,about,suggest,thanks,privacy}.astro` + `src/pages/en/{index,about,suggest,thanks,privacy}.astro`) as a 3-line delegate passing `lang` as a prop.
+- [x] Preserve React-island props (SuggestionForm, MapSection, AdminAwareNav) exactly.
+- [x] Preserve `privacy.astro`'s inline `renderBlock()` markdown helper (move into the shared component).
+- [x] Verify `npm run build` produces the same 14 pages; visual QA each route matches pre-refactor.
+- [x] Vitest suite (28 tests from 9a-ii) stays green.
+- [x] Additional structural work landed: switched from `/thanks` + `/en/thanks` (default-locale-hidden) to `/es/thanks` + `/en/thanks` (always-prefix) via dynamic routes under `src/pages/[lang]/`. Adding a new locale is now one line in `src/i18n/locales.ts`. Astro's `redirectToDefaultLocale: true` was incompatible with dynamic-index routes — used top-level `redirects: { "/": "/es/" }` config instead.
 
 Branch: `feature/08.4-page-pair-dry`. Rough size: ~3.5h.
 
@@ -150,6 +151,8 @@ Full 9b spec lives in `docs/01-implementation-plan.md`. Checklist form here:
 - [ ] Lighthouse audit on production URL — target ≥90 on Performance, Accessibility, Best Practices, SEO.
 - [ ] Mobile QA on real device (Danny's iPhone or equivalent).
 - [ ] Email deliverability check: Danny sends herself a test suggestion from prod → confirms Resend email arrives in inbox (not spam).
+- [ ] Investigate WOFF2 font warnings on staging (`OTS parsing error: Size of decompressed WOFF 2.0 is less than compressed size`). Likely Cloudflare Pages double-compressing WOFF2 files. Fix candidate: add `Content-Encoding: identity` for `*.woff2` via `public/_headers`.
+- [ ] File as known-harmless (documented Turnstile behavior): `/suggest` pages emit `WebGL: INVALID_ENUM: getInternalformatParameter` warnings + `powerPreference option ignored on Windows` + `No available adapters` console noise. These are Turnstile's bot-fingerprinting probes on Windows Chrome — no user impact.
 
 ---
 
