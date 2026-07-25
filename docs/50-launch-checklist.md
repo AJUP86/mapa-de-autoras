@@ -78,6 +78,36 @@ Currently every page renders TWO nav bars stacked: `<AdminAwareNav>` (site-wide,
 - [ ] Danny promotes real authors via `/admin/promote` after 9b deploy. Nothing tracked in code.
 - [ ] Before launch: verify no test/dev rows leaked into `mapa-prod` (check via Studio table editor).
 
+### 5.5. Stage 8.4 — Page-pair DRY refactor
+
+Cleanup of duplicated ES/EN page files. Purely structural — no user-visible change, no data change. Halves the per-page diff cost of every subsequent stage that touches routing/layout (including Stage 8.5).
+
+- [ ] Extract markup from each ES/EN page pair into a shared component at `src/components/pages/<Name>Page.astro`.
+- [ ] Rewrite each of the 10 route files (`src/pages/{index,about,suggest,thanks,privacy}.astro` + `src/pages/en/{index,about,suggest,thanks,privacy}.astro`) as a 3-line delegate passing `lang` as a prop.
+- [ ] Preserve React-island props (SuggestionForm, MapSection, AdminAwareNav) exactly.
+- [ ] Preserve `privacy.astro`'s inline `renderBlock()` markdown helper (move into the shared component).
+- [ ] Verify `npm run build` produces the same 14 pages; visual QA each route matches pre-refactor.
+- [ ] Vitest suite (28 tests from 9a-ii) stays green.
+
+Branch: `feature/08.4-page-pair-dry`. Rough size: ~3.5h.
+
+### 5.6. Stage 8.5 — Book-first refactor (schema + form UX)
+
+Discovered during Stage 8: the current data model is author-centric (`authors.status` set at promote time, `/suggest` form asks for one author + N books). This is inverted — the natural unit is a **book**. Books have mutable state (to_read → reading → read); authors are pure grouping. The current model has three visible bugs: (a) suggestions for existing authors raise `duplicate_author` and can't be promoted; (b) `authors.status` freezes at promote time (a `discovery` author stays `discovery` forever, even after Danny reads their book — the map lies); (c) users can't be told per-book what happened to their suggestion.
+
+- [ ] Migration: drop `authors.status`; add `books.status` (`to_read` | `reading` | `read`), default `to_read`, backfill from `authors.status`.
+- [ ] Migration: add `suggestions.proposed_book_title`, `suggestions.disposition` (`pending` | `added` | `already_present` | `rejected`), `suggestions.linked_book_id`. One suggestion row = one book proposal.
+- [ ] Rewrite `promote_suggestion` RPC: upsert author (name + country), attach book, set suggestion's disposition + linked_book_id. No more `duplicate_author` exception.
+- [ ] `/suggest` form: switch from "author + free-text books" to a book-first UI with an "add another book" button. Server-side, one submission with N books → N `suggestions` rows (same author + country, each atomic).
+- [ ] `submit_suggestion` Edge Function updated to accept the new payload shape.
+- [ ] PromoteForm reworked: per-suggestion (per-book) disposition — [Accept] / [Already have it] / [Reject].
+- [ ] `notify_submitter` email content: one book → one outcome sentence (added / already_present / rejected). Per-locale (ES/EN).
+- [ ] `getCatalog()` + `computeCountryStates()` re-aggregate map colors from `books.status` (not `authors.status`).
+- [ ] Admin book-status edit UI: simple table with inline status dropdown for each book. Realtime propagates changes.
+- [ ] Filter labels tweaked ("Por leer" instead of "Sugerencias").
+
+Branch: `feature/08.5-book-first-refactor`. Rough size: ~5.5 days. Requires a proper brainstorm + spec + plan cycle before implementation.
+
 ### 6. Production deploy (Stage 9b)
 
 Full 9b spec lives in `docs/01-implementation-plan.md`. Checklist form here:

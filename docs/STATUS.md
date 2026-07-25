@@ -62,6 +62,23 @@ Running log of what's done, what's next, and any context a future-you (or contri
 - Resend domain auth on `mapadeautoras.com` (SPF/DKIM/DMARC via Cloudflare DNS — same account, one-click). Swap `RESEND_FROM_EMAIL` to `hola@mapadeautoras.com` when domain is verified.
 - Recreate the Database Webhook + three function secrets on the prod Supabase project. Function code carries over unchanged (relaxed auth pattern is compatible).
 
+### Follow-up decisions (evening of 2026-07-21)
+
+Post-shipping conversation surfaced a data-model bug we've been living with since Stage 4:
+
+- **The `/suggest` form is author-centric, but the natural unit of curation is a book.** The visualization hierarchy (country → author → books) got copied into the *input* direction, which is inverted from how a library actually grows.
+- **Concrete symptoms in the current code:** (a) suggestions naming an author already in `authors` raise `duplicate_author` in the promote RPC and can't be processed; (b) `authors.status` is set at promote time and never updated — the map's "Leídas / Leyendo / Sugerencias" filters lie the moment Danny actually reads a promoted `discovery` book; (c) the notify_submitter email can only carry one outcome per suggestion because a suggestion covers one author with N books.
+- **The refactor:** move state to `books.status` (`to_read` → `reading` → `read`), drop `authors.status`, switch `/suggest` to a book-first form (multi-book UI submits N atomic one-book suggestions server-side), add `disposition` on `suggestions` (`pending` / `added` / `already_present` / `rejected`), enumerate per-book outcomes in notify_submitter emails.
+
+**Two stages added to the pre-launch path:**
+
+1. **Stage 8.4 — Page-pair DRY refactor** (~3.5h). Consolidate the 10 duplicated ES/EN page files into 5 shared components. Cheaper 8.5 afterwards (form/UI edits touch one file per page instead of two). Branch: `feature/08.4-page-pair-dry` (already created).
+2. **Stage 8.5 — Book-first refactor** (~5.5 days). Requires its own brainstorm + spec + plan cycle. Branch: `feature/08.5-book-first-refactor` (future).
+
+**Revised pre-launch runway:** 8.4 → 8.5 → 9b → 10 launch polish → live. ~2 weeks of session-work. Meaningful delay but the model reflects how library curation actually works.
+
+Details captured in [docs/50-launch-checklist.md](50-launch-checklist.md) §5.5 and §5.6.
+
 ---
 
 ## Last session — 2026-07-01 (Stage 9a-ii — realtime map data)

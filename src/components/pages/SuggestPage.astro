@@ -4,11 +4,16 @@ import SuggestionForm from "~/components/SuggestionForm";
 import { t } from "~/i18n/t";
 import { getCountries } from "~/lib/countries";
 
-const lang = "es";
+interface Props {
+  lang: "es" | "en";
+}
+
+const { lang } = Astro.props;
 const countries = await getCountries(lang);
 const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? "";
 const submitUrl = `${supabaseUrl}/functions/v1/submit_suggestion`;
+const thanksUrl = `/${lang}/thanks`;
 
 const formLabels = {
   fields: {
@@ -58,7 +63,7 @@ const formLabels = {
         locale={lang}
         turnstileSiteKey={turnstileSiteKey}
         submitUrl={submitUrl}
-        thanksUrl="/thanks"
+        thanksUrl={thanksUrl}
       />
     </section>
   </main>

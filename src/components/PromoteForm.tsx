@@ -208,7 +208,7 @@ export default function PromoteForm({ labels }: Props) {
       })),
     );
     if (result.ok) {
-      window.location.href = suggestionId ? "/admin/inbox" : "/";
+      window.location.href = suggestionId ? "/admin/inbox" : "/es/";
       return;
     }
     setStatus("error");
@@ -226,7 +226,7 @@ export default function PromoteForm({ labels }: Props) {
   const formMarkup = (
     <form onSubmit={onSubmit} className="mx-auto max-w-3xl space-y-6 p-6">
       <div>
-        <a href="/" className="text-sm text-ink/70 underline">← {labels.back}</a>
+        <a href="/es/" className="text-sm text-ink/70 underline">← {labels.back}</a>
         <h1 className="mt-2 font-serif text-2xl text-ink">
           {suggestionId ? labels.title_review : labels.title_new}
         </h1>
@@ -403,7 +403,7 @@ export default function PromoteForm({ labels }: Props) {
         >
           {status === "saving" ? labels.saving : labels.save}
         </button>
-        <a href="/" className="text-sm text-ink/70 underline">{labels.cancel}</a>
+        <a href="/es/" className="text-sm text-ink/70 underline">{labels.cancel}</a>
       </div>
     </form>
   );

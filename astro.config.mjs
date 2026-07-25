@@ -7,10 +7,15 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   site: "https://mapadeautoras.com",
   output: "static",
+  redirects: {
+    "/": "/es/",
+  },
   i18n: {
     locales: ["es", "en"],
     defaultLocale: "es",
-    routing: { prefixDefaultLocale: false },
+    routing: {
+      prefixDefaultLocale: true,
+    },
   },
   integrations: [react(), sitemap()],
   vite: {

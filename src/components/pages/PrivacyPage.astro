@@ -2,7 +2,11 @@
 import Base from "~/layouts/Base.astro";
 import { t } from "~/i18n/t";
 
-const lang = "es";
+interface Props {
+  lang: "es" | "en";
+}
+
+const { lang } = Astro.props;
 
 // Sections rendered in order. Each pair -> heading + body.
 const sections = [
