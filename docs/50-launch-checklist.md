@@ -40,13 +40,17 @@ Complementary to:
 - [ ] Content provided by Danny: bio, why-this-project, contact / social (IG handle at minimum).
 - [ ] Layout: same base + typography as `/suggest`; photo optional.
 
-### 3. Newsletter (Stage 8 — elevated to launch-blocking)
+### 3. Notify submitter on promote (Stage 8) — SHIPPED
 
-- [ ] Existing `subscribers` table + double-opt-in Edge Function per the original Stage 8 spec in `docs/01-implementation-plan.md`.
-- [ ] Newsletter capture form on `/` (bottom of page or footer) + a dedicated `/newsletter` page for direct linking.
-- [ ] Confirmation email (via Resend) + thanks page after confirmation.
-- [ ] Uses the same Resend account provisioned in Stage 9b (single account, shared audience).
-- [ ] Note: Stage 8 was originally standalone; can now share Resend infra with 9b.
+- [x] Migration `0010_stage8_notify_submitter.sql` applied on staging (`locale`, `promoted_author_id`, `notified_at` on `suggestions`; `promote_suggestion` RPC updated).
+- [x] `notify_submitter` Edge Function deployed to staging (with `--use-api` flag; standard `functions deploy` hangs on Windows CLI 2.102).
+- [x] Staging function env vars set: `RESEND_API_KEY`, `RESEND_FROM_EMAIL` (`onboarding@resend.dev`), `SITE_URL` (`https://staging.mapadeautoras.com`).
+- [x] Supabase Database Webhook `notify_submitter_on_promote` configured on staging (`suggestions UPDATE` → POST to function URL, `Authorization: Bearer <service_role>`). No dashboard-level filter — function's internal guards short-circuit non-target rows.
+- [x] `submit_suggestion` extended to store `locale` on the suggestion row.
+- [x] End-to-end verified on staging: opt-in submission → promote → email arrived at Danny's inbox → `notified_at` populated.
+- [x] Privacy policy no longer references a newsletter (5 strings reframed in both locales).
+- [x] Debug runbook at `docs/30-ops/notify-submitter-debug.md`.
+- [ ] Note for Stage 9b: provision Resend domain auth for `mapadeautoras.com`; swap `RESEND_FROM_EMAIL` to `hola@mapadeautoras.com`; recreate the webhook + secrets on the prod project; the function's relaxed-auth pattern (trust platform `verify_jwt`) carries over unchanged.
 
 ### 3.5. Consolidate the double nav bar
 

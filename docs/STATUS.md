@@ -21,13 +21,46 @@ Running log of what's done, what's next, and any context a future-you (or contri
 | 7a — Owner notification + admin auth + read-only inbox | ✅ Merged | feature/07a-notify-and-auth |
 | 7b-i — Promote suggestion + currently_reading + translate + unified admin UX | ✅ Done | feature/07b-promote-and-crud |
 | 7b-ii — CRUD on existing authors (edit, add more books, delete) | ⏳ Next | feature/07b-ii-author-crud |
-| 8 — Newsletter double-opt-in + Resend audience sync | ⏳ Pending | feature/08-newsletter-confirmation |
+| 8 — Notify submitter on promote (scope pivoted from newsletter) | ✅ Done | feature/08-newsletter-confirmation |
 | 9a — Staging deployment (Cloudflare Pages + Supabase staging) | ✅ Done | feature/09a-staging-deploy |
 | 9a-ii — Realtime map data (client-side fetch + Supabase Realtime) | ✅ Merged | feature/09a-ii-realtime-map |
 | 9b — Production deployment (apex + www + Resend) | ⏳ Pending | feature/09b-production-deploy |
 | 10 — Launch content + checklist | ⏳ Pending | feature/10-launch-prep |
 
-**About ~77% of MVP shipped by stage count.** Remaining work: author CRUD (7b-ii), newsletter (8), production deploy (9b), launch prep (10).
+**About ~81% of MVP shipped by stage count.** Remaining launch-blocking work: production deploy (9b), launch prep (10). Post-launch backlog: author CRUD (7b-ii), real newsletter (broadcast list).
+
+---
+
+## Last session — 2026-07-21 (Stage 8 — notify submitter on promote)
+
+**Status:** Shipped end-to-end on staging on 2026-07-21. Branch `feature/08-newsletter-confirmation` ready to merge to `development`. Branch name kept for git-history continuity; actual scope pivoted from "newsletter double-opt-in" to "transactional notification when a suggestion is promoted" during brainstorming.
+
+### What landed
+- **Migration `0010_stage8_notify_submitter.sql`** — `suggestions` gains three columns: `locale` (submitter language), `promoted_author_id` (FK back to the created author, populated by the RPC), `notified_at` (idempotency marker for the send). The `promote_suggestion` RPC now writes `promoted_author_id` inside its existing resolve-suggestion UPDATE.
+- **`supabase/functions/notify_submitter/`** — new Edge Function pair: `email.ts` (inlined ES/EN strings + `renderEmail()`) and `index.ts` (webhook handler: auth check, load, idempotent claim, Resend POST, revert-on-failure).
+- **`submit_suggestion`** extended: now stores `locale` on the suggestion insert (previously only on the deprecated `subscribers` upsert).
+- **i18n copy:** opt-in checkbox label tightened ("Avísame cuando añada esta autora al mapa" / "Let me know when I add this writer to the map"). Privacy policy reframed — 5 `privacy.*_body` strings in each locale no longer reference a newsletter that doesn't exist.
+- **`.env.example`** documents `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `SITE_URL`. `RESEND_AUDIENCE_ID` removed as intentionally out-of-scope.
+- **Docs:** spec at [docs/specs/2026-07-20-stage-8-notify-submitter-design.md](specs/2026-07-20-stage-8-notify-submitter-design.md), plan at [docs/plans/2026-07-20-stage-8-notify-submitter-implementation.md](plans/2026-07-20-stage-8-notify-submitter-implementation.md), debug runbook at [docs/30-ops/notify-submitter-debug.md](30-ops/notify-submitter-debug.md), Stage 8 section rewritten in `01-implementation-plan.md`, item 3 rewritten in `50-launch-checklist.md`, `RAG.md` updated.
+
+### Ops setup on staging Supabase (`kkdjrzuewnwrlokhemnl`)
+- Resend account provisioned via GitHub OAuth (free tier; `alejandrourroz86@gmail.com` is the account-owner address, and thus the only recipient Resend will deliver to until domain auth lands in 9b).
+- `notify_submitter` deployed via `supabase functions deploy notify_submitter --project-ref kkdjrzuewnwrlokhemnl --use-api` — the `--use-api` flag is required on Windows CLI 2.102 (default Deno-bundling path hangs silently).
+- Three function secrets set in the dashboard: `RESEND_API_KEY`, `RESEND_FROM_EMAIL=onboarding@resend.dev`, `SITE_URL=https://staging.mapadeautoras.com`.
+- Supabase Database Webhook `notify_submitter_on_promote` configured (Integrations → Database Webhooks): `suggestions UPDATE` → POST to function URL with `Authorization: Bearer <service_role>`. Current dashboard UI does not expose conditional filters — function's internal guards handle the filtering.
+
+### Verified (2026-07-21)
+- Opt-in submission via `/suggest` → admin promote → email arrived at `alejandrourroz86@gmail.com` within seconds. `suggestions.notified_at` populated. Author on map.
+- (Regression to run on the next test session, or trust construction: opt-out submission → no email fires; the function guard `if (sug.accepted_newsletter !== true) return ... "not_opted_in"` covers it.)
+
+### Debug notes worth keeping
+- **Auth check relaxed.** Original design required exact-string match between the webhook Authorization header and `SUPABASE_SERVICE_ROLE_KEY`. JWT paste in the webhook UI is fragile (whitespace/truncation); Supabase's platform-level `verify_jwt=true` already validates JWTs before the handler runs. The in-function check now only requires a Bearer token is present. See [debug runbook § Auth 401](30-ops/notify-submitter-debug.md).
+- **Root-cause diagnostic:** `select * from net._http_response order by created desc limit 5;` in Supabase SQL editor shows the actual HTTP outcome of each webhook fire (status code + body + error message). More useful than the Edge Functions logs UI, which does not currently show request/response detail — only Boot/Shutdown lifecycle events.
+- **Windows deploy quirk:** always append `--use-api` to `supabase functions deploy`. Non-obvious silent hang otherwise.
+
+### Pending for Stage 9b
+- Resend domain auth on `mapadeautoras.com` (SPF/DKIM/DMARC via Cloudflare DNS — same account, one-click). Swap `RESEND_FROM_EMAIL` to `hola@mapadeautoras.com` when domain is verified.
+- Recreate the Database Webhook + three function secrets on the prod Supabase project. Function code carries over unchanged (relaxed auth pattern is compatible).
 
 ---
 

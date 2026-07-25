@@ -226,21 +226,31 @@ git push -u origin development
 
 ---
 
-## Stage 8 — Newsletter double-opt-in confirmation + Resend audience sync
+## Stage 8 — Notify submitter on promote
 
-**Branch:** `feature/08-newsletter-confirmation`
+**Branch:** `feature/08-newsletter-confirmation` (branch name kept for git-history continuity — actual scope pivoted from newsletter to transactional notification during brainstorming).
 
-**Goal:** confirmed subscribers reach the Resend audience and are usable for broadcasts.
+**Goal:** When Danny promotes a suggestion whose submitter opted in, the submitter receives one transactional email in their locale via Resend.
+
+**Design:** [docs/specs/2026-07-20-stage-8-notify-submitter-design.md](specs/2026-07-20-stage-8-notify-submitter-design.md) — full scope, decisions table, architecture, verification.
 
 **Build:**
-- `src/pages/confirm.astro` — handles `?token=…` from the double-opt-in email; flips `subscribers.status` to `confirmed`, sets `confirmed_at`.
-- Edge function (or post-confirmation hook) that calls Resend Audiences API to add the contact.
-- A simple `/admin/subscribers` page: list, manual unsubscribe, manual resync.
+- Migration `0010_stage8_notify_submitter.sql` — adds `locale`, `promoted_author_id`, `notified_at` columns to `suggestions`; re-declares `promote_suggestion` RPC to populate `promoted_author_id`.
+- `supabase/functions/notify_submitter/index.ts` — webhook-triggered Edge Function; auth via Bearer presence + Supabase platform-level `verify_jwt`; conditional `notified_at` claim for at-most-once semantics; renders + sends via Resend.
+- `supabase/functions/notify_submitter/email.ts` — inlined ES/EN strings + `renderEmail()`.
+- Update `supabase/functions/submit_suggestion/index.ts` to store `locale` on the suggestion row (previously only stored on the deprecated `subscribers` upsert).
+- i18n copy: tighten opt-in checkbox label; strip newsletter references from the privacy policy (5 body strings × 2 locales).
+- Supabase Database Webhook on `suggestions UPDATE` — POSTs to `notify_submitter`. Filter conditions unavailable in the current dashboard UI; function's internal guards short-circuit non-target rows.
+- Resend account provisioned in unverified mode for staging (sends only to account owner's email). Domain auth deferred to Stage 9b.
+- `.env.example` documents `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `SITE_URL`.
+- `docs/30-ops/notify-submitter-debug.md` runbook — captures the debug patterns hit during Slice D (401 auth failure, `net._http_response` inspection, Windows `--use-api` requirement).
 
-**Verify:**
-1. Submit suggestion with newsletter opt-in → confirmation email arrives.
-2. Click confirm link → DB row flips to `confirmed`; contact present in Resend audience.
-3. Manually unsubscribing in admin removes from Resend audience.
+**Verify (staging):**
+1. Opt-in submission → promote → email delivered (subject + body match locale) → `notified_at` populated.
+2. Opt-out submission → promote → no email, `notified_at` remains `NULL` (guarded by `if (sug.accepted_newsletter !== true)` in the function).
+3. `promoted_author_id` populated on the resolved suggestion row.
+
+**Out (Phase 2):** real newsletter (broadcast list, Resend Audiences), unsubscribe flow, HTML-styled template, "resend notification" admin button, structured logging.
 
 **Pause for review.**
 
