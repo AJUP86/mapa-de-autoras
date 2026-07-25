@@ -1,0 +1,40 @@
+---
+import Base from "~/layouts/Base.astro";
+import { t } from "~/i18n/t";
+
+interface Props {
+  lang: "es" | "en";
+}
+
+const { lang } = Astro.props;
+const homeHref = lang === "en" ? "/en/" : "/";
+---
+
+<Base
+  lang={lang}
+  title={`${t(lang, "suggest.thanks.title")} · ${t(lang, "meta.title")}`}
+  description={t(lang, "suggest.thanks.body")}
+>
+  <main class="mx-auto max-w-xl px-6 py-24 sm:py-32 text-center">
+    <p class="text-sm uppercase tracking-[0.18em] text-ink/60 font-body mb-4">
+      {t(lang, "suggest.eyebrow")}
+    </p>
+    <h1 class="font-display text-5xl sm:text-6xl font-semibold leading-[1.05] tracking-tight">
+      {t(lang, "suggest.thanks.title")}
+    </h1>
+    <p class="mt-6 text-lg text-ink/75 font-body max-w-prose mx-auto">
+      {t(lang, "suggest.thanks.body")}
+    </p>
+    <a
+      href={homeHref}
+      class="
+        inline-flex items-center justify-center mt-10
+        rounded-lg bg-oxblood px-5 py-2.5
+        text-parchment font-semibold font-body
+        transition-colors hover:bg-oxblood/90
+      "
+    >
+      {t(lang, "suggest.thanks.cta")}
+    </a>
+  </main>
+</Base>
