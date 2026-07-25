@@ -22,12 +22,13 @@ Running log of what's done, what's next, and any context a future-you (or contri
 | 7b-i — Promote suggestion + currently_reading + translate + unified admin UX | ✅ Done | feature/07b-promote-and-crud |
 | 7b-ii — CRUD on existing authors (edit, add more books, delete) | ⏳ Next | feature/07b-ii-author-crud |
 | 8 — Notify submitter on promote (scope pivoted from newsletter) | ✅ Done | feature/08-newsletter-confirmation |
+| 8.4 — Page-pair DRY (shared components) + always-prefix locale URLs (dynamic routes) | ✅ Done | feature/08.4-page-pair-dry |
 | 9a — Staging deployment (Cloudflare Pages + Supabase staging) | ✅ Done | feature/09a-staging-deploy |
 | 9a-ii — Realtime map data (client-side fetch + Supabase Realtime) | ✅ Merged | feature/09a-ii-realtime-map |
 | 9b — Production deployment (apex + www + Resend) | ⏳ Pending | feature/09b-production-deploy |
 | 10 — Launch content + checklist | ⏳ Pending | feature/10-launch-prep |
 
-**About ~81% of MVP shipped by stage count.** Remaining launch-blocking work: production deploy (9b), launch prep (10). Post-launch backlog: author CRUD (7b-ii), real newsletter (broadcast list).
+**About ~82% of MVP shipped by stage count.** Remaining launch-blocking work: production deploy (9b), launch prep (10). Post-launch backlog: author CRUD (7b-ii), real newsletter (broadcast list).
 
 ---
 
@@ -78,6 +79,36 @@ Post-shipping conversation surfaced a data-model bug we've been living with sinc
 **Revised pre-launch runway:** 8.4 → 8.5 → 9b → 10 launch polish → live. ~2 weeks of session-work. Meaningful delay but the model reflects how library curation actually works.
 
 Details captured in [docs/50-launch-checklist.md](50-launch-checklist.md) §5.5 and §5.6.
+
+### Stage 8.4 also shipped this session (2026-07-21 late night)
+
+Merged to `development` via PR #14. Two slices, one branch (`feature/08.4-page-pair-dry`):
+
+**Slice 1 — Shared page components.** Consolidated the 5 ES/EN page pairs (index, about, suggest, thanks, privacy — 10 delegate files) into 5 shared components under `src/components/pages/*Page.astro`. Each page pair's route file became a 3-line delegate importing the shared component.
+
+**Slice 2 — Dynamic routes + always-prefix locale URLs.** Went further than the original 8.4 scope after realising the two-file-per-URL pattern doesn't scale beyond 2 languages. Switched from `/thanks` + `/en/thanks` (default-locale-hidden) to `/es/thanks` + `/en/thanks` (always-prefix) using dynamic routes:
+
+- `astro.config.mjs` — flipped `prefixDefaultLocale: true`, added top-level `redirects: { "/": "/es/" }` (the Astro-native `redirectToDefaultLocale: true` was incompatible with our `[lang]` dynamic-index pattern — required a physical `src/pages/index.astro` anchor page that would fight the dynamic route).
+- New `src/i18n/locales.ts` — single source of truth for supported locales (`LOCALES = ["es", "en"] as const`). Adding a new language = one entry here.
+- `src/pages/[lang]/{index,about,suggest,thanks,privacy}.astro` — 5 dynamic-route files, each ~11 lines using `getStaticPaths()` over `LOCALES` to emit both variants.
+- Deleted all 10 legacy delegate files at `src/pages/*.astro` and `src/pages/en/*.astro`.
+- Updated `src/layouts/Base.astro` language-switch logic to swap `/es/*` ↔ `/en/*` instead of adding/stripping `/en`. Admin pages (`/admin/*`) stay outside the locale scheme; language switch on admin defaults to the OTHER locale's home.
+- Updated internal-link hardcodes in `SuggestPage.astro` (`thanksUrl`), `ThanksPage.astro` (`homeHref`), and `PromoteForm.tsx` (3 back-to-site refs from `/` → `/es/`).
+
+**Diff impact:** 21 files, +171 / −310 lines. Net −139. More important than the line count: adding a language is now one line, editing shared markup is one file, new pages are one shared component instead of two.
+
+**Verified on staging:** language switch works from every page; `/es/*` and `/en/*` both render; `/` redirects to `/es/`. Vitest 28/28 still green.
+
+### Lessons learned (2026-07-21 late night)
+
+Worth remembering for future sessions:
+
+1. **Astro v5 `redirectToDefaultLocale: true` requires a physical root `src/pages/index.astro` anchor page** — dynamic `[lang]/index.astro` doesn't satisfy the check. Use top-level `redirects:` config instead. Error surface: `MissingIndexForInternationalizationError`.
+2. **Windows + Supabase CLI 2.102 needs `--use-api` for `supabase functions deploy`** (already in the notify_submitter debug runbook, worth re-flagging).
+3. **Supabase Database Webhook auth: don't strict-match the service_role key inside the function** — the platform-level `verify_jwt=true` already validates. JWT paste in the webhook UI is fragile (whitespace/truncation kills strict matching). Already applied in `notify_submitter/index.ts`.
+4. **Console warnings on staging** (from Alejandro's DevTools inspection, worth filing under Stage 10 polish):
+   - `OTS parsing error: Size of decompressed WOFF 2.0 is less than compressed size` — likely Cloudflare Pages double-compressing WOFF2 files. Fix in `_headers` if fonts render but noise appears.
+   - `WebGL: INVALID_ENUM: getInternalformatParameter` + `powerPreference option ignored on Windows` + `No available adapters` — Turnstile bot-fingerprinting probes. Harmless per Turnstile docs; only appears on `/suggest` pages where Turnstile loads.
 
 ---
 
