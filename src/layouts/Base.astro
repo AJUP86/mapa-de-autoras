@@ -15,28 +15,32 @@ const {
   lang = "es",
 } = Astro.props;
 
+// URL helpers — with prefixDefaultLocale: true, every public page lives at
+// `/<locale>/<path>`. Admin pages under /admin/* stay outside the locale scheme.
 const path = Astro.url.pathname;
-const esPath = path.replace(/^\/en(\/|$)/, "/");
-const enPath = esPath === "/" ? "/en/" : `/en${esPath}`;
+const localePrefix = `/${lang}`;
+
+// Derive the "path within the locale" — strip the current locale prefix.
+// e.g. `/es/about` -> `/about`; `/en/thanks` -> `/thanks`; `/es/` -> `/`.
+const pathWithinLocale = path.replace(/^\/(?:es|en)(\/|$)/, "/");
+
+// Build hreflang alternates for the SAME page in each locale.
+const esPath = `/es${pathWithinLocale === "/" ? "/" : pathWithinLocale}`;
+const enPath = `/en${pathWithinLocale === "/" ? "/" : pathWithinLocale}`;
 
 const site = Astro.site ?? new URL("http://localhost:4321/");
 const esUrl = new URL(esPath, site).href;
 const enUrl = new URL(enPath, site).href;
 
 const isEn = lang === "en";
-const localePrefix = isEn ? "/en" : "";
 
-// Language-switch target: mirror the current path in the other locale.
-// Route paths are English on both locales, so we just swap the /en prefix
-// on or off (same logic that used to live in the deleted LanguageSwitch.astro).
-const pathname = Astro.url.pathname;
-let languageSwitchHref: string;
-if (isEn) {
-  const stripped = pathname.replace(/^\/en(\/|$)/, "/");
-  languageSwitchHref = stripped === "" ? "/" : stripped;
-} else {
-  languageSwitchHref = pathname === "/" ? "/en/" : `/en${pathname}`;
-}
+// Language switch: swap /es/... <-> /en/... on the current path.
+// If we're on an admin page (/admin/*), the switch target defaults to the
+// home page of the other locale (admin stays single-locale Spanish).
+const isAdmin = path.startsWith("/admin");
+const languageSwitchHref = isAdmin
+  ? (isEn ? "/es/" : "/en/")
+  : (isEn ? esPath : enPath);
 
 const navLabels = {
   mapa: t(lang, "nav.home"),

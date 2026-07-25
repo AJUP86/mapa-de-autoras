@@ -13,7 +13,7 @@ const countries = await getCountries(lang);
 const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? "";
 const submitUrl = `${supabaseUrl}/functions/v1/submit_suggestion`;
-const thanksUrl = lang === "en" ? "/en/thanks" : "/thanks";
+const thanksUrl = `/${lang}/thanks`;
 
 const formLabels = {
   fields: {

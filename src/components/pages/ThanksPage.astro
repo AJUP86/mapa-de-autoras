@@ -7,7 +7,7 @@ interface Props {
 }
 
 const { lang } = Astro.props;
-const homeHref = lang === "en" ? "/en/" : "/";
+const homeHref = `/${lang}/`;
 ---
 
 <Base
