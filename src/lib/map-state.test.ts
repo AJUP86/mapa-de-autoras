@@ -7,7 +7,7 @@ import {
   type Filter,
 } from "./map-state";
 
-function author(status: AuthorStatus, id = status) {
+function author(status: AuthorStatus, id: string = status) {
   return { id, name: id, status, books: [] };
 }
 

@@ -6,6 +6,7 @@
 
 import { supabase } from "./supabase";
 import type { AuthorStatus } from "./map-state";
+import type { Json } from "~/types/supabase";
 
 export interface PromoteAuthorInput {
   name: string;
@@ -44,8 +45,8 @@ export async function promoteSuggestion(
 ): Promise<PromoteResult> {
   const { data, error } = await supabase.rpc("promote_suggestion", {
     p_suggestion_id: suggestionId as unknown as string,
-    p_author: author as unknown as Record<string, unknown>,
-    p_books: books as unknown as Record<string, unknown>[],
+    p_author: author as unknown as Json,
+    p_books: books as unknown as Json[],
   });
   if (error) {
     const msg = error.message ?? "";
