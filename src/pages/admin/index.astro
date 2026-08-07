@@ -16,7 +16,7 @@ const labels = {
 };
 ---
 
-<Base lang={lang} title={labels.title}>
+<Base lang={lang} title={labels.title} noindex>
   <main class="min-h-screen bg-parchment">
     <AdminLoginForm client:load redirectTo="/" labels={labels} />
   </main>

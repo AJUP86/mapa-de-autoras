@@ -20,7 +20,7 @@ const inboxLabels = {
 };
 ---
 
-<Base lang={lang} title={inboxLabels.title}>
+<Base lang={lang} title={inboxLabels.title} noindex>
   <main class="min-h-screen bg-parchment p-6">
     <AdminGate client:load loginUrl="/admin" notAdminLabel={notAdminLabel}>
       <AdminInbox client:load labels={inboxLabels} />

@@ -7,12 +7,14 @@ interface Props {
   title?: string;
   description?: string;
   lang?: "es" | "en";
+  noindex?: boolean;
 }
 
 const {
   title = "mapa de autoras",
   description = "Un mapa mundial de escritoras: autoras leídas y descubrimientos por descubrir.",
   lang = "es",
+  noindex = false,
 } = Astro.props;
 
 // URL helpers — with prefixDefaultLocale: true, every public page lives at
@@ -67,6 +69,7 @@ const navLabels = {
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="alternate" hreflang="es" href={esUrl} />
     <link rel="alternate" hreflang="en" href={enUrl} />
