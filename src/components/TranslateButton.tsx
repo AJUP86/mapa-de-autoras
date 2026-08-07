@@ -9,9 +9,9 @@ import { useState } from "react";
 import { translateText, type TargetLang } from "~/lib/translate";
 
 interface Labels {
-  button: string;            // e.g. "Traducir →" or "← Traducir"
-  confirm_title: string;     // e.g. "Reemplazar texto"
-  confirm_body: string;      // e.g. "Esto reemplazará el texto actual."
+  button: string; // e.g. "Traducir →" or "← Traducir"
+  confirm_title: string; // e.g. "Reemplazar texto"
+  confirm_body: string; // e.g. "Esto reemplazará el texto actual."
   confirm_ok: string;
   confirm_cancel: string;
   translating: string;
@@ -67,9 +67,7 @@ export default function TranslateButton({
       >
         {status === "loading" ? labels.translating : labels.button}
       </button>
-      {status === "error" && (
-        <span className="ml-2 text-xs text-oxblood">{labels.error}</span>
-      )}
+      {status === "error" && <span className="ml-2 text-xs text-oxblood">{labels.error}</span>}
       {status === "confirm" && (
         <div className="absolute z-10 mt-2 w-64 rounded border border-ink/20 bg-parchment p-3 shadow">
           <p className="text-sm font-medium text-ink">{labels.confirm_title}</p>

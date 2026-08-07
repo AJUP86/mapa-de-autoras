@@ -46,9 +46,7 @@ describe("addAuthor", () => {
     expect(next).toEqual([
       {
         iso_a3: "AUS",
-        authors: [
-          expect.objectContaining({ id: "a1", name: "Ada", status: "read", books: [] }),
-        ],
+        authors: [expect.objectContaining({ id: "a1", name: "Ada", status: "read", books: [] })],
       },
     ]);
   });

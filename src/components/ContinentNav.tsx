@@ -1,12 +1,6 @@
 import type { MapView } from "./AuthorsMap";
 
-export type ContinentKey =
-  | "world"
-  | "europe"
-  | "americas"
-  | "africa"
-  | "asia"
-  | "oceania";
+export type ContinentKey = "world" | "europe" | "americas" | "africa" | "asia" | "oceania";
 
 export const CONTINENT_VIEWS: Record<ContinentKey, MapView> = {
   world: { center: [0, 20], zoom: 1 },
@@ -17,14 +11,7 @@ export const CONTINENT_VIEWS: Record<ContinentKey, MapView> = {
   oceania: { center: [140, -25], zoom: 2.5 },
 };
 
-const ORDER: ContinentKey[] = [
-  "world",
-  "europe",
-  "americas",
-  "africa",
-  "asia",
-  "oceania",
-];
+const ORDER: ContinentKey[] = ["world", "europe", "americas", "africa", "asia", "oceania"];
 
 interface Props {
   view: MapView;
@@ -75,10 +62,7 @@ export default function ContinentNav({ view, onSetView, labels }: Props) {
             <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
         </ZoomButton>
-        <ZoomButton
-          ariaLabel={labels.zoom.reset}
-          onClick={() => onSetView(CONTINENT_VIEWS.world)}
-        >
+        <ZoomButton ariaLabel={labels.zoom.reset} onClick={() => onSetView(CONTINENT_VIEWS.world)}>
           <svg
             width="14"
             height="14"

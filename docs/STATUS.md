@@ -8,25 +8,25 @@ Running log of what's done, what's next, and any context a future-you (or contri
 
 ## Where we are on the MVP roadmap
 
-| Stage | Status | Branch |
-| --- | --- | --- |
-| 0 — Branching | ✅ Merged | master / development |
-| 1 — Scaffold + brand tokens + styleguide | ✅ Merged | feature/01-scaffold-and-styleguide |
-| 2 — i18n skeleton (ES default, EN at /en/) | ✅ Merged | feature/02-i18n-skeleton |
-| 3 — Supabase schema + RLS + 249-country seed | ✅ Merged | feature/03-supabase-schema |
-| 4 — Public landing + map (mocked data) | ✅ Merged | feature/04-landing-and-map |
-| 4b — Two-color hierarchy map palette refinement | ✅ Merged | feature/04b-map-palette-penguin |
-| 5 — Map runs on live Supabase data + dev seed | ✅ Merged | feature/05-real-author-data |
-| **6 — Suggestion form + Turnstile + Edge Function** | ✅ Merged | feature/06-suggestion-flow |
-| 7a — Owner notification + admin auth + read-only inbox | ✅ Merged | feature/07a-notify-and-auth |
-| 7b-i — Promote suggestion + currently_reading + translate + unified admin UX | ✅ Done | feature/07b-promote-and-crud |
-| 7b-ii — CRUD on existing authors (edit, add more books, delete) | ⏳ Next | feature/07b-ii-author-crud |
-| 8 — Notify submitter on promote (scope pivoted from newsletter) | ✅ Done | feature/08-newsletter-confirmation |
-| 8.4 — Page-pair DRY (shared components) + always-prefix locale URLs (dynamic routes) | ✅ Done | feature/08.4-page-pair-dry |
-| 9a — Staging deployment (Cloudflare Pages + Supabase staging) | ✅ Done | feature/09a-staging-deploy |
-| 9a-ii — Realtime map data (client-side fetch + Supabase Realtime) | ✅ Merged | feature/09a-ii-realtime-map |
-| 9b — Production deployment (apex + www + Resend) | ⏳ Pending | feature/09b-production-deploy |
-| 10 — Launch content + checklist | ⏳ Pending | feature/10-launch-prep |
+| Stage                                                                                | Status     | Branch                             |
+| ------------------------------------------------------------------------------------ | ---------- | ---------------------------------- |
+| 0 — Branching                                                                        | ✅ Merged  | master / development               |
+| 1 — Scaffold + brand tokens + styleguide                                             | ✅ Merged  | feature/01-scaffold-and-styleguide |
+| 2 — i18n skeleton (ES default, EN at /en/)                                           | ✅ Merged  | feature/02-i18n-skeleton           |
+| 3 — Supabase schema + RLS + 249-country seed                                         | ✅ Merged  | feature/03-supabase-schema         |
+| 4 — Public landing + map (mocked data)                                               | ✅ Merged  | feature/04-landing-and-map         |
+| 4b — Two-color hierarchy map palette refinement                                      | ✅ Merged  | feature/04b-map-palette-penguin    |
+| 5 — Map runs on live Supabase data + dev seed                                        | ✅ Merged  | feature/05-real-author-data        |
+| **6 — Suggestion form + Turnstile + Edge Function**                                  | ✅ Merged  | feature/06-suggestion-flow         |
+| 7a — Owner notification + admin auth + read-only inbox                               | ✅ Merged  | feature/07a-notify-and-auth        |
+| 7b-i — Promote suggestion + currently_reading + translate + unified admin UX         | ✅ Done    | feature/07b-promote-and-crud       |
+| 7b-ii — CRUD on existing authors (edit, add more books, delete)                      | ⏳ Next    | feature/07b-ii-author-crud         |
+| 8 — Notify submitter on promote (scope pivoted from newsletter)                      | ✅ Done    | feature/08-newsletter-confirmation |
+| 8.4 — Page-pair DRY (shared components) + always-prefix locale URLs (dynamic routes) | ✅ Done    | feature/08.4-page-pair-dry         |
+| 9a — Staging deployment (Cloudflare Pages + Supabase staging)                        | ✅ Done    | feature/09a-staging-deploy         |
+| 9a-ii — Realtime map data (client-side fetch + Supabase Realtime)                    | ✅ Merged  | feature/09a-ii-realtime-map        |
+| 9b — Production deployment (apex + www + Resend)                                     | ⏳ Pending | feature/09b-production-deploy      |
+| 10 — Launch content + checklist                                                      | ⏳ Pending | feature/10-launch-prep             |
 
 **About ~82% of MVP shipped by stage count.** Remaining launch-blocking work: production deploy (9b), launch prep (10). Post-launch backlog: author CRUD (7b-ii), real newsletter (broadcast list).
 
@@ -37,6 +37,7 @@ Running log of what's done, what's next, and any context a future-you (or contri
 **Status:** Shipped end-to-end on staging on 2026-07-21. Branch `feature/08-newsletter-confirmation` ready to merge to `development`. Branch name kept for git-history continuity; actual scope pivoted from "newsletter double-opt-in" to "transactional notification when a suggestion is promoted" during brainstorming.
 
 ### What landed
+
 - **Migration `0010_stage8_notify_submitter.sql`** — `suggestions` gains three columns: `locale` (submitter language), `promoted_author_id` (FK back to the created author, populated by the RPC), `notified_at` (idempotency marker for the send). The `promote_suggestion` RPC now writes `promoted_author_id` inside its existing resolve-suggestion UPDATE.
 - **`supabase/functions/notify_submitter/`** — new Edge Function pair: `email.ts` (inlined ES/EN strings + `renderEmail()`) and `index.ts` (webhook handler: auth check, load, idempotent claim, Resend POST, revert-on-failure).
 - **`submit_suggestion`** extended: now stores `locale` on the suggestion insert (previously only on the deprecated `subscribers` upsert).
@@ -45,21 +46,25 @@ Running log of what's done, what's next, and any context a future-you (or contri
 - **Docs:** spec at [docs/specs/2026-07-20-stage-8-notify-submitter-design.md](specs/2026-07-20-stage-8-notify-submitter-design.md), plan at [docs/plans/2026-07-20-stage-8-notify-submitter-implementation.md](plans/2026-07-20-stage-8-notify-submitter-implementation.md), debug runbook at [docs/30-ops/notify-submitter-debug.md](30-ops/notify-submitter-debug.md), Stage 8 section rewritten in `01-implementation-plan.md`, item 3 rewritten in `50-launch-checklist.md`, `RAG.md` updated.
 
 ### Ops setup on staging Supabase (`kkdjrzuewnwrlokhemnl`)
+
 - Resend account provisioned via GitHub OAuth (free tier; `alejandrourroz86@gmail.com` is the account-owner address, and thus the only recipient Resend will deliver to until domain auth lands in 9b).
 - `notify_submitter` deployed via `supabase functions deploy notify_submitter --project-ref kkdjrzuewnwrlokhemnl --use-api` — the `--use-api` flag is required on Windows CLI 2.102 (default Deno-bundling path hangs silently).
 - Three function secrets set in the dashboard: `RESEND_API_KEY`, `RESEND_FROM_EMAIL=onboarding@resend.dev`, `SITE_URL=https://staging.mapadeautoras.com`.
 - Supabase Database Webhook `notify_submitter_on_promote` configured (Integrations → Database Webhooks): `suggestions UPDATE` → POST to function URL with `Authorization: Bearer <service_role>`. Current dashboard UI does not expose conditional filters — function's internal guards handle the filtering.
 
 ### Verified (2026-07-21)
+
 - Opt-in submission via `/suggest` → admin promote → email arrived at `alejandrourroz86@gmail.com` within seconds. `suggestions.notified_at` populated. Author on map.
 - (Regression to run on the next test session, or trust construction: opt-out submission → no email fires; the function guard `if (sug.accepted_newsletter !== true) return ... "not_opted_in"` covers it.)
 
 ### Debug notes worth keeping
+
 - **Auth check relaxed.** Original design required exact-string match between the webhook Authorization header and `SUPABASE_SERVICE_ROLE_KEY`. JWT paste in the webhook UI is fragile (whitespace/truncation); Supabase's platform-level `verify_jwt=true` already validates JWTs before the handler runs. The in-function check now only requires a Bearer token is present. See [debug runbook § Auth 401](30-ops/notify-submitter-debug.md).
 - **Root-cause diagnostic:** `select * from net._http_response order by created desc limit 5;` in Supabase SQL editor shows the actual HTTP outcome of each webhook fire (status code + body + error message). More useful than the Edge Functions logs UI, which does not currently show request/response detail — only Boot/Shutdown lifecycle events.
 - **Windows deploy quirk:** always append `--use-api` to `supabase functions deploy`. Non-obvious silent hang otherwise.
 
 ### Pending for Stage 9b
+
 - Resend domain auth on `mapadeautoras.com` (SPF/DKIM/DMARC via Cloudflare DNS — same account, one-click). Swap `RESEND_FROM_EMAIL` to `hola@mapadeautoras.com` when domain is verified.
 - Recreate the Database Webhook + three function secrets on the prod Supabase project. Function code carries over unchanged (relaxed auth pattern is compatible).
 
@@ -67,7 +72,7 @@ Running log of what's done, what's next, and any context a future-you (or contri
 
 Post-shipping conversation surfaced a data-model bug we've been living with since Stage 4:
 
-- **The `/suggest` form is author-centric, but the natural unit of curation is a book.** The visualization hierarchy (country → author → books) got copied into the *input* direction, which is inverted from how a library actually grows.
+- **The `/suggest` form is author-centric, but the natural unit of curation is a book.** The visualization hierarchy (country → author → books) got copied into the _input_ direction, which is inverted from how a library actually grows.
 - **Concrete symptoms in the current code:** (a) suggestions naming an author already in `authors` raise `duplicate_author` in the promote RPC and can't be processed; (b) `authors.status` is set at promote time and never updated — the map's "Leídas / Leyendo / Sugerencias" filters lie the moment Danny actually reads a promoted `discovery` book; (c) the notify_submitter email can only carry one outcome per suggestion because a suggestion covers one author with N books.
 - **The refactor:** move state to `books.status` (`to_read` → `reading` → `read`), drop `authors.status`, switch `/suggest` to a book-first form (multi-book UI submits N atomic one-book suggestions server-side), add `disposition` on `suggestions` (`pending` / `added` / `already_present` / `rejected`), enumerate per-book outcomes in notify_submitter emails.
 
@@ -117,24 +122,30 @@ Worth remembering for future sessions:
 **Status:** Merged into `development` on 2026-07-01; migrations 0008 + 0009 pushed to staging; verified live (two-tab realtime demo) on `staging.mapadeautoras.com`.
 
 ### Architecture flip
+
 - Public map data flow changed from Astro build-time fetch to client-side fetch + Supabase Realtime subscription with granular patching. See [ADR 0005](adr/0005-realtime-map-data.md).
 - `<MapSection>` now owns the catalog: fetches on mount, subscribes to `postgres_changes` on `public.authors` + `public.books`, patches local state in place (reducers in `src/lib/realtime-reducers.ts`), resyncs via `getCatalog()` on reconnect.
 - `src/pages/index.astro` + `src/pages/en/index.astro` no longer call `getCatalog()` at build time — the build is data-independent (no more `[authors] getCatalog() failed` noise when local Supabase is off).
 
 ### Migrations
+
 - `0008_realtime_authors.sql` — add `authors` + `books` to the `supabase_realtime` publication.
 - `0009_iso_columns_to_text.sql` — **bug fix.** Supabase Realtime truncates `char(3)`/`bpchar` columns to one character in `postgres_changes` payloads, so `country_iso_a3` arrived as `"A"` not `"AUS"` and live-promoted authors never matched a map country (REST/`getCatalog` decoded correctly, so only reloads worked). Converted the three ISO columns to `text`. Confirmed with an anon Realtime probe.
 
 ### Tests (first in the repo)
+
 - Added Vitest. `src/lib/map-state.test.ts` (13) + `src/lib/realtime-reducers.test.ts` (15) = **28 passing**. Scripts: `npm test`, `npm run test:watch`.
 
 ### Env / local
+
 - `supabase/config.toml` `[db].major_version` 15 → 17. The Supabase CLI (≥ 2.102) initialises local volumes with PG 17.x; a leftover PG15 volume made `supabase start` crash-loop. Fix: `supabase stop --no-backup` → `npm run dev:db` → `npm run dev:db:reset` (wipes local data; re-bootstrap admin). Staging is PG `17.6.1.127` — **parity confirmed**; dashboard offers a patch upgrade to `.141`, deferred to 9b.
 
 ### Verified
+
 - Two-tab browser demo: insert/promote a published author → the country paints live on another open tab within ~1s, no reload.
 
 ### Out of scope / next
+
 - **Staging (Task A2):** `supabase db push` applies 0008 + 0009, then merge → `development` auto-deploys, then run the staging two-tab demo.
 - Realtime admin inbox + pending-count badge → **Stage 9a-iii** (design brainstormed; spec pending).
 - `notify_owner` deep-link points at `/admin/suggestions/:id` (404); should be `/admin/suggestion?id=` — small separate fix.
@@ -146,18 +157,21 @@ Worth remembering for future sessions:
 **Branch in progress:** `feature/09a-staging-deploy` (not yet merged).
 
 ### Hosted Supabase
+
 - Provisioned `mapa-staging` (region `eu-west-1`, project ref `kkdjrzuewnwrlokhemnl`). All 7 migrations applied (0001-0007). 249-country seed run manually via Studio SQL (hosted projects don't auto-run `[db.seed].sql_paths`). Admin user bootstrapped.
 - Three edge functions deployed: `submit_suggestion`, `notify_owner`, `translate`. `TURNSTILE_SECRET_KEY` + `DEEPL_API_KEY` set in function secrets. `RESEND_API_KEY` intentionally unset → `notify_owner` stays console-log only on staging (deferred to 9b).
 - New migration `0007_fix_notify_url_setting.sql` — updates the notify trigger to read `app.settings.functions_url` instead of `app.functions_url`. Turns out **hosted Supabase blocks user-defined GUCs entirely**, including the `app.settings.*` namespace. Trigger writes harmless rows to `net._http_response`; 9b will pivot to Supabase Database Webhooks.
 - Auth `site_url` + redirect URLs configured for `https://staging.mapadeautoras.com`. Magic-link emails route via Supabase's built-in mailer (4/hour limit on free tier).
 
 ### Cloudflare Pages + DNS
+
 - Pages project `mapa-de-autoras` connected to GitHub repo, production branch = `development`, auto-deploys on every push.
 - Env vars set in **Production scope** (not Preview — important): `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`, `PUBLIC_TURNSTILE_SITE_KEY`, `NODE_VERSION=22`.
 - `staging.mapadeautoras.com` mapped as custom domain (one-click since Cloudflare is both registrar + DNS host).
 - Real Turnstile widget created (`mapa-de-autoras`) with 5 allowed hostnames covering local dev + staging + future production. Both local `.env` and the widget use the real keys (no more test keys).
 
 ### Heartbeat + docs
+
 - New migration `0006_heartbeat_rpc.sql` adds `public.heartbeat()` — no-op SQL function called weekly to prevent free-tier auto-pause.
 - New GitHub Actions workflow `.github/workflows/heartbeat.yml` (matrix-ready for 9b). Live-trigger verification deferred to post-merge (GitHub Actions only indexes workflows from the default branch).
 - `STAGING_SUPABASE_URL` + `STAGING_SUPABASE_ANON_KEY` set as GitHub Actions repo secrets.
@@ -165,6 +179,7 @@ Worth remembering for future sessions:
 - `docs/01-implementation-plan.md` updated — Stage 9 split into 9a (done) + 9b (pending).
 
 ### Gotchas surfaced (full list in the runbook)
+
 - Cloudflare Pages env vars are scope-specific (Production vs Preview). Setting only one breaks builds for the other.
 - Node 20 is EOL + breaks `@supabase/realtime-js` (needs native WebSocket). `NODE_VERSION=22` minimum.
 - `verify_jwt = true` on hosted Edge Functions blocks CORS preflight (browser strips Authorization from OPTIONS → 401 → no CORS headers → POST blocked). Fix: `verify_jwt = false` in config.toml + dashboard toggle OFF + in-function `decodeJwtPayload` admin check.
@@ -175,6 +190,7 @@ Worth remembering for future sessions:
 - GitHub Actions UI only shows workflows from the default branch.
 
 ### Out of scope (lives in 9b)
+
 - Production Supabase project `mapa-prod` + production Pages project + apex + www custom domains
 - Resend domain auth + real notify emails + HTML template
 - Database Webhooks pivot for the notify trigger
@@ -186,39 +202,46 @@ Worth remembering for future sessions:
 **Branch in progress:** `feature/07b-promote-and-crud` (six commits, not yet merged).
 
 ### DB
+
 - Migration `0004_promote_prep.sql`: `unaccent` extension, `public.slugify(text)` helper, `author_status` enum extended with `currently_reading`.
 - Migration `0005_promote_suggestion_rpc.sql`: atomic `promote_suggestion(p_suggestion_id uuid, p_author jsonb, p_books jsonb[]) returns uuid`. `SECURITY DEFINER` + `is_admin()` gate. Server-generates the slug as `slugify(name) || '-' || lower(iso_a3)` with collision-suffix fallback. Duplicate guard by `(lower(name), country_iso_a3)`. When `p_suggestion_id` non-null, flips the suggestion to `approved` + sets `reviewed_at` + `reviewer_notes`.
 - ADR `docs/adr/0004-translation-strategy.md` accepted — DeepL via admin-only Edge Function, owner reviews before save.
 
 ### Map state model
+
 - Third state `currently_reading` (sage `#7a9b82`) added alongside read (penguin) and discovery (oxblood).
 - Filter row went from 3 → 4 buttons: `Todas / Sugerencias / Leyendo / Leídas`.
 - Semantic CSS aliases (`--c-state-read`, `--c-state-currently-reading`, `--c-state-discovery`) in `tokens.css` so palette swaps later are one-line edits.
 - i18n label rename only — "Descubrimientos" → "Sugerencias" in ES (`Discoveries` → `Suggestions` in EN). DB enum stays `discovery`.
 
 ### Admin UX
+
 - Route restructure: `/admin` is now the login form, `/admin/inbox` is the list, `/admin/promote` is the form.
 - `<AdminAwareNav>` island mounted in `Base.astro` renders public nav for anon, admin nav for authenticated admin (3 icons + tooltip + pending-count badge, 60s polling).
 - Skeleton placeholder during the ~150ms session check — no content flicker.
 - `<SuggestionReview>` page replaces the 7a placeholder: Promotar + Rechazar buttons; Rechazar uses an inline reason textarea + plain PostgREST update.
 
 ### Promote
+
 - `<PromoteForm>` handles both entry points — from suggestion (prefilled, suggestion context column on the left, reviewer notes) or from scratch (`+ Añadir` icon in admin nav, empty form).
 - Atomic save via `promote_suggestion()` RPC; redirects to `/admin/inbox` (suggestion mode) or `/` (scratch mode).
 - Country dropdown loads from `public.countries` via a new `getCountriesBilingual()` helper (the Stage 6 `getCountries(lang)` stayed intact).
 
 ### Translation
+
 - `supabase/functions/translate/index.ts` — admin-only DeepL proxy. `verify_jwt = true` plus a defence-in-depth `app_metadata.role === 'admin'` check inside the handler.
 - `<TranslateButton>` per bilingual field pair (bio + book description) with confirm modal when the target field is non-empty.
 - `.env.example` adds `DEEPL_API_KEY` (free tier, 500k chars/month).
 
 ### Gotchas surfaced
+
 - `dev:functions` reads `--env-file .env` only at startup; restart needed after adding env vars.
 - PowerShell + `curl.exe` mangles single-quoted JSON bodies → use `Invoke-RestMethod` or file-based `--data-binary "@body.json"`.
 - Vite's `node_modules/.vite/deps/` cache can go stale across long dev sessions or after `dev:types` regen → fix with `Remove-Item -Recurse -Force node_modules\.vite` + restart `npm run dev`. Production unaffected (Vite produces static hashed bundles).
 - Supabase TS generator emits `p_suggestion_id: string` (non-nullable) for the RPC even though Postgres accepts null — `promote.ts` uses a `as unknown as string` cast as workaround. Cleaner fix is `default null` in the migration; revisit if it becomes a pattern.
 
 ### Out of scope (lives in 7b-ii)
+
 - Edit existing author (bio, dates, photo, status, published).
 - Add more books to an existing author (post-promotion).
 - Edit existing books and `book_links`.
@@ -286,11 +309,12 @@ Worth remembering for future sessions:
 ## How to resume tomorrow
 
 **Next up: Stage 9a-iii — realtime admin inbox + pending-count badge.** Design brainstormed (spec not yet written). Locked decisions:
+
 - **Scope:** inbox list (`<AdminInbox>`) + nav badge (`<AdminAwareNav>`).
 - **Approach:** refetch-on-change (admin-only, low volume — not granular patching).
 - **Migration 0010:** `alter publication supabase_realtime add table public.suggestions;`
 - **Shared hook** `src/lib/use-suggestions-realtime.ts` (subscribe + `onChange` + reconnect resync); replaces the 60s poll in `<AdminAwareNav>`.
-- **DE-RISK FIRST:** probe that an *admin-JWT* subscriber receives `postgres_changes` on the RLS-gated `suggestions` table (the map used anon/public rows; this is admin-only). If not, call `supabase.realtime.setAuth(session.access_token)` before subscribing.
+- **DE-RISK FIRST:** probe that an _admin-JWT_ subscriber receives `postgres_changes` on the RLS-gated `suggestions` table (the map used anon/public rows; this is admin-only). If not, call `supabase.realtime.setAuth(session.access_token)` before subscribing.
 - **First move:** write `docs/specs/2026-07-02-stage-9a-iii-realtime-inbox-design.md`, then the plan.
 
 ```sh
@@ -308,5 +332,6 @@ npm test                 # 28-test baseline (map-state + realtime-reducers)
 ```
 
 **Loose ends (small, optional, any time):**
+
 - Cloudflare Pages: disable preview deployments OR add Preview-scope env vars — stops the red preview check on every PR.
 - `notify_owner` deep-link: `/admin/suggestions/:id` → `/admin/suggestion?id=` (the owner email's "Revisar" link 404s).

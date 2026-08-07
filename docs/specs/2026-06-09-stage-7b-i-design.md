@@ -35,27 +35,27 @@
 
 ## Decisions
 
-| # | Decision | Choice | Rationale |
-|---|---|---|---|
-| 1 | Atomic multi-table write | Postgres RPC `promote_suggestion()` with `SECURITY DEFINER` + `is_admin()` gate | All-or-nothing in one transaction; no client-side multi-step risk |
-| 2 | Slug visibility | Hidden completely; server-generated as `slugify(name) + "-" + iso_a3.lower()`; collisions auto-resolved with `-N` suffix | Slug is a developer concern, not a UX one — admin works with authors, not URLs |
-| 3 | Duplicate detection | By `(lower(name), country_iso_a3)`, not by slug | Real semantic uniqueness for a person |
-| 4 | Promote form scope | Narrow: NEW author + ≥1 book required. Existing-author = friendly error pointing to 7b-ii edit page | Keeps 7b-i contained; "add book to existing author" lives in 7b-ii |
-| 5 | Default author status | `discovery` | Matches current DB default; admin flips after research |
-| 6 | Map third state color | Sage `#7a9b82` | Cool color separates cleanly from warm penguin/oxblood; already in brand palette |
-| 7 | Token layering | Semantic state aliases (`--c-state-read`, `--c-state-currently-reading`, `--c-state-discovery`) → base palette tokens | One-line palette swaps at end of MVP |
-| 8 | Filter order (LTR) | `Todas / Sugerencias / Leyendo / Leídas` | Future → present → past of Danny's reading journey |
-| 9 | Mixed-country fill priority | `read > currently_reading > discovery` for default; active filter overrides | Preserves "no blended middle" baseline from Stage 4b |
-| 10 | i18n rename | UI labels only: ES "Sugerencias", EN "Suggestions". DB enum stays `discovery` | Avoids migration churn for a display-only change |
-| 11 | Translation provider | DeepL via Supabase Edge Function (`verify_jwt = true`) | Free tier sufficient; review-before-save mitigates flat tone; swappable later |
-| 12 | Translate UX | Per-field-pair button; confirm modal when target field is non-empty | Optional — manual entry always works |
-| 13 | Suggestion duplicates from visitors | Allowed (different visitors → same author). Danny rejects extras manually for 7b-i | Visitors have no session — blocking would be bad UX |
-| 14 | Admin nav pattern | `<AdminAwareNav>` island on every page; inline SVG icons + tooltips + pending-count badge; skeleton during auth check | Unified UX across `/` and `/admin/*`; skeleton hides the ~150ms session-check |
-| 15 | Route restructure | `/admin` = login (was `/admin/login`); `/admin/inbox` = list (was `/admin`); new `/admin/promote` | Cleaner URL for the admin entry point |
-| 16 | Session lifecycle | Default Supabase (1h JWT, ~30d refresh, auto-renew) | Single-admin laptop; low risk for MVP |
-| 17 | After promote-from-suggestion | Redirect to `/admin/inbox` | Continue reviewing |
-| 18 | After promote-from-scratch | Redirect to `/` (home with admin nav) | Came from there, return there |
-| 19 | Icon library | Inline SVG | No new dependency; 3 icons (inbox, plus, logout) are trivial |
+| #   | Decision                            | Choice                                                                                                                   | Rationale                                                                        |
+| --- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| 1   | Atomic multi-table write            | Postgres RPC `promote_suggestion()` with `SECURITY DEFINER` + `is_admin()` gate                                          | All-or-nothing in one transaction; no client-side multi-step risk                |
+| 2   | Slug visibility                     | Hidden completely; server-generated as `slugify(name) + "-" + iso_a3.lower()`; collisions auto-resolved with `-N` suffix | Slug is a developer concern, not a UX one — admin works with authors, not URLs   |
+| 3   | Duplicate detection                 | By `(lower(name), country_iso_a3)`, not by slug                                                                          | Real semantic uniqueness for a person                                            |
+| 4   | Promote form scope                  | Narrow: NEW author + ≥1 book required. Existing-author = friendly error pointing to 7b-ii edit page                      | Keeps 7b-i contained; "add book to existing author" lives in 7b-ii               |
+| 5   | Default author status               | `discovery`                                                                                                              | Matches current DB default; admin flips after research                           |
+| 6   | Map third state color               | Sage `#7a9b82`                                                                                                           | Cool color separates cleanly from warm penguin/oxblood; already in brand palette |
+| 7   | Token layering                      | Semantic state aliases (`--c-state-read`, `--c-state-currently-reading`, `--c-state-discovery`) → base palette tokens    | One-line palette swaps at end of MVP                                             |
+| 8   | Filter order (LTR)                  | `Todas / Sugerencias / Leyendo / Leídas`                                                                                 | Future → present → past of Danny's reading journey                               |
+| 9   | Mixed-country fill priority         | `read > currently_reading > discovery` for default; active filter overrides                                              | Preserves "no blended middle" baseline from Stage 4b                             |
+| 10  | i18n rename                         | UI labels only: ES "Sugerencias", EN "Suggestions". DB enum stays `discovery`                                            | Avoids migration churn for a display-only change                                 |
+| 11  | Translation provider                | DeepL via Supabase Edge Function (`verify_jwt = true`)                                                                   | Free tier sufficient; review-before-save mitigates flat tone; swappable later    |
+| 12  | Translate UX                        | Per-field-pair button; confirm modal when target field is non-empty                                                      | Optional — manual entry always works                                             |
+| 13  | Suggestion duplicates from visitors | Allowed (different visitors → same author). Danny rejects extras manually for 7b-i                                       | Visitors have no session — blocking would be bad UX                              |
+| 14  | Admin nav pattern                   | `<AdminAwareNav>` island on every page; inline SVG icons + tooltips + pending-count badge; skeleton during auth check    | Unified UX across `/` and `/admin/*`; skeleton hides the ~150ms session-check    |
+| 15  | Route restructure                   | `/admin` = login (was `/admin/login`); `/admin/inbox` = list (was `/admin`); new `/admin/promote`                        | Cleaner URL for the admin entry point                                            |
+| 16  | Session lifecycle                   | Default Supabase (1h JWT, ~30d refresh, auto-renew)                                                                      | Single-admin laptop; low risk for MVP                                            |
+| 17  | After promote-from-suggestion       | Redirect to `/admin/inbox`                                                                                               | Continue reviewing                                                               |
+| 18  | After promote-from-scratch          | Redirect to `/` (home with admin nav)                                                                                    | Came from there, return there                                                    |
+| 19  | Icon library                        | Inline SVG                                                                                                               | No new dependency; 3 icons (inbox, plus, logout) are trivial                     |
 
 ---
 
@@ -247,8 +247,8 @@ Expected `p_books[i]` shape:
 
 - `unauthorized: admin only` → should never happen behind `<AdminGate>`; if it does, force re-login.
 - `validation: <field>` → form highlights the offending field.
-- `duplicate_author: <name> already exists in <country>` → form shows: *"Ya existe una autora con este nombre en este país. Edita su perfil para añadir más libros."* (Link is for 7b-ii; harmless now.)
-- Postgres-level errors propagate as-is; UI shows generic *"No se pudo guardar. Inténtalo de nuevo."*
+- `duplicate_author: <name> already exists in <country>` → form shows: _"Ya existe una autora con este nombre en este país. Edita su perfil para añadir más libros."_ (Link is for 7b-ii; harmless now.)
+- Postgres-level errors propagate as-is; UI shows generic _"No se pudo guardar. Inténtalo de nuevo."_
 
 **Atomicity:** the function body runs in an implicit transaction; any error rolls back all writes.
 

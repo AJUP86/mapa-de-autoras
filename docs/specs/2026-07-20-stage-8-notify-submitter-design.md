@@ -48,24 +48,24 @@ Stage 8 is the last launch-blocking capability before Stage 9b (production deplo
 
 ## Decisions
 
-| # | Decision | Choice | Rationale |
-|---|---|---|---|
-| 1 | Scope | Only transactional "your suggestion is on the map" email. No newsletter, no capture form, no confirm page. | Danny asked to cut Stage 8 to the minimum needed for launch. Newsletter is speculative demand; notify-on-promote closes an existing loop. |
-| 2 | Trigger source | Supabase Database Webhook on `suggestions UPDATE`, filtered to the exact transition. | Matches the pattern already committed for `notify_owner` in 9b — one webhook mechanism, two configs. Alternative (client-side chain after promote) was considered and rejected to keep architecture consistent; the maintainability cost is offset by adding a debug runbook. |
-| 3 | Idempotency | New column `suggestions.notified_at`. Function conditionally sets it via `update ... where notified_at is null returning id` before sending. On send failure, revert to NULL. | Webhook retries + at-least-once delivery semantics; the conditional update collapses concurrent invocations to one winner. |
-| 4 | Author linkage | New column `suggestions.promoted_author_id references public.authors(id) on delete set null`. `promote_suggestion` RPC populates it inside the existing resolve-suggestion block. | Matching by name is fragile (Danny may adjust the display name during promote). FK is one row modification, zero race window. `on delete set null` so future author deletion (7b-ii) doesn't break historical suggestions. |
-| 5 | Locale storage | New column `suggestions.locale text not null default 'es' check (locale in ('es','en'))`. `submit_suggestion` Edge Function starts writing it. | The submitter's locale was already captured in the form but only stored on the deprecated `subscribers` upsert. Emails need to render in the submitter's chosen language. |
-| 6 | Column rename | Do NOT rename `accepted_newsletter`. Update column comment to reflect current semantics: "Set true when submitter wants an email when their suggestion is promoted. (Future: newsletter opt-in when that feature ships.)" | Not user-visible; rename churn is unnecessary. When real newsletter ships post-launch, either repurpose or add a second column then. |
-| 7 | Function signature | `notify_submitter` accepts the Supabase webhook payload shape `{ type, record, old_record, ... }`. Reads only `record.id`, then re-fetches the full row for freshness. | Payload from the webhook is a snapshot; re-fetch guards against processing stale data if the row was updated again during the (retry) window. |
-| 8 | Authorization | Function requires `Authorization: Bearer <service_role_key>` (the webhook's outbound header). Rejects anything else with 401. | Prevents public callers from spoofing the webhook and triggering emails. |
-| 9 | Failure semantics | If Resend returns non-2xx, `notified_at` reverts to NULL and function returns 500. Webhook retries 3× automatically. After 3 fails, row remains in NULL state; a manual retry (post-launch admin button) can re-send. | Fail-open on retry semantics; no silent drop. |
-| 10 | Email content | Plain text + minimal HTML mirror. Subject + heading + one-paragraph body + link to `SITE_URL`. First-person Danny voice, ES/EN by submitter locale. `{authorName}` from the promoted author's display name; optional `{submitterName}` if provided. | Matches the site's overall editorial tone. HTML styling is Phase 2 polish. |
-| 11 | From address | Staging: `onboarding@resend.dev` (Resend's shared shell). Prod: `hola@mapadeautoras.com` (domain-authed in Stage 9b). Configured via `RESEND_FROM_EMAIL` env var so no code change per environment. | Unverified Resend accounts only allow shared-shell from-address; Danny gets domain auth in 9b. |
-| 12 | Site URL in email | Configured via `SITE_URL` env var. Staging: `https://staging.mapadeautoras.com`. Prod: `https://mapadeautoras.com`. | Env-var driven so staging emails link to staging map. |
-| 13 | Unsubscribe | Not included. This is transactional (one-per-suggestion, not a subscription). | GDPR-wise consent-based, single-shot; when a real newsletter ships, unsubscribe returns with it. |
-| 14 | Privacy policy | Reframe now, not later. Drop newsletter mentions; describe the actual current behavior (transactional emails on promote). | Accurate-now beats forward-looking-and-slightly-wrong. Add newsletter language back when we ship it. |
-| 15 | Local dev behavior | If `RESEND_API_KEY` absent, function logs a warning and returns 200 without sending. | Lets local suggestion + promote flow work without side-effects. |
-| 16 | Existing rows | Existing suggestions rows get `locale = 'es'` (backfill via column default). No historical row will have `notified_at` set or `promoted_author_id` populated — safe because none have been notified yet. | Backfill via `default 'es'` is the correct behavior for early submitters (Spanish audience). |
+| #   | Decision           | Choice                                                                                                                                                                                                                                              | Rationale                                                                                                                                                                                                                                                                     |
+| --- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Scope              | Only transactional "your suggestion is on the map" email. No newsletter, no capture form, no confirm page.                                                                                                                                          | Danny asked to cut Stage 8 to the minimum needed for launch. Newsletter is speculative demand; notify-on-promote closes an existing loop.                                                                                                                                     |
+| 2   | Trigger source     | Supabase Database Webhook on `suggestions UPDATE`, filtered to the exact transition.                                                                                                                                                                | Matches the pattern already committed for `notify_owner` in 9b — one webhook mechanism, two configs. Alternative (client-side chain after promote) was considered and rejected to keep architecture consistent; the maintainability cost is offset by adding a debug runbook. |
+| 3   | Idempotency        | New column `suggestions.notified_at`. Function conditionally sets it via `update ... where notified_at is null returning id` before sending. On send failure, revert to NULL.                                                                       | Webhook retries + at-least-once delivery semantics; the conditional update collapses concurrent invocations to one winner.                                                                                                                                                    |
+| 4   | Author linkage     | New column `suggestions.promoted_author_id references public.authors(id) on delete set null`. `promote_suggestion` RPC populates it inside the existing resolve-suggestion block.                                                                   | Matching by name is fragile (Danny may adjust the display name during promote). FK is one row modification, zero race window. `on delete set null` so future author deletion (7b-ii) doesn't break historical suggestions.                                                    |
+| 5   | Locale storage     | New column `suggestions.locale text not null default 'es' check (locale in ('es','en'))`. `submit_suggestion` Edge Function starts writing it.                                                                                                      | The submitter's locale was already captured in the form but only stored on the deprecated `subscribers` upsert. Emails need to render in the submitter's chosen language.                                                                                                     |
+| 6   | Column rename      | Do NOT rename `accepted_newsletter`. Update column comment to reflect current semantics: "Set true when submitter wants an email when their suggestion is promoted. (Future: newsletter opt-in when that feature ships.)"                           | Not user-visible; rename churn is unnecessary. When real newsletter ships post-launch, either repurpose or add a second column then.                                                                                                                                          |
+| 7   | Function signature | `notify_submitter` accepts the Supabase webhook payload shape `{ type, record, old_record, ... }`. Reads only `record.id`, then re-fetches the full row for freshness.                                                                              | Payload from the webhook is a snapshot; re-fetch guards against processing stale data if the row was updated again during the (retry) window.                                                                                                                                 |
+| 8   | Authorization      | Function requires `Authorization: Bearer <service_role_key>` (the webhook's outbound header). Rejects anything else with 401.                                                                                                                       | Prevents public callers from spoofing the webhook and triggering emails.                                                                                                                                                                                                      |
+| 9   | Failure semantics  | If Resend returns non-2xx, `notified_at` reverts to NULL and function returns 500. Webhook retries 3× automatically. After 3 fails, row remains in NULL state; a manual retry (post-launch admin button) can re-send.                               | Fail-open on retry semantics; no silent drop.                                                                                                                                                                                                                                 |
+| 10  | Email content      | Plain text + minimal HTML mirror. Subject + heading + one-paragraph body + link to `SITE_URL`. First-person Danny voice, ES/EN by submitter locale. `{authorName}` from the promoted author's display name; optional `{submitterName}` if provided. | Matches the site's overall editorial tone. HTML styling is Phase 2 polish.                                                                                                                                                                                                    |
+| 11  | From address       | Staging: `onboarding@resend.dev` (Resend's shared shell). Prod: `hola@mapadeautoras.com` (domain-authed in Stage 9b). Configured via `RESEND_FROM_EMAIL` env var so no code change per environment.                                                 | Unverified Resend accounts only allow shared-shell from-address; Danny gets domain auth in 9b.                                                                                                                                                                                |
+| 12  | Site URL in email  | Configured via `SITE_URL` env var. Staging: `https://staging.mapadeautoras.com`. Prod: `https://mapadeautoras.com`.                                                                                                                                 | Env-var driven so staging emails link to staging map.                                                                                                                                                                                                                         |
+| 13  | Unsubscribe        | Not included. This is transactional (one-per-suggestion, not a subscription).                                                                                                                                                                       | GDPR-wise consent-based, single-shot; when a real newsletter ships, unsubscribe returns with it.                                                                                                                                                                              |
+| 14  | Privacy policy     | Reframe now, not later. Drop newsletter mentions; describe the actual current behavior (transactional emails on promote).                                                                                                                           | Accurate-now beats forward-looking-and-slightly-wrong. Add newsletter language back when we ship it.                                                                                                                                                                          |
+| 15  | Local dev behavior | If `RESEND_API_KEY` absent, function logs a warning and returns 200 without sending.                                                                                                                                                                | Lets local suggestion + promote flow work without side-effects.                                                                                                                                                                                                               |
+| 16  | Existing rows      | Existing suggestions rows get `locale = 'es'` (backfill via column default). No historical row will have `notified_at` set or `promoted_author_id` populated — safe because none have been notified yet.                                            | Backfill via `default 'es'` is the correct behavior for early submitters (Spanish audience).                                                                                                                                                                                  |
 
 ---
 
@@ -285,27 +285,27 @@ interface WebhookPayload {
   type: "UPDATE";
   table: "suggestions";
   schema: "public";
-  record: { id: string; /* other fields present but not relied on */ };
-  old_record: { id: string; /* ... */ };
+  record: { id: string /* other fields present but not relied on */ };
+  old_record: { id: string /* ... */ };
 }
 ```
 
 **Environment variables:**
 
-| Name | Staging value | Prod value | Notes |
-|---|---|---|---|
-| `RESEND_API_KEY` | Real key from Resend dashboard | Real key (same or separate account) | Absent → warn+skip (dev) |
-| `RESEND_FROM_EMAIL` | `onboarding@resend.dev` | `hola@mapadeautoras.com` | Domain-authed in 9b |
-| `SITE_URL` | `https://staging.mapadeautoras.com` | `https://mapadeautoras.com` | Rendered in the email link |
-| `SUPABASE_URL` | auto | auto | For sb client |
-| `SUPABASE_SERVICE_ROLE_KEY` | auto | auto | For DB access + auth check |
+| Name                        | Staging value                       | Prod value                          | Notes                      |
+| --------------------------- | ----------------------------------- | ----------------------------------- | -------------------------- |
+| `RESEND_API_KEY`            | Real key from Resend dashboard      | Real key (same or separate account) | Absent → warn+skip (dev)   |
+| `RESEND_FROM_EMAIL`         | `onboarding@resend.dev`             | `hola@mapadeautoras.com`            | Domain-authed in 9b        |
+| `SITE_URL`                  | `https://staging.mapadeautoras.com` | `https://mapadeautoras.com`         | Rendered in the email link |
+| `SUPABASE_URL`              | auto                                | auto                                | For sb client              |
+| `SUPABASE_SERVICE_ROLE_KEY` | auto                                | auto                                | For DB access + auth check |
 
 **Flow (pseudocode):**
 
 ```ts
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
-  if (req.method !== "POST")    return json({ error: "method_not_allowed" }, 405);
+  if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
 
   // 1. Auth
   const bearer = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/, "");
@@ -313,7 +313,7 @@ Deno.serve(async (req) => {
   if (!bearer || bearer !== serviceKey) return json({ error: "unauthorized" }, 401);
 
   // 2. Parse payload
-  const payload = await req.json() as WebhookPayload;
+  const payload = (await req.json()) as WebhookPayload;
   const suggestionId = payload?.record?.id;
   if (!suggestionId) return json({ error: "bad_payload" }, 400);
 
@@ -325,18 +325,22 @@ Deno.serve(async (req) => {
   }
 
   // 4. Load suggestion + author
-  const sb = createClient(Deno.env.get("SUPABASE_URL")!, serviceKey, { auth: { persistSession: false } });
+  const sb = createClient(Deno.env.get("SUPABASE_URL")!, serviceKey, {
+    auth: { persistSession: false },
+  });
   const { data: sug, error: loadErr } = await sb
     .from("suggestions")
-    .select("id, submitter_email, submitter_name, locale, accepted_newsletter, notified_at, promoted_author_id")
+    .select(
+      "id, submitter_email, submitter_name, locale, accepted_newsletter, notified_at, promoted_author_id",
+    )
     .eq("id", suggestionId)
     .single();
   if (loadErr || !sug) return json({ error: "load_failed" }, 500);
 
   // 5. Sanity: was this really an opt-in and not yet notified?
   if (sug.accepted_newsletter !== true) return json({ ok: true, reason: "not_opted_in" }, 200);
-  if (sug.notified_at !== null)          return json({ ok: true, reason: "already_notified" }, 200);
-  if (!sug.promoted_author_id)           return json({ ok: true, reason: "no_promoted_author" }, 200);
+  if (sug.notified_at !== null) return json({ ok: true, reason: "already_notified" }, 200);
+  if (!sug.promoted_author_id) return json({ ok: true, reason: "no_promoted_author" }, 200);
 
   const { data: author, error: authorErr } = await sb
     .from("authors")
@@ -369,7 +373,7 @@ Deno.serve(async (req) => {
   const resendRes = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${resendKey}`,
+      Authorization: `Bearer ${resendKey}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -398,6 +402,7 @@ Deno.serve(async (req) => {
 ## Email content
 
 **Substitution rules** (applied by `renderEmail()`):
+
 - `{authorName}` — required; from the linked `authors.name`.
 - `{siteUrl}` — required; from `SITE_URL` env var.
 - Salutation branch: if `submitterName` is present, the greeting is `Hola, {submitterName},` / `Hi {submitterName},`; if absent, it's `Hola,` / `Hi,`. Rendered by an explicit conditional in `renderEmail()` — not a placeholder in the strings.
@@ -407,6 +412,7 @@ Deno.serve(async (req) => {
 Subject: `Tu sugerencia está en el mapa`
 
 Text body (with submitter name):
+
 ```
 Hola, {submitterName},
 
@@ -418,6 +424,7 @@ Danny
 ```
 
 Text body (no submitter name — identical apart from the greeting):
+
 ```
 Hola,
 
@@ -433,6 +440,7 @@ Danny
 Subject: `Your suggestion is on the map`
 
 Text body (with submitter name):
+
 ```
 Hi {submitterName},
 
@@ -444,6 +452,7 @@ Danny
 ```
 
 Text body (no submitter name):
+
 ```
 Hi,
 
@@ -461,22 +470,22 @@ HTML mirror: same content, wrapped in minimal `<p>` structure with the link as a
 ```ts
 const STRINGS = {
   es: {
-    subject:      "Tu sugerencia está en el mapa",
+    subject: "Tu sugerencia está en el mapa",
     greetingWith: (name: string) => `Hola, ${name},`,
     greetingBare: "Hola,",
-    body:         (authorName: string) =>
+    body: (authorName: string) =>
       `Acabo de añadir a ${authorName} al mapa de autoras — gracias por la sugerencia.`,
-    ctaLabel:     "Ver el mapa",
-    signature:    "Danny",
+    ctaLabel: "Ver el mapa",
+    signature: "Danny",
   },
   en: {
-    subject:      "Your suggestion is on the map",
+    subject: "Your suggestion is on the map",
     greetingWith: (name: string) => `Hi ${name},`,
     greetingBare: "Hi,",
-    body:         (authorName: string) =>
+    body: (authorName: string) =>
       `I just added ${authorName} to the map — thanks for the suggestion.`,
-    ctaLabel:     "See the map",
-    signature:    "Danny",
+    ctaLabel: "See the map",
+    signature: "Danny",
   },
 } as const;
 
@@ -487,9 +496,7 @@ export function renderEmail(input: {
   siteUrl: string;
 }): { subject: string; textBody: string; htmlBody: string } {
   const s = STRINGS[input.locale];
-  const greeting = input.submitterName
-    ? s.greetingWith(input.submitterName)
-    : s.greetingBare;
+  const greeting = input.submitterName ? s.greetingWith(input.submitterName) : s.greetingBare;
   const bodyLine = s.body(input.authorName);
 
   const textBody = [
@@ -502,7 +509,8 @@ export function renderEmail(input: {
     s.signature,
   ].join("\n");
 
-  const htmlBody = `<p>${greeting}</p>` +
+  const htmlBody =
+    `<p>${greeting}</p>` +
     `<p>${bodyLine}</p>` +
     `<p><a href="${input.siteUrl}">${s.ctaLabel}</a></p>` +
     `<p>${s.signature}</p>`;
@@ -542,16 +550,16 @@ export function renderEmail(input: {
 
 **Configuration (staging, mirrored in 9b for prod):**
 
-| Field | Value |
-|---|---|
-| Name | `notify_submitter_on_promote` |
-| Table | `public.suggestions` |
-| Events | `UPDATE` |
-| Type | HTTP Request |
-| Method | POST |
-| URL | `https://<project-ref>.supabase.co/functions/v1/notify_submitter` |
-| Headers | `Authorization: Bearer <service_role_key>` |
-| Filter | `status = "approved"` (see note) |
+| Field   | Value                                                             |
+| ------- | ----------------------------------------------------------------- |
+| Name    | `notify_submitter_on_promote`                                     |
+| Table   | `public.suggestions`                                              |
+| Events  | `UPDATE`                                                          |
+| Type    | HTTP Request                                                      |
+| Method  | POST                                                              |
+| URL     | `https://<project-ref>.supabase.co/functions/v1/notify_submitter` |
+| Headers | `Authorization: Bearer <service_role_key>`                        |
+| Filter  | `status = "approved"` (see note)                                  |
 
 **Filter note:** Supabase Database Webhook filters historically support single-column equality only. If the dashboard supports the compound expression `status = "approved" AND accepted_newsletter = true AND notified_at IS NULL`, use it — spurious invocations drop to zero. If it doesn't, filter on `status = "approved"` alone and rely on the function's internal guards (steps 5–6 in the Edge Function pseudocode) to short-circuit on `!accepted_newsletter`, `notified_at != null`, and `promoted_author_id == null`. Either way, at-most-once delivery is preserved. Implementation task: try the compound filter first; fall back to single-column if unsupported and document the actual filter used in `notify-submitter-debug.md`.
 

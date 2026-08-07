@@ -11,7 +11,8 @@
 **The spec for this plan is the audit itself** — section 7, items P0-1 through P0-9. Coverage map at the bottom of this document.
 
 **Workflow reminders (project conventions, override anything below that conflicts):**
-- Alejandro runs every `git commit` / `push` / `merge` himself. Steps below that say "Commit" mean: *pause, summarize the diff, hand to Alejandro with the suggested message*.
+
+- Alejandro runs every `git commit` / `push` / `merge` himself. Steps below that say "Commit" mean: _pause, summarize the diff, hand to Alejandro with the suggested message_.
 - Windows quirks: `supabase functions deploy` always needs `--use-api`; use `Invoke-RestMethod` or `curl.exe --data-binary "@file.json"` for JSON bodies (PowerShell mangles inline single-quoted JSON).
 - After Branch 1 lands, run `npm run format` before handing off any Branch 2 diff — CI now enforces `prettier --check`.
 
@@ -26,6 +27,7 @@ Created from `development`. Estimated 2–3 h. Covers audit P0 items 5, 7, 8, 9 
 Three Supabase Studio scratch files are committed; two contain a real personal email address and one is the live admin-grant SQL. They don't belong in a public MIT repo. (The email stays in git history — treat it as disclosed; nothing to rotate.)
 
 **Files:**
+
 - Delete: `supabase/snippets/Untitled query 251.sql`
 - Delete: `supabase/snippets/Untitled query 513.sql`
 - Delete: `supabase/snippets/Untitled query 987.sql`
@@ -61,6 +63,7 @@ Expected: three deletions staged, `.gitignore` modified, nothing else.
 `prettier --check .` currently fails on **88 files**. CI (Task 4) will enforce it, so baseline the whole repo first. Purely mechanical — review the diff by spot-check + green tests, not line-by-line.
 
 **Files:**
+
 - Modify: `package.json` (scripts)
 - Modify: 88 files, mechanical (run, don't hand-edit)
 
@@ -89,6 +92,7 @@ Run: `npm run format:check` → Expected: `All matched files use Prettier code s
 34 errors today: 25 are Deno Edge Functions leaking into the Astro typecheck via `"include": ["**/*"]`; 9 are real `src/` errors (7× a mistyped test helper, 2× `Json` casts in `promote.ts`).
 
 **Files:**
+
 - Modify: `tsconfig.json`
 - Modify: `src/lib/map-state.test.ts:10`
 - Modify: `src/lib/promote.ts:7-8,47-51`
@@ -160,6 +164,7 @@ Run: `npm test` → Expected: 28 passing.
 One workflow, four gates, ~2 min per run. `development` auto-deploys to staging on push, so this is the only thing standing between a typo and a broken staging site.
 
 **Files:**
+
 - Create: `.github/workflows/ci.yml`
 
 - [ ] **Step 1: Create the workflow**
@@ -215,6 +220,7 @@ Expected: all four exit 0.
 `src/lib/supabase.ts` falls back to `http://127.0.0.1:54321` with only a console.warn — a misconfigured Cloudflare Pages build **succeeds** and ships a dead site (this exact failure is in the staging runbook). The build is the right place to fail: check in `astro.config.mjs`, which runs at build start in Node context. Leave `supabase.ts`'s dev-time warn as is.
 
 **Files:**
+
 - Modify: `astro.config.mjs`
 
 - [ ] **Step 1: Add the guard** — full new `astro.config.mjs`:
@@ -285,6 +291,7 @@ npm run build          # Expected: clean build again
 Admin pages are currently in `dist/sitemap-0.xml` and allowed by robots.txt.
 
 **Files:**
+
 - Modify: `astro.config.mjs` (done in Task 5 — verify here)
 - Modify: `public/robots.txt`
 - Modify: `src/layouts/Base.astro`
@@ -362,6 +369,7 @@ supabase status         # shows local anon key + service_role key — copy both
 Four functions each hand-roll `CORS_HEADERS` with `Access-Control-Allow-Origin: *`, and two need the same service-role bearer check. Folders starting with `_` are not deployed as functions; `supabase functions deploy <name>` bundles `_shared` imports automatically.
 
 **Files:**
+
 - Create: `supabase/functions/_shared/cors.ts`
 - Create: `supabase/functions/_shared/auth.ts`
 
@@ -439,6 +447,7 @@ export function isServiceRoleBearer(req: Request): boolean {
 `translate` is admin-**user**-called (not a webhook), so it needs a real signature check, not the service-role bearer. Add a `requireAdmin(req)` helper to `_shared/auth.ts` that verifies the caller's JWT via `supabase.auth.getUser(jwt)` and asserts `app_metadata.role === 'admin'`. `verify_jwt` stays `false` (so the CORS preflight isn't rejected — the OPTIONS request strips Authorization); the in-function check is now cryptographic, not a base64 decode.
 
 **Files:**
+
 - Modify: `supabase/functions/_shared/auth.ts` (add `requireAdmin`)
 - Modify: `supabase/functions/translate/index.ts` (auth block + CORS)
 - Modify: `supabase/config.toml` (`[functions.translate]` comment)
@@ -503,6 +512,7 @@ Deno.serve(async (req: Request) => {
 Migration `0003` promised an `X-Webhook-Source` header check the function never implemented; CORS is `*` and any POST sends an email to Danny's inbox with attacker-controlled subject/body. `notify_owner` is webhook-only → require the service-role bearer (`_shared/auth.ts`) and send **no** CORS headers.
 
 **Files:**
+
 - Modify: `supabase/functions/notify_owner/index.ts`
 - Modify: `supabase/README.md:104-107`
 
@@ -531,7 +541,7 @@ Remove `Access-Control-Allow-Origin: *` from this function entirely (no browser 
 
 - [ ] **Step 4: README.** Rewrite `supabase/README.md:104-107` — the known-gap note becomes "closed: service-role bearer required." Note that the `X-Webhook-Source` header approach in migration `0003` was superseded (historical migration text; do not edit applied migrations).
 
-- [ ] **Step 5: Verify (green).** Re-run Step 1 → **`401`**. With `-H "Authorization: Bearer <local service_role key from \`supabase status\`>"` → `200` log-only (no PII in the logged output).
+- [ ] **Step 5: Verify (green).** Re-run Step 1 → **`401`**. With `-H "Authorization: Bearer <local service_role key from \`supabase status\`>"`→`200` log-only (no PII in the logged output).
 
 - [ ] **Step 6: Commit (Alejandro)** — suggested: `security(notify_owner): require service-role bearer, drop CORS *, stop PII logging (C2/H3)`
 
@@ -542,6 +552,7 @@ Remove `Access-Control-Allow-Origin: *` from this function entirely (no browser 
 The function accepts **any** non-empty bearer and has **no `[functions.notify_submitter]` block** in `config.toml`, so nothing pins `verify_jwt`. Even with it on, the public anon key passes. Pin the config and require the service-role bearer.
 
 **Files:**
+
 - Modify: `supabase/config.toml` (add the block)
 - Modify: `supabase/functions/notify_submitter/index.ts`
 
@@ -557,7 +568,7 @@ verify_jwt = true
 
 - [ ] **Step 3: Fix the revert-on-failure idempotency hole.** Today a Resend failure reverts `notified_at = null`, reopening the send window (duplicate email on send-then-timeout). Change to **no revert**: on Resend failure, leave `notified_at` set, log the failure loudly for manual retry. At-most-once is the correct bias for outbound email. (Document the trade-off in a comment.)
 
-- [ ] **Step 4: Verify (green).** POST with no bearer → `401`; POST with the anon key as bearer → `401`; POST with the service-role bearer → processes (or `200` skip if guards short-circuit). 
+- [ ] **Step 4: Verify (green).** POST with no bearer → `401`; POST with the anon key as bearer → `401`; POST with the service-role bearer → processes (or `200` skip if guards short-circuit).
 
 - [ ] **Step 5: Commit (Alejandro)** — suggested: `security(notify_submitter): pin verify_jwt + service-role bearer, no-revert idempotency (C3)`
 
@@ -568,6 +579,7 @@ verify_jwt = true
 Only `authorName` is length-capped server-side; `booksText`/`note`/`submitterName`/`email` are inserted unbounded and echoed into Danny's email. `verifyResp.ok` is never checked before `.json()`. Turnstile `hostname` is ignored (a staging token is valid on prod). CORS is `*`.
 
 **Files:**
+
 - Modify: `supabase/functions/submit_suggestion/index.ts`
 - Modify: `.env.example` (document `TURNSTILE_ALLOWED_HOSTNAMES`)
 
@@ -588,6 +600,7 @@ Only `authorName` is length-capped server-side; `booksText`/`note`/`submitterNam
 Ticking the notify checkbox writes `email`/`locale`/`confirm_token` to `subscribers` — a table the privacy notice never mentions, with an unimplemented double-opt-in. The notify flow reads from `suggestions`, not `subscribers`, so this write is dead + a GDPR purpose-limitation problem. (The PII-log half of H3 was closed in Task 3.)
 
 **Files:**
+
 - Modify: `supabase/functions/submit_suggestion/index.ts`
 
 - [ ] **Step 1: Delete the `subscribers` upsert block** entirely (the `if (body.newsletterOptIn === true) { … subscribers.upsert … }`). The opt-in is still recorded on `suggestions.accepted_newsletter`, which is all the notify flow needs.
@@ -604,18 +617,18 @@ Ticking the notify checkbox writes `email`/`locale`/`confirm_token` to `subscrib
 
 ## Coverage map (audit §7 P0 items → tasks)
 
-| P0 item | Audit finding | Where |
-| --- | --- | --- |
-| 1 | C1 — `translate` JWT forge | Branch 2 · Task 2 |
-| 2 | C2 — `notify_owner` open relay | Branch 2 · Task 3 |
-| 3 | C3 — `notify_submitter` any-bearer + unpinned config | Branch 2 · Task 4 |
-| 4 | H2 — `submit_suggestion` validation/Turnstile/CORS | Branch 2 · Task 5 |
-| 5 | Remove `supabase/snippets/` | Branch 1 · Task 1 |
-| 6 | H3 — undisclosed `subscribers` write + PII log | Branch 2 · Tasks 6 (+3 for the log) |
-| 7 | Remove `supabase/snippets/` from repo (gitignore) | Branch 1 · Task 1 |
-| 8 | Fail build on missing `PUBLIC_*` env vars | Branch 1 · Task 5 |
-| 9 | Exclude `/admin` from sitemap + robots (+noindex) | Branch 1 · Task 6 |
-| (H4, partial) | Green `astro check` — needed for CI | Branch 1 · Task 3 |
-| (H1) | CI pipeline + branch protection | Branch 1 · Task 4 |
+| P0 item       | Audit finding                                        | Where                               |
+| ------------- | ---------------------------------------------------- | ----------------------------------- |
+| 1             | C1 — `translate` JWT forge                           | Branch 2 · Task 2                   |
+| 2             | C2 — `notify_owner` open relay                       | Branch 2 · Task 3                   |
+| 3             | C3 — `notify_submitter` any-bearer + unpinned config | Branch 2 · Task 4                   |
+| 4             | H2 — `submit_suggestion` validation/Turnstile/CORS   | Branch 2 · Task 5                   |
+| 5             | Remove `supabase/snippets/`                          | Branch 1 · Task 1                   |
+| 6             | H3 — undisclosed `subscribers` write + PII log       | Branch 2 · Tasks 6 (+3 for the log) |
+| 7             | Remove `supabase/snippets/` from repo (gitignore)    | Branch 1 · Task 1                   |
+| 8             | Fail build on missing `PUBLIC_*` env vars            | Branch 1 · Task 5                   |
+| 9             | Exclude `/admin` from sitemap + robots (+noindex)    | Branch 1 · Task 6                   |
+| (H4, partial) | Green `astro check` — needed for CI                  | Branch 1 · Task 3                   |
+| (H1)          | CI pipeline + branch protection                      | Branch 1 · Task 4                   |
 
 **Deferred (not P0, tracked elsewhere):** replacing all hand-rolled row types with generated ones (P1-12), Deno/Playwright test infra (P1/P2), the full accessibility + OG/meta + nav-dehydration work (Stage 10). The Stage 8.5 refactor consumes `_shared/auth.ts` + `_shared/cors.ts` and preserves every guard added here.

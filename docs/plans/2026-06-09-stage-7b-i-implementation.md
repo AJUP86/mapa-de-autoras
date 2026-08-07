@@ -30,6 +30,7 @@
 ## Task A1 — Migration `0004_promote_prep.sql`
 
 **Files:**
+
 - Create: `supabase/migrations/0004_promote_prep.sql`
 
 - [ ] **Step 1: Write the migration**
@@ -79,6 +80,7 @@ Expected: migrations apply cleanly, no errors. The reset reapplies all migration
 - [ ] **Step 3: Verify in Studio SQL editor (`http://127.0.0.1:54323`)**
 
 Run:
+
 ```sql
 select public.slugify('Gabriela Mistral');                 -- 'gabriela-mistral'
 select public.slugify('María José Ñandutí — Test!');       -- 'maria-jose-nanduti-test'
@@ -94,6 +96,7 @@ Expected: three outputs as commented.
 ## Task A2 — Migration `0005_promote_suggestion_rpc.sql`
 
 **Files:**
+
 - Create: `supabase/migrations/0005_promote_suggestion_rpc.sql`
 
 - [ ] **Step 1: Write the RPC**
@@ -306,6 +309,7 @@ Expected: cascade deletes the book row too (books has `on delete cascade`).
 ## Task A3 — ADR 0004 — Translation strategy
 
 **Files:**
+
 - Create: `docs/adr/0004-translation-strategy.md`
 
 - [ ] **Step 1: Write the ADR**
@@ -367,6 +371,7 @@ Edit `docs/RAG.md`. Add this row right below the `adr/0003-data-model.md` row:
 ## Task A4 — Regenerate Supabase TS types
 
 **Files:**
+
 - Modify: `src/types/supabase.ts` (regenerated)
 
 - [ ] **Step 1: Regenerate the types**
@@ -399,6 +404,7 @@ promote_suggestion: {
 - [ ] **Step 4: STOP — Slice A complete**
 
 User actions:
+
 1. Review the diff: `git status` + `git diff supabase/migrations/0004_promote_prep.sql supabase/migrations/0005_promote_suggestion_rpc.sql docs/adr/0004-translation-strategy.md docs/RAG.md src/types/supabase.ts`
 2. Stage and commit. Suggested message: `feat(stage-7b-i,db): unaccent + slugify(), currently_reading enum, promote_suggestion() RPC, ADR 0004`
 
@@ -413,6 +419,7 @@ Resume at Slice B after commit confirms.
 ## Task B1 — Extend tokens.css
 
 **Files:**
+
 - Modify: `src/styles/tokens.css`
 
 - [ ] **Step 1: Add sage stroke token + semantic state aliases**
@@ -442,19 +449,19 @@ Replace the entire `:root { ... }` block in [src/styles/tokens.css](../../src/st
   --c-water: #b5cfd2;
   --c-penguin-line: #9c4e10;
   --c-oxblood-line: #4a0d18;
-  --c-sage-line: #4d6651;       /* Stage 7b-i — darker sage for currently_reading strokes */
-  --c-paper-line: #7a5a3a;      /* sepia for empty-country borders */
+  --c-sage-line: #4d6651; /* Stage 7b-i — darker sage for currently_reading strokes */
+  --c-paper-line: #7a5a3a; /* sepia for empty-country borders */
 
   /* Map state aliases — Stage 7b-i.
    * Change the right-hand side here to repaint the map without touching
    * any TS/component code. The state-driven fills in src/lib/map-state.ts
    * reference these aliases, never the base palette directly. */
-  --c-state-read:                   var(--c-penguin);
-  --c-state-read-line:              var(--c-penguin-line);
-  --c-state-currently-reading:      var(--c-sage);
+  --c-state-read: var(--c-penguin);
+  --c-state-read-line: var(--c-penguin-line);
+  --c-state-currently-reading: var(--c-sage);
   --c-state-currently-reading-line: var(--c-sage-line);
-  --c-state-discovery:              var(--c-oxblood);
-  --c-state-discovery-line:         var(--c-oxblood-line);
+  --c-state-discovery: var(--c-oxblood);
+  --c-state-discovery-line: var(--c-oxblood-line);
 
   --font-display: "Fraunces Variable", Georgia, serif;
   --font-body: "Inter Variable", system-ui, sans-serif;
@@ -472,6 +479,7 @@ Expected: build passes (CSS tokens don't affect TS type-check, but this confirms
 ## Task B2 — Extend map-state.ts
 
 **Files:**
+
 - Modify: `src/lib/map-state.ts`
 
 - [ ] **Step 1: Replace the entire file contents**
@@ -488,12 +496,7 @@ export type AuthorStatus = "read" | "currently_reading" | "discovery";
 
 export type Filter = "all" | "read" | "currently_reading" | "discoveries";
 
-export type CountryState =
-  | "read"
-  | "currently_reading"
-  | "discovery"
-  | "mixed"
-  | "empty";
+export type CountryState = "read" | "currently_reading" | "discovery" | "mixed" | "empty";
 
 export interface Book {
   title: string;
@@ -546,8 +549,7 @@ export function computeCountryStates(
       else hasDiscovery = true;
       if (hasRead && hasCurrent && hasDiscovery) break;
     }
-    const distinct =
-      (hasRead ? 1 : 0) + (hasCurrent ? 1 : 0) + (hasDiscovery ? 1 : 0);
+    const distinct = (hasRead ? 1 : 0) + (hasCurrent ? 1 : 0) + (hasDiscovery ? 1 : 0);
     if (distinct === 0) continue;
     if (distinct >= 2) result[entry.iso_a3] = "mixed";
     else if (hasRead) result[entry.iso_a3] = "read";
@@ -601,18 +603,14 @@ export function fillFor(state: CountryState, filter: Filter): CountryStyle {
     return state === "read" || state === "mixed" ? READ_STYLE : EMPTY_STYLE;
   }
   if (filter === "currently_reading") {
-    return state === "currently_reading" || state === "mixed"
-      ? CURRENT_STYLE
-      : EMPTY_STYLE;
+    return state === "currently_reading" || state === "mixed" ? CURRENT_STYLE : EMPTY_STYLE;
   }
   if (filter === "discoveries") {
-    return state === "discovery" || state === "mixed"
-      ? DISCOVERY_STYLE
-      : EMPTY_STYLE;
+    return state === "discovery" || state === "mixed" ? DISCOVERY_STYLE : EMPTY_STYLE;
   }
 
   // filter === "all" — priority for mixed and the per-state shortcuts
-  if (state === "read" || (state === "mixed")) {
+  if (state === "read" || state === "mixed") {
     // Mixed: pick by priority. computeCountryStates collapses 2+ statuses
     // to "mixed" without telling us which; we re-derive from the entry at
     // the call site, OR we accept the simple rule: any country labelled
@@ -637,6 +635,7 @@ If the build errors out on `MapLabels` missing keys → go to Task B3 to update 
 ## Task B3 — Update MapFilter component
 
 **Files:**
+
 - Modify: `src/components/MapFilter.tsx`
 
 - [ ] **Step 1: Replace OPTIONS array with the four-button order**
@@ -673,9 +672,7 @@ export default function MapFilter({ value, onChange, labels }: Props) {
             onClick={() => onChange(option)}
             className={
               "rounded-full px-4 py-1.5 transition-colors " +
-              (active
-                ? "bg-oxblood text-parchment shadow-sm"
-                : "text-ink/70 hover:text-ink")
+              (active ? "bg-oxblood text-parchment shadow-sm" : "text-ink/70 hover:text-ink")
             }
           >
             {labels[option]}
@@ -694,6 +691,7 @@ The TS error from B2 (`MapLabels["filter"]` missing `currently_reading`) will pe
 ## Task B4 — Update i18n catalogs
 
 **Files:**
+
 - Modify: `src/i18n/es.json`
 - Modify: `src/i18n/en.json`
 
@@ -768,6 +766,7 @@ Expected: passes. The previously-failing TS error about missing `currently_readi
 ## Task B5 — Update CountryPanel to render the third status
 
 **Files:**
+
 - Modify: `src/components/CountryPanel.tsx`
 
 - [ ] **Step 1: Replace the StatusBadge component**
@@ -821,6 +820,7 @@ Expected: passes.
 ## Task B6 — Add a `currently_reading` dev-seed author
 
 **Files:**
+
 - Modify: `supabase/seeds/dev-authors.sql`
 
 - [ ] **Step 1: Add a new author block before the final `commit;`**
@@ -863,6 +863,7 @@ Run: `npm run dev`
 - [ ] **Step 5: Visit the homepage at http://localhost:4321**
 
 Expected:
+
 - Portugal (PRT) is filled in sage (the new `currently_reading` color).
 - USA shows mixed-with-read priority: still penguin (read wins over currently_reading + discovery).
 - The filter row has 4 buttons: `Todas / Sugerencias / Leyendo / Leídas`.
@@ -876,6 +877,7 @@ Expected:
 ## Task B7 — Update styleguide
 
 **Files:**
+
 - Modify: `src/pages/styleguide.astro`
 
 - [ ] **Step 1: Add a sage swatch + three-state explanation**
@@ -883,13 +885,23 @@ Expected:
 Open [src/pages/styleguide.astro](../../src/pages/styleguide.astro). Find the map-palette section (around line 50, after the `<p>` describing the two-color hierarchy). Update the paragraph text to describe three colors. Search for the line containing:
 
 ```html
-<p class="text-ink/70 max-w-prose font-body">Two fill colors total. Countries with both read and discovery authors pick a side based on the active filter — read wins by default; the <em>Discoveries</em> filter is the exception that surfaces the discovery side. Each fill has a paired darker stroke so adjacent same-state countries keep a visible boundary. The map sits on a dusty-blue water backdrop.</p>
+<p class="text-ink/70 max-w-prose font-body">
+  Two fill colors total. Countries with both read and discovery authors pick a side based on the
+  active filter — read wins by default; the <em>Discoveries</em> filter is the exception that
+  surfaces the discovery side. Each fill has a paired darker stroke so adjacent same-state countries
+  keep a visible boundary. The map sits on a dusty-blue water backdrop.
+</p>
 ```
 
 Replace it with:
 
 ```html
-<p class="text-ink/70 max-w-prose font-body">Three fill colors total. Countries with multiple states pick one side based on the priority hierarchy (read &gt; currently_reading &gt; discovery) or the active filter. Each fill has a paired darker stroke so adjacent same-state countries keep a visible boundary. The map sits on a dusty-blue water backdrop.</p>
+<p class="text-ink/70 max-w-prose font-body">
+  Three fill colors total. Countries with multiple states pick one side based on the priority
+  hierarchy (read &gt; currently_reading &gt; discovery) or the active filter. Each fill has a
+  paired darker stroke so adjacent same-state countries keep a visible boundary. The map sits on a
+  dusty-blue water backdrop.
+</p>
 ```
 
 Then find the swatch grid (the row that renders the existing `--c-penguin` and `--c-oxblood` swatches). Add a sage swatch between them or at the end of the row. The existing swatch pattern looks like:
@@ -937,6 +949,7 @@ Resume at Slice C after commit.
 ## Task C1 — Rename admin routes
 
 **Files:**
+
 - Delete: `src/pages/admin/login.astro` (content moves to `index.astro`)
 - Modify/Create: `src/pages/admin/index.astro` (becomes the login form)
 - Create: `src/pages/admin/inbox.astro` (the inbox, was `index.astro`)
@@ -1028,6 +1041,7 @@ Run: `npm run build`. Expected: passes.
 ## Task C2 — Update Supabase auth redirect URLs
 
 **Files:**
+
 - Modify: `supabase/config.toml`
 
 - [ ] **Step 1: Add new redirect URLs**
@@ -1060,6 +1074,7 @@ After reset, re-bootstrap the admin user per `supabase/README.md`.
 ## Task C3 — Create `<AdminAwareNav>` component
 
 **Files:**
+
 - Create: `src/components/AdminAwareNav.tsx`
 - Create: `src/components/AdminNavIcon.tsx`
 
@@ -1082,13 +1097,7 @@ interface Props {
   children: ReactNode;
 }
 
-export default function AdminNavIcon({
-  label,
-  href,
-  onClick,
-  badge,
-  children,
-}: Props) {
+export default function AdminNavIcon({ label, href, onClick, badge, children }: Props) {
   const inner = (
     <>
       <span className="sr-only">{label}</span>
@@ -1215,10 +1224,7 @@ export default function AdminAwareNav({ labels }: Props) {
 
   return (
     <nav className="flex items-center justify-between gap-4 px-6 py-3 border-b border-ink/10 bg-parchment">
-      <a
-        href="/"
-        className="font-display text-lg font-semibold text-ink no-underline"
-      >
+      <a href="/" className="font-display text-lg font-semibold text-ink no-underline">
         {labels.mapa}
       </a>
       {state.kind === "admin" ? (
@@ -1240,10 +1246,7 @@ export default function AdminAwareNav({ labels }: Props) {
           </AdminNavIcon>
         </div>
       ) : (
-        <a
-          href="/suggest"
-          className="text-sm text-ink/80 underline hover:text-oxblood"
-        >
+        <a href="/suggest" className="text-sm text-ink/80 underline hover:text-oxblood">
           {labels.sugerir}
         </a>
       )}
@@ -1262,7 +1265,15 @@ function NavSkeleton() {
 
 function InboxIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-5 w-5"
+    >
       <path d="M22 12h-6l-2 3h-4l-2-3H2" />
       <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z" />
     </svg>
@@ -1271,7 +1282,15 @@ function InboxIcon() {
 
 function PlusIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-5 w-5"
+    >
       <circle cx="12" cy="12" r="10" />
       <line x1="12" y1="8" x2="12" y2="16" />
       <line x1="8" y1="12" x2="16" y2="12" />
@@ -1281,7 +1300,15 @@ function PlusIcon() {
 
 function LogoutIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-5 w-5"
+    >
       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
       <polyline points="16 17 21 12 16 7" />
       <line x1="21" y1="12" x2="9" y2="12" />
@@ -1295,6 +1322,7 @@ function LogoutIcon() {
 ## Task C4 — Mount `<AdminAwareNav>` in Base.astro
 
 **Files:**
+
 - Modify: `src/layouts/Base.astro`
 
 - [ ] **Step 1: Wire the island + labels**
@@ -1393,6 +1421,7 @@ Run `npm run dev`. Visit `/` as anon — nav shows "mapa de autoras" + "Sugerir"
 ## Task C5 — Update redirect targets
 
 **Files:**
+
 - Modify: `src/components/AdminGate.tsx` — already accepts `loginUrl` prop; just the consumer pages need updating, which we did in Task C1. No code change here, but confirm:
 
 - [ ] **Step 1: Verify all `<AdminGate>` usages point to `/admin`**
@@ -1412,6 +1441,7 @@ Run: `npm run build`. Expected: passes.
 ## Task C6 — Real `<SuggestionReview>` page (replaces placeholder)
 
 **Files:**
+
 - Delete: `src/components/SuggestionDetailPlaceholder.tsx`
 - Create: `src/components/SuggestionReview.tsx`
 - Modify: `src/pages/admin/suggestion.astro` (swap the placeholder for the real component)
@@ -1455,10 +1485,7 @@ export async function getSuggestion(id: string): Promise<SuggestionDetail | null
   return (data as SuggestionDetail) ?? null;
 }
 
-export async function rejectSuggestion(
-  id: string,
-  reviewerNotes: string,
-): Promise<void> {
+export async function rejectSuggestion(id: string, reviewerNotes: string): Promise<void> {
   const { error } = await supabase
     .from("suggestions")
     .update({
@@ -1558,22 +1585,30 @@ export default function SuggestionReview({ labels }: Props) {
     return <p className="text-ink/60">{labels.loading}</p>;
   }
   if (state.kind === "error") {
-    return <p className="text-oxblood">{labels.error}: {state.msg}</p>;
+    return (
+      <p className="text-oxblood">
+        {labels.error}: {state.msg}
+      </p>
+    );
   }
   if (state.kind === "not_found") {
     return (
       <div className="space-y-2">
         <p className="text-ink/60">{labels.not_found}</p>
-        <a href="/admin/inbox" className="text-oxblood underline">← {labels.back_to_inbox}</a>
+        <a href="/admin/inbox" className="text-oxblood underline">
+          ← {labels.back_to_inbox}
+        </a>
       </div>
     );
   }
 
   const s = state.suggestion;
   const statusLabel =
-    s.status === "pending" ? labels.status_pending
-    : s.status === "approved" ? labels.status_approved
-    : labels.status_rejected;
+    s.status === "pending"
+      ? labels.status_pending
+      : s.status === "approved"
+        ? labels.status_approved
+        : labels.status_rejected;
 
   async function onConfirmReject() {
     setRejectStatus("submitting");
@@ -1588,10 +1623,16 @@ export default function SuggestionReview({ labels }: Props) {
   return (
     <section className="mx-auto max-w-2xl space-y-6">
       <div>
-        <a href="/admin/inbox" className="text-sm text-ink/70 underline">← {labels.back_to_inbox}</a>
+        <a href="/admin/inbox" className="text-sm text-ink/70 underline">
+          ← {labels.back_to_inbox}
+        </a>
         <h1 className="mt-2 font-serif text-2xl text-ink">{labels.title}</h1>
-        <p className="text-xs text-ink/50">{labels.submitted_on}: {formatDate(s.created_at)}</p>
-        <p className="text-xs text-ink/50">{labels.status}: <span className="font-medium">{statusLabel}</span></p>
+        <p className="text-xs text-ink/50">
+          {labels.submitted_on}: {formatDate(s.created_at)}
+        </p>
+        <p className="text-xs text-ink/50">
+          {labels.status}: <span className="font-medium">{statusLabel}</span>
+        </p>
       </div>
 
       <dl className="grid grid-cols-[140px_1fr] gap-y-2 text-sm">
@@ -1793,6 +1834,7 @@ Run: `npm run build`. Expected: passes.
 ## Task C7 — Update AdminInbox row links to `/admin/promote?suggestion=...`
 
 **Files:**
+
 - Modify: `src/components/AdminInbox.tsx`
 
 - [ ] **Step 1: Inspect the existing link**
@@ -1832,9 +1874,11 @@ Expected: lands on `/admin/suggestion?id=<uuid>`, shows the suggestion details +
 Expected: redirects to `/admin/inbox`; the inbox now shows zero pending. The nav badge updates to no badge.
 
 In Studio SQL editor, verify:
+
 ```sql
 select id, status, reviewed_at, reviewer_notes from public.suggestions order by created_at desc limit 1;
 ```
+
 Expected: `status = 'rejected'`, `reviewed_at` set, `reviewer_notes` matches your input.
 
 - [ ] **Step 7: Sign out**
@@ -1860,6 +1904,7 @@ Resume at Slice D after commit.
 ## Task D1 — Create the Edge Function
 
 **Files:**
+
 - Create: `supabase/functions/translate/index.ts`
 
 - [ ] **Step 1: Write the function**
@@ -1911,8 +1956,7 @@ function decodeJwtPayload(jwt: string): Record<string, unknown> | null {
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS")
-    return new Response(null, { status: 204, headers: CORS_HEADERS });
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS_HEADERS });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
 
   // Extra defence: confirm the JWT belongs to an admin even though
@@ -1975,6 +2019,7 @@ Deno.serve(async (req: Request) => {
 ## Task D2 — Register the function in config.toml
 
 **Files:**
+
 - Modify: `supabase/config.toml`
 
 - [ ] **Step 1: Add the `[functions.translate]` block**
@@ -1999,6 +2044,7 @@ If `npm run dev:functions` is running, restart it (`Ctrl+C`, then re-run). The C
 ## Task D3 — Update env files
 
 **Files:**
+
 - Modify: `.env.example`
 - (You manually edit `.env` to add a real DeepL key for local testing — `.env` is gitignored)
 
@@ -2029,13 +2075,14 @@ DEEPL_API_KEY=
 ## Task D4 — Update supabase/README.md
 
 **Files:**
+
 - Modify: `supabase/README.md`
 
 - [ ] **Step 1: Add a short section on the translate function**
 
 Append this section near the existing `Suggestion notifications + admin auth (Stage 7a)` section. Use the same heading style as the other Stage sections.
 
-```markdown
+````markdown
 ## Translate (Stage 7b-i)
 
 Admin-only Edge Function proxying to DeepL. Lives at `supabase/functions/translate/index.ts`.
@@ -2053,10 +2100,12 @@ curl.exe -X POST http://127.0.0.1:54321/functions/v1/translate `
   -H "Content-Type: application/json" `
   -d '{"text":"Hola mundo","target_lang":"EN"}'
 ```
+````
 
 Expected with a valid `DEEPL_API_KEY`: `{"text":"Hello world"}` (or close).
 Expected without a key: `{"error":"translation_failed"}`.
-```
+
+````
 
 ---
 
@@ -2074,17 +2123,20 @@ curl.exe -X POST http://127.0.0.1:54321/functions/v1/translate `
   -H "Authorization: Bearer $jwt" `
   -H "Content-Type: application/json" `
   -d '{"text":"Hola mundo","target_lang":"EN"}'
-```
+````
 
 Expected (with `DEEPL_API_KEY` set in `.env`):
+
 ```json
-{"text":"Hello world"}
+{ "text": "Hello world" }
 ```
+
 or similar.
 
 Expected (without key):
+
 ```json
-{"error":"translation_failed"}
+{ "error": "translation_failed" }
 ```
 
 Either is a pass for this slice — the contract works; the key just gates real translations.
@@ -2129,6 +2181,7 @@ Resume at Slice E1.
 ## Task E1.1 — Helper libs
 
 **Files:**
+
 - Create: `src/lib/countries.ts`
 - Create: `src/lib/translate.ts`
 - Create: `src/lib/promote.ts`
@@ -2179,10 +2232,7 @@ import { supabase } from "./supabase";
 
 export type TargetLang = "EN" | "ES";
 
-export async function translateText(
-  text: string,
-  target_lang: TargetLang,
-): Promise<string> {
+export async function translateText(text: string, target_lang: TargetLang): Promise<string> {
   const { data, error } = await supabase.functions.invoke<{ text?: string; error?: string }>(
     "translate",
     { body: { text, target_lang } },
@@ -2237,9 +2287,7 @@ export type PromoteError =
   | { kind: "unauthorized" }
   | { kind: "unknown"; message: string };
 
-export type PromoteResult =
-  | { ok: true; authorId: string }
-  | { ok: false; error: PromoteError };
+export type PromoteResult = { ok: true; authorId: string } | { ok: false; error: PromoteError };
 
 export async function promoteSuggestion(
   suggestionId: string | null,
@@ -2254,7 +2302,8 @@ export async function promoteSuggestion(
   if (error) {
     const msg = error.message ?? "";
     if (msg.startsWith("duplicate_author:")) return { ok: false, error: { kind: "duplicate" } };
-    if (msg.startsWith("validation:")) return { ok: false, error: { kind: "validation", message: msg } };
+    if (msg.startsWith("validation:"))
+      return { ok: false, error: { kind: "validation", message: msg } };
     if (msg.startsWith("unauthorized:")) return { ok: false, error: { kind: "unauthorized" } };
     return { ok: false, error: { kind: "unknown", message: msg } };
   }
@@ -2271,6 +2320,7 @@ Run: `npm run build`. Expected: passes.
 ## Task E1.2 — `<TranslateButton>` component
 
 **Files:**
+
 - Create: `src/components/TranslateButton.tsx`
 
 - [ ] **Step 1: Write the component**
@@ -2287,9 +2337,9 @@ import { useState } from "react";
 import { translateText, type TargetLang } from "~/lib/translate";
 
 interface Labels {
-  button: string;            // e.g. "Traducir →" or "← Traducir"
-  confirm_title: string;     // e.g. "Reemplazar texto"
-  confirm_body: string;      // e.g. "Esto reemplazará el texto actual."
+  button: string; // e.g. "Traducir →" or "← Traducir"
+  confirm_title: string; // e.g. "Reemplazar texto"
+  confirm_body: string; // e.g. "Esto reemplazará el texto actual."
   confirm_ok: string;
   confirm_cancel: string;
   translating: string;
@@ -2345,9 +2395,7 @@ export default function TranslateButton({
       >
         {status === "loading" ? labels.translating : labels.button}
       </button>
-      {status === "error" && (
-        <span className="ml-2 text-xs text-oxblood">{labels.error}</span>
-      )}
+      {status === "error" && <span className="ml-2 text-xs text-oxblood">{labels.error}</span>}
       {status === "confirm" && (
         <div className="absolute z-10 mt-2 w-64 rounded border border-ink/20 bg-parchment p-3 shadow">
           <p className="text-sm font-medium text-ink">{labels.confirm_title}</p>
@@ -2383,6 +2431,7 @@ export default function TranslateButton({
 ## Task E1.3 — `<BookFields>` component
 
 **Files:**
+
 - Create: `src/components/BookFields.tsx`
 
 - [ ] **Step 1: Write the component**
@@ -2397,7 +2446,7 @@ import TranslateButton from "./TranslateButton";
 
 export interface BookValue {
   title: string;
-  year: string;          // string in the form; coerced to number at submit
+  year: string; // string in the form; coerced to number at submit
   original_language: string;
   cover_url: string;
   description_es: string;
@@ -2449,11 +2498,7 @@ export default function BookFields({ index, value, onChange, onRemove, labels }:
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-ink">Libro {index + 1}</span>
         {onRemove && (
-          <button
-            type="button"
-            onClick={onRemove}
-            className="text-xs text-oxblood underline"
-          >
+          <button type="button" onClick={onRemove} className="text-xs text-oxblood underline">
             {labels.remove}
           </button>
         )}
@@ -2550,6 +2595,7 @@ export default function BookFields({ index, value, onChange, onRemove, labels }:
 ## Task E1.4 — `<PromoteForm>` component (empty-mode only for now)
 
 **Files:**
+
 - Create: `src/components/PromoteForm.tsx`
 
 - [ ] **Step 1: Write the component**
@@ -2706,7 +2752,9 @@ export default function PromoteForm({ labels }: Props) {
   return (
     <form onSubmit={onSubmit} className="mx-auto max-w-3xl space-y-6 p-6">
       <div>
-        <a href="/" className="text-sm text-ink/70 underline">← {labels.back}</a>
+        <a href="/" className="text-sm text-ink/70 underline">
+          ← {labels.back}
+        </a>
         <h1 className="mt-2 font-serif text-2xl text-ink">{labels.title_new}</h1>
       </div>
 
@@ -2731,9 +2779,13 @@ export default function PromoteForm({ labels }: Props) {
             onChange={(e) => update("country_iso_a3", e.target.value)}
             className="mt-1 block w-full rounded border border-ink/20 bg-parchment px-3 py-1.5"
           >
-            <option value="" disabled>—</option>
+            <option value="" disabled>
+              —
+            </option>
             {countries.map((c) => (
-              <option key={c.iso_a3} value={c.iso_a3}>{c.name_es}</option>
+              <option key={c.iso_a3} value={c.iso_a3}>
+                {c.name_es}
+              </option>
             ))}
           </select>
         </label>
@@ -2750,9 +2802,11 @@ export default function PromoteForm({ labels }: Props) {
                   checked={author.status === s}
                   onChange={() => update("status", s)}
                 />
-                {s === "read" ? labels.status_read
-                  : s === "currently_reading" ? labels.status_currently_reading
-                  : labels.status_discovery}
+                {s === "read"
+                  ? labels.status_read
+                  : s === "currently_reading"
+                    ? labels.status_currently_reading
+                    : labels.status_discovery}
               </label>
             ))}
           </div>
@@ -2866,10 +2920,15 @@ export default function PromoteForm({ labels }: Props) {
       </label>
 
       {status === "error" && error && (
-        <div role="alert" className="rounded border border-oxblood/40 bg-oxblood/5 p-3 text-sm text-oxblood">
-          {error.kind === "duplicate" ? labels.error_duplicate
-          : error.kind === "validation" ? labels.error_validation
-          : labels.error_unknown}
+        <div
+          role="alert"
+          className="rounded border border-oxblood/40 bg-oxblood/5 p-3 text-sm text-oxblood"
+        >
+          {error.kind === "duplicate"
+            ? labels.error_duplicate
+            : error.kind === "validation"
+              ? labels.error_validation
+              : labels.error_unknown}
         </div>
       )}
 
@@ -2881,7 +2940,9 @@ export default function PromoteForm({ labels }: Props) {
         >
           {status === "saving" ? labels.saving : labels.save}
         </button>
-        <a href="/" className="text-sm text-ink/70 underline">{labels.cancel}</a>
+        <a href="/" className="text-sm text-ink/70 underline">
+          {labels.cancel}
+        </a>
       </div>
     </form>
   );
@@ -2893,6 +2954,7 @@ export default function PromoteForm({ labels }: Props) {
 ## Task E1.5 — Create `/admin/promote` page
 
 **Files:**
+
 - Create: `src/pages/admin/promote.astro`
 
 - [ ] **Step 1: Write the page**
@@ -2970,6 +3032,7 @@ const labels = {
 ## Task E1.6 — Add the `admin.promote.*` i18n keys
 
 **Files:**
+
 - Modify: `src/i18n/es.json`
 - Modify: `src/i18n/en.json`
 
@@ -3156,6 +3219,7 @@ Resume at Slice E2.
 ## Task E2.1 — Extend `<PromoteForm>` to load + prefill from suggestion
 
 **Files:**
+
 - Modify: `src/components/PromoteForm.tsx`
 
 - [ ] **Step 1: Add a `suggestionId` prop + loading state**
@@ -3163,11 +3227,13 @@ Resume at Slice E2.
 Open [src/components/PromoteForm.tsx](../../src/components/PromoteForm.tsx). Make the following edits:
 
 Add to the imports at the top:
+
 ```ts
 import { getSuggestion, type SuggestionDetail } from "~/lib/suggestions-detail";
 ```
 
 Extend `Props`:
+
 ```ts
 interface Props {
   labels: PromoteFormLabels;
@@ -3176,81 +3242,88 @@ interface Props {
 ```
 
 Extend `PromoteFormLabels` (add at the end, before the closing brace):
+
 ```ts
-  // Suggestion context column (only used when suggestionId is set)
-  title_review: string;
-  context_submitted_on: string;
-  context_proposed_author: string;
-  context_country: string;
-  context_books_text: string;
-  context_note: string;
-  context_submitter: string;
-  reviewer_notes_label: string;
+// Suggestion context column (only used when suggestionId is set)
+title_review: string;
+context_submitted_on: string;
+context_proposed_author: string;
+context_country: string;
+context_books_text: string;
+context_note: string;
+context_submitter: string;
+reviewer_notes_label: string;
 ```
 
 Update the component signature:
+
 ```ts
 export default function PromoteForm({ labels, suggestionId }: Props) {
 ```
 
 Add state for the suggestion + reviewer notes (right after the existing `useState` lines):
+
 ```ts
-  const [suggestion, setSuggestion] = useState<SuggestionDetail | null>(null);
-  const [suggestionLoading, setSuggestionLoading] = useState<boolean>(!!suggestionId);
-  const [reviewerNotes, setReviewerNotes] = useState<string>("");
+const [suggestion, setSuggestion] = useState<SuggestionDetail | null>(null);
+const [suggestionLoading, setSuggestionLoading] = useState<boolean>(!!suggestionId);
+const [reviewerNotes, setReviewerNotes] = useState<string>("");
 ```
 
 Add a `useEffect` to fetch + prefill when `suggestionId` is present (place after the `getCountries` useEffect):
+
 ```ts
-  useEffect(() => {
-    if (!suggestionId) return;
-    let cancelled = false;
-    getSuggestion(suggestionId)
-      .then((s) => {
-        if (cancelled || !s) return;
-        setSuggestion(s);
-        setAuthor((a) => ({
-          ...a,
-          name: s.proposed_author_name,
-          country_iso_a3: s.proposed_country_iso_a3,
-        }));
-        setSuggestionLoading(false);
-      })
-      .catch((e) => {
-        console.error("[PromoteForm] load suggestion failed:", e);
-        setSuggestionLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [suggestionId]);
+useEffect(() => {
+  if (!suggestionId) return;
+  let cancelled = false;
+  getSuggestion(suggestionId)
+    .then((s) => {
+      if (cancelled || !s) return;
+      setSuggestion(s);
+      setAuthor((a) => ({
+        ...a,
+        name: s.proposed_author_name,
+        country_iso_a3: s.proposed_country_iso_a3,
+      }));
+      setSuggestionLoading(false);
+    })
+    .catch((e) => {
+      console.error("[PromoteForm] load suggestion failed:", e);
+      setSuggestionLoading(false);
+    });
+  return () => {
+    cancelled = true;
+  };
+}, [suggestionId]);
 ```
 
 Update the title rendering — replace the existing `<h1>` line:
+
 ```tsx
-        <h1 className="mt-2 font-serif text-2xl text-ink">
-          {suggestionId ? labels.title_review : labels.title_new}
-        </h1>
+<h1 className="mt-2 font-serif text-2xl text-ink">
+  {suggestionId ? labels.title_review : labels.title_new}
+</h1>
 ```
 
 Update the `onSubmit` function to pass `suggestionId` and `reviewer_notes`:
+
 ```ts
-    const result = await promoteSuggestion(
-      suggestionId ?? null,
-      {
-        // ... existing author fields ...
-        reviewer_notes: suggestionId ? reviewerNotes.trim() || undefined : undefined,
-      },
-      // ... books unchanged ...
-    );
+const result = await promoteSuggestion(
+  suggestionId ?? null,
+  {
+    // ... existing author fields ...
+    reviewer_notes: suggestionId ? reviewerNotes.trim() || undefined : undefined,
+  },
+  // ... books unchanged ...
+);
 ```
 
 Update the post-save redirect (replace `window.location.href = "/";`):
+
 ```ts
-    if (result.ok) {
-      window.location.href = suggestionId ? "/admin/inbox" : "/";
-      return;
-    }
+if (result.ok) {
+  window.location.href = suggestionId ? "/admin/inbox" : "/";
+  return;
+}
 ```
 
 Wrap the entire current form return in a two-column layout when `suggestionId` is set. Replace the existing `return (...)` block with:
@@ -3316,6 +3389,7 @@ Run: `npm run build`. Expected: passes after adding the new label fields in the 
 ## Task E2.2 — Update `/admin/promote.astro` to pass `suggestionId` + new labels
 
 **Files:**
+
 - Modify: `src/pages/admin/promote.astro`
 
 - [ ] **Step 1: Read `?suggestion=` from the URL on the Astro side**
@@ -3406,12 +3480,12 @@ const suggestionId = Astro.url.searchParams.get("suggestion") ?? undefined;
 > Remove the `Astro.url.searchParams` line. In `PromoteForm.tsx`, read the URL on mount when `suggestionId` is undefined:
 >
 > ```ts
->   useEffect(() => {
->     if (suggestionId) return; // explicit prop wins
->     const params = new URLSearchParams(window.location.search);
->     const fromUrl = params.get("suggestion");
->     if (fromUrl) setSuggestionId(fromUrl); // or set local state
->   }, [suggestionId]);
+> useEffect(() => {
+>   if (suggestionId) return; // explicit prop wins
+>   const params = new URLSearchParams(window.location.search);
+>   const fromUrl = params.get("suggestion");
+>   if (fromUrl) setSuggestionId(fromUrl); // or set local state
+> }, [suggestionId]);
 > ```
 >
 > Simpler approach used in this plan: skip the Astro-side parsing entirely. The form reads `window.location.search` directly (same pattern as `SuggestionReview.tsx`).
@@ -3423,24 +3497,24 @@ Revert the page to NOT read `Astro.url.searchParams`. Drop the line `const sugge
 Then in `src/components/PromoteForm.tsx`, instead of receiving `suggestionId` as a prop, use a local state that hydrates from the URL:
 
 ```ts
-  const [suggestionId, setSuggestionId] = useState<string | undefined>(undefined);
+const [suggestionId, setSuggestionId] = useState<string | undefined>(undefined);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get("suggestion");
-    if (id) setSuggestionId(id);
-    else setSuggestionLoading(false); // no suggestion → no loading state
-  }, []);
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("suggestion");
+  if (id) setSuggestionId(id);
+  else setSuggestionLoading(false); // no suggestion → no loading state
+}, []);
 ```
 
 Initialize `suggestionLoading` based on whether URL has the param at first paint:
 
 ```ts
-  const [suggestionLoading, setSuggestionLoading] = useState<boolean>(
-    typeof window !== "undefined"
-      ? new URLSearchParams(window.location.search).has("suggestion")
-      : false,
-  );
+const [suggestionLoading, setSuggestionLoading] = useState<boolean>(
+  typeof window !== "undefined"
+    ? new URLSearchParams(window.location.search).has("suggestion")
+    : false,
+);
 ```
 
 Remove the `suggestionId` prop from `Props`. Adjust the existing `useEffect` that loads the suggestion to depend on `[suggestionId]` and skip when undefined.
@@ -3456,6 +3530,7 @@ Run: `npm run build`. Expected: passes.
 ## Task E2.3 — Add the `admin.promote.context.*` and `reviewer_notes_label` i18n keys
 
 **Files:**
+
 - Modify: `src/i18n/es.json`
 - Modify: `src/i18n/en.json`
 
@@ -3504,6 +3579,7 @@ Submit a fresh suggestion at `/suggest` as anon (or seed one).
 - [ ] **Step 2: Log in as admin → inbox icon → Revisar → Promotar**
 
 Expected:
+
 - Inbox shows the pending suggestion + badge count.
 - Click "Revisar" → suggestion details page.
 - Click "Promotar" → lands on `/admin/promote?suggestion=<uuid>`.
@@ -3554,6 +3630,7 @@ After Slice E2 commits, do these housekeeping updates before opening the PR.
 ## Task F1 — Update `docs/STATUS.md`
 
 **Files:**
+
 - Modify: `docs/STATUS.md`
 
 - [ ] **Step 1: Roadmap table**
@@ -3575,31 +3652,37 @@ Add a new section at the top of the file (above the existing "Last session" bloc
 **Branch in progress:** `feature/07b-promote-and-crud` (six commits; merge after final review).
 
 ### DB
+
 - Migrations 0004 (`unaccent` + `slugify()` + `currently_reading` enum value) and 0005 (`promote_suggestion()` RPC with `SECURITY DEFINER`, `is_admin()` gate, duplicate-`(name, country)` guard, slug auto-generation + collision suffix).
 - ADR 0004 — translation strategy (DeepL via admin Edge Function, owner reviews before save).
 
 ### Map state model
+
 - Third state `currently_reading` (sage `#7a9b82`) added alongside read (penguin) and discovery (oxblood).
 - Filter row went from 3 → 4 buttons: `Todas / Sugerencias / Leyendo / Leídas`.
 - Semantic CSS aliases (`--c-state-read`, `--c-state-currently-reading`, `--c-state-discovery`) in `tokens.css` so future palette swaps are one-line edits.
 - i18n label rename only — "Descubrimientos" → "Sugerencias" in ES (`Discoveries` → `Suggestions` in EN). DB enum stays `discovery`.
 
 ### Admin UX
+
 - Route restructure: `/admin` = login form, `/admin/inbox` = list, `/admin/promote` = form.
 - `<AdminAwareNav>` mounted in `Base.astro` renders public nav for anon, admin nav for authenticated admin (3 icons + tooltip + pending-count badge, 60s polling).
 - Skeleton placeholder during the ~150ms session check — no content flicker.
 
 ### Promote / Reject
+
 - `<SuggestionReview>` page replaces the 7a placeholder: Promotar + Rechazar buttons; Rechazar uses an inline reason textarea + plain PostgREST update.
 - `<PromoteForm>` handles both entry points — from suggestion (prefilled, suggestion context column, reviewer notes) or from scratch (`+ Añadir` icon in admin nav, empty form).
 - Atomic save via `promote_suggestion()` RPC; redirects to `/admin/inbox` (from suggestion) or `/` (from scratch).
 
 ### Translation
+
 - `supabase/functions/translate/index.ts` — admin-only DeepL proxy (`verify_jwt = true` + extra role check).
 - `<TranslateButton>` component used per bilingual field pair (bio + book description), with confirm modal when the target field is non-empty.
 - `.env.example` adds `DEEPL_API_KEY` (free tier).
 
 ### Out of scope (lives in 7b-ii)
+
 - Edit existing author / book / book_links.
 - Add more books to an existing author after promotion.
 - Delete actions.
@@ -3622,6 +3705,7 @@ Update to refer to `feature/07b-ii-author-crud` as the next branch.
 ## Task F2 — Update `docs/RAG.md`
 
 **Files:**
+
 - Modify: `docs/RAG.md`
 
 - [ ] **Step 1: Verify ADR 0004 row exists**
@@ -3637,6 +3721,7 @@ The spec + plan files already use the `specs/YYYY-...` and `plans/YYYY-...` patt
 ## Task F3 — Update `supabase/README.md`
 
 **Files:**
+
 - Modify: `supabase/README.md`
 
 - [ ] **Step 1: Verify the Stage 7b-i translate section was added**
@@ -3672,6 +3757,7 @@ Replay the spec's [§ Verification](../specs/2026-06-09-stage-7b-i-design.md#ver
 - [ ] **Step 3: STOP — Stage 7b-i implementation complete**
 
 User actions:
+
 1. Commit the docs updates: `feat(stage-7b-i,docs): STATUS, RAG, supabase/README updates for end-of-stage`
 2. Open a PR `feature/07b-promote-and-crud` → `development`. Title: `Stage 7b-i — promote suggestion + currently_reading + translate + unified admin UX`.
 3. After review, merge to `development`, then to `master`.

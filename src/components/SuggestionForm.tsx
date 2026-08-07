@@ -89,9 +89,7 @@ export default function SuggestionForm({
   const [form, setForm] = useState<FormState>(EMPTY);
   const [turnstileToken, setTurnstileToken] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<keyof SuggestionFormLabels["errors"] | "">(
-    "",
-  );
+  const [error, setError] = useState<keyof SuggestionFormLabels["errors"] | "">("");
 
   const turnstileRef = useRef<HTMLDivElement | null>(null);
   const widgetIdRef = useRef<string | null>(null);
@@ -183,8 +181,7 @@ export default function SuggestionForm({
         if (body?.error === "turnstile") setError("turnstile");
         else if (body?.error === "validation") setError("validation");
         else setError("network");
-        if (window.turnstile && widgetIdRef.current)
-          window.turnstile.reset(widgetIdRef.current);
+        if (window.turnstile && widgetIdRef.current) window.turnstile.reset(widgetIdRef.current);
         setTurnstileToken("");
         setSubmitting(false);
         return;
@@ -193,8 +190,7 @@ export default function SuggestionForm({
       window.location.assign(thanksUrl);
     } catch {
       setError("network");
-      if (window.turnstile && widgetIdRef.current)
-        window.turnstile.reset(widgetIdRef.current);
+      if (window.turnstile && widgetIdRef.current) window.turnstile.reset(widgetIdRef.current);
       setTurnstileToken("");
       setSubmitting(false);
     }
@@ -202,10 +198,7 @@ export default function SuggestionForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-      <Field
-        label={labels.fields.author_name_label + labels.required_mark}
-        htmlFor="author-name"
-      >
+      <Field label={labels.fields.author_name_label + labels.required_mark} htmlFor="author-name">
         <input
           id="author-name"
           type="text"
@@ -218,10 +211,7 @@ export default function SuggestionForm({
         />
       </Field>
 
-      <Field
-        label={labels.fields.country_label + labels.required_mark}
-        htmlFor="country"
-      >
+      <Field label={labels.fields.country_label + labels.required_mark} htmlFor="country">
         <select
           id="country"
           required
@@ -282,10 +272,7 @@ export default function SuggestionForm({
         />
       </Field>
 
-      <Field
-        label={labels.fields.submitter_name_label}
-        htmlFor="submitter-name"
-      >
+      <Field label={labels.fields.submitter_name_label} htmlFor="submitter-name">
         <input
           id="submitter-name"
           type="text"
@@ -351,10 +338,7 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <label
-        htmlFor={htmlFor}
-        className="block text-sm font-medium text-ink font-body"
-      >
+      <label htmlFor={htmlFor} className="block text-sm font-medium text-ink font-body">
         {label}
       </label>
       {children}

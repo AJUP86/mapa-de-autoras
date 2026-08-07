@@ -35,9 +35,7 @@ export type PromoteError =
   | { kind: "unauthorized" }
   | { kind: "unknown"; message: string };
 
-export type PromoteResult =
-  | { ok: true; authorId: string }
-  | { ok: false; error: PromoteError };
+export type PromoteResult = { ok: true; authorId: string } | { ok: false; error: PromoteError };
 
 export async function promoteSuggestion(
   suggestionId: string | null,
@@ -52,7 +50,8 @@ export async function promoteSuggestion(
   if (error) {
     const msg = error.message ?? "";
     if (msg.startsWith("duplicate_author:")) return { ok: false, error: { kind: "duplicate" } };
-    if (msg.startsWith("validation:")) return { ok: false, error: { kind: "validation", message: msg } };
+    if (msg.startsWith("validation:"))
+      return { ok: false, error: { kind: "validation", message: msg } };
     if (msg.startsWith("unauthorized:")) return { ok: false, error: { kind: "unauthorized" } };
     return { ok: false, error: { kind: "unknown", message: msg } };
   }

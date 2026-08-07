@@ -7,7 +7,7 @@ import TranslateButton from "./TranslateButton";
 
 export interface BookValue {
   title: string;
-  year: string;          // string in the form; coerced to number at submit
+  year: string; // string in the form; coerced to number at submit
   original_language: string;
   cover_url: string;
   description_es: string;
@@ -59,11 +59,7 @@ export default function BookFields({ index, value, onChange, onRemove, labels }:
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-ink">Libro {index + 1}</span>
         {onRemove && (
-          <button
-            type="button"
-            onClick={onRemove}
-            className="text-xs text-oxblood underline"
-          >
+          <button type="button" onClick={onRemove} className="text-xs text-oxblood underline">
             {labels.remove}
           </button>
         )}

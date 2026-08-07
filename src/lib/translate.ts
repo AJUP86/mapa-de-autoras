@@ -8,10 +8,7 @@ import { supabase } from "./supabase";
 
 export type TargetLang = "EN" | "ES";
 
-export async function translateText(
-  text: string,
-  target_lang: TargetLang,
-): Promise<string> {
+export async function translateText(text: string, target_lang: TargetLang): Promise<string> {
   const { data, error } = await supabase.functions.invoke<{ text?: string; error?: string }>(
     "translate",
     { body: { text, target_lang } },

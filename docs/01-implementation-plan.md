@@ -64,6 +64,7 @@ git push -u origin development
 **Goal:** a runnable Astro project with the brand wired through CSS variables and a visual styleguide page so the palette and type are iterable from day one.
 
 **Build:**
+
 - Manually scaffold a minimal Astro 5 project (avoids `create-astro`'s interactive boilerplate). TypeScript strict via `astro/tsconfigs/strict`.
 - Dependencies: `astro`, `@astrojs/react`, `@astrojs/sitemap`, `tailwindcss` v4, `@tailwindcss/vite`, `react`, `react-dom`, `@fontsource-variable/fraunces`, `@fontsource-variable/inter`. Dev: `typescript`, `@types/react`, `@types/react-dom`, `prettier`, `prettier-plugin-astro`.
 - `astro.config.mjs` — `output: 'static'`, integrations: React + sitemap; Vite plugin: `@tailwindcss/vite`.
@@ -76,6 +77,7 @@ git push -u origin development
 - Root `README.md` "Getting started" filled in.
 
 **Verify:**
+
 1. `pnpm dev` boots; `http://localhost:4321/` renders the placeholder hero on parchment.
 2. `http://localhost:4321/styleguide` shows all palette swatches with the right colors.
 3. Editing `src/styles/tokens.css` and reloading visibly changes the palette everywhere.
@@ -92,6 +94,7 @@ git push -u origin development
 **Goal:** bilingual routing and translation lookup, no real content yet.
 
 **Build:**
+
 - `astro.config.mjs` — `i18n: { locales: ['es','en'], defaultLocale: 'es', routing: { prefixDefaultLocale: false } }`.
 - `src/i18n/es.json`, `src/i18n/en.json` — small starter catalog (`nav.home`, `nav.suggest`, `hero.headline`, `hero.subhead`).
 - `src/i18n/t.ts` — tiny `t(lang, key)` helper.
@@ -99,6 +102,7 @@ git push -u origin development
 - `src/components/LanguageSwitch.astro` — top-right toggle.
 
 **Verify:**
+
 1. `/` shows Spanish content; `/en/` shows English; toggle preserves the current page.
 2. Adding a key to both catalogs and referencing it via `t()` works.
 
@@ -113,6 +117,7 @@ git push -u origin development
 **Goal:** the database exists, with all six tables, RLS, indexes, and the countries seed.
 
 **Build:**
+
 - `supabase init` in `supabase/`.
 - `supabase/migrations/0001_init.sql` — all six tables per [adr/0003-data-model.md](adr/0003-data-model.md), including the `authors.status` enum, every index, every RLS policy, and the `is_admin()` helper function.
 - `supabase/seed.sql` — seed `countries` from a public ISO 3166-1 list (~250 rows).
@@ -120,6 +125,7 @@ git push -u origin development
 - `.env.example` — `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE`.
 
 **Verify:**
+
 1. `supabase start` brings up the local stack.
 2. `supabase db reset` applies migrations and seed cleanly.
 3. With `anon` JWT: `INSERT` into `suggestions` succeeds; `SELECT` from `suggestions` returns zero rows (RLS).
@@ -136,6 +142,7 @@ git push -u origin development
 **Goal:** the hero feature working end-to-end against mocked data — no Supabase wiring yet.
 
 **Build:**
+
 - Install `@vnedyalk0v/react19-simple-maps` + `topojson-client` + `world-atlas`.
 - `src/components/AuthorsMap.tsx` — React island; props per [00-mvp-plan.md § The map](00-mvp-plan.md).
 - `src/components/CountryPanel.tsx` — side panel with author list, per-author "Read" / "Discovery" tag.
@@ -145,6 +152,7 @@ git push -u origin development
 - `src/pages/index.astro` — wires hero + map + filter + panel; `client:visible` on the map island.
 
 **Verify:**
+
 1. Map renders all countries; mocked highlighted countries show the right tint.
 2. Tap/click a country (desktop + mobile viewport) → side panel opens with the author list.
 3. Filter `Read` only highlights read+mixed; `Discoveries` only highlights discovery+mixed; `All` shows everything.
@@ -162,6 +170,7 @@ git push -u origin development
 **Goal:** replace the mock with live Supabase reads.
 
 **Build:**
+
 - `src/lib/supabase.ts` — typed `supabase-js` client (anon key).
 - Generated TS types from the schema (`supabase gen types typescript`).
 - `src/lib/authors.ts` — `getCountryStates()` and `getAuthorsByCountry(iso, filter)`.
@@ -169,6 +178,7 @@ git push -u origin development
 - A few seeded test authors per country in a dev-only `supabase/seeds/dev-authors.sql`.
 
 **Verify:**
+
 1. With dev seed loaded, the map highlights the correct countries with correct tints.
 2. Clicking a country shows the seeded authors.
 3. Build still passes; static output works.
@@ -184,6 +194,7 @@ git push -u origin development
 **Goal:** anonymous visitors can submit a suggestion; row lands in `suggestions`.
 
 **Build:**
+
 - `src/pages/suggest.astro` + `src/components/SuggestionForm.tsx` (React island).
 - Cloudflare Turnstile widget on the form (use Cloudflare test sitekey in dev).
 - `supabase/functions/submit_suggestion/index.ts` — verifies Turnstile token server-side, validates input, inserts into `suggestions`, optionally upserts `subscribers` as `pending` + sends double-opt-in email via Resend.
@@ -191,6 +202,7 @@ git push -u origin development
 - A success page + an error message UX.
 
 **Verify:**
+
 1. Submit a suggestion (no newsletter opt-in) → row in `suggestions` with `status='pending'`, `turnstile_verified=true`.
 2. Submit a suggestion (with newsletter opt-in) → also row in `subscribers` (`status='pending'`); double-opt-in email arrives.
 3. Submitting with a bad Turnstile token returns a clean error.
@@ -208,6 +220,7 @@ git push -u origin development
 > This is the biggest stage. If it crosses ~300 lines, **split** into `07a-notify-and-auth` and `07b-inbox-and-crud`.
 
 **Build:**
+
 - DB webhook on `suggestions INSERT` → `supabase/functions/notify_owner/index.ts` → Resend email to owner.
 - `src/pages/admin/login.astro` — magic-link form.
 - `src/pages/admin/index.astro` — inbox of pending suggestions (`<AdminInbox>` island).
@@ -217,6 +230,7 @@ git push -u origin development
 - Auth guard via Supabase session on the client; `is_admin()` checked server-side on every write.
 
 **Verify:**
+
 1. Submit a public suggestion → owner inbox receives email within seconds.
 2. Owner clicks magic-link from another email → lands on `/admin` logged in.
 3. Owner approves suggestion → promote form pre-filled → save → author appears on the public map at the right country with `discovery` tint.
@@ -235,6 +249,7 @@ git push -u origin development
 **Design:** [docs/specs/2026-07-20-stage-8-notify-submitter-design.md](specs/2026-07-20-stage-8-notify-submitter-design.md) — full scope, decisions table, architecture, verification.
 
 **Build:**
+
 - Migration `0010_stage8_notify_submitter.sql` — adds `locale`, `promoted_author_id`, `notified_at` columns to `suggestions`; re-declares `promote_suggestion` RPC to populate `promoted_author_id`.
 - `supabase/functions/notify_submitter/index.ts` — webhook-triggered Edge Function; auth via Bearer presence + Supabase platform-level `verify_jwt`; conditional `notified_at` claim for at-most-once semantics; renders + sends via Resend.
 - `supabase/functions/notify_submitter/email.ts` — inlined ES/EN strings + `renderEmail()`.
@@ -246,6 +261,7 @@ git push -u origin development
 - `docs/30-ops/notify-submitter-debug.md` runbook — captures the debug patterns hit during Slice D (401 auth failure, `net._http_response` inspection, Windows `--use-api` requirement).
 
 **Verify (staging):**
+
 1. Opt-in submission → promote → email delivered (subject + body match locale) → `notified_at` populated.
 2. Opt-out submission → promote → no email, `notified_at` remains `NULL` (guarded by `if (sug.accepted_newsletter !== true)` in the function).
 3. `promoted_author_id` populated on the resolved suggestion row.
@@ -263,7 +279,8 @@ git push -u origin development
 **Goal:** `staging.mapadeautoras.com` reachable, auto-deploying every push to `development`. Internal-only QA + client demo environment.
 
 **Build:**
-- Hosted Supabase project `mapa-staging` in `eu-west-1`. All migrations applied + 249-country seed + admin user bootstrapped. Edge Functions deployed (`submit_suggestion`, `notify_owner`, `translate`). Function env vars set (TURNSTILE_SECRET_KEY, DEEPL_API_KEY — NOT RESEND_*).
+
+- Hosted Supabase project `mapa-staging` in `eu-west-1`. All migrations applied + 249-country seed + admin user bootstrapped. Edge Functions deployed (`submit_suggestion`, `notify_owner`, `translate`). Function env vars set (TURNSTILE*SECRET_KEY, DEEPL_API_KEY — NOT RESEND*\*).
 - Migration `0006_heartbeat_rpc.sql` — `public.heartbeat()` no-op for free-tier auto-pause prevention.
 - Migration `0007_fix_notify_url_setting.sql` — namespace fix for notify trigger.
 - Cloudflare Pages project connected to GitHub, production branch = `development`. Env vars in Production scope (PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, PUBLIC_TURNSTILE_SITE_KEY, NODE_VERSION=22).
@@ -273,6 +290,7 @@ git push -u origin development
 - `docs/30-ops/staging-deploy.md` — operational runbook.
 
 **Verify:**
+
 1. `https://staging.mapadeautoras.com` loads, map renders, real Supabase calls in devtools Network.
 2. Suggestion form submits, lands in staging Studio.
 3. Admin magic-link login works end-to-end (email arrives in real inbox).
@@ -290,6 +308,7 @@ git push -u origin development
 **Goal:** Flip the public map from build-time Astro fetch to a static shell + client-side fetch + Supabase Realtime subscription, so promoted authors appear on open tabs within ~1s without a rebuild. See [adr/0005-realtime-map-data.md](adr/0005-realtime-map-data.md).
 
 **Build:**
+
 - Migration `0008_realtime_authors.sql` — add `authors` + `books` to the `supabase_realtime` publication.
 - Migration `0009_iso_columns_to_text.sql` — convert ISO code columns `char(3)` → `text`. Supabase Realtime truncates `bpchar` to one character in `postgres_changes` payloads, so `country_iso_a3` arrived as `"A"` not `"AUS"` and live authors never matched a map country (REST/`getCatalog` decoded them correctly, so only reloads worked).
 - `src/lib/realtime-reducers.ts` — pure INSERT/UPDATE/DELETE catalog patchers (granular patching, no refetch-on-event).
@@ -299,6 +318,7 @@ git push -u origin development
 - **Test baseline (first automated tests in the repo):** Vitest + unit tests for the pure logic — `src/lib/map-state.test.ts` and `src/lib/realtime-reducers.test.ts` (28 tests). Scripts: `npm test` (run once) and `npm run test:watch`.
 
 **Verify:**
+
 1. `npm test` — all unit tests pass.
 2. `npm run build` — no `[authors] getCatalog() failed` lines (the build is data-independent).
 3. Two-tab demo: promote/insert a published author in one tab → the country paints live in another open tab within ~1s, no reload.
@@ -315,6 +335,7 @@ git push -u origin development
 **Goal:** `mapadeautoras.com` + `www.mapadeautoras.com` live on Cloudflare Pages backed by `mapa-prod` Supabase project. Real notification emails via Resend.
 
 **Build:**
+
 - New hosted Supabase project `mapa-prod` (same region as staging). Migrations + admin bootstrap + functions deploy.
 - SEPARATE Cloudflare Pages project pointed at `master`, custom domains apex + www.
 - Resend domain auth on `mapadeautoras.com` (SPF/DKIM/DMARC). `RESEND_API_KEY` + `RESEND_FROM_EMAIL` + `OWNER_NOTIFICATION_EMAIL` set on prod Supabase function settings.
@@ -323,6 +344,7 @@ git push -u origin development
 - Heartbeat workflow matrix updated to include production env.
 
 **Verify:**
+
 1. `https://mapadeautoras.com` + `https://www.mapadeautoras.com` resolve, serve HTTPS.
 2. Submitting a real suggestion triggers a Resend email to `OWNER_NOTIFICATION_EMAIL`.
 3. Magic-link login works on production URL.
@@ -339,6 +361,7 @@ git push -u origin development
 **Goal:** seed real content and run the launch checklist.
 
 **Build:**
+
 - Seed initial author/book data from the creator.
 - About / contact page.
 - Open-Graph + Twitter card metadata per locale.
@@ -346,6 +369,7 @@ git push -u origin development
 - `docs/30-ops/launch-checklist.md` — Lighthouse, accessibility audit, broken-link sweep, mobile QA on real device, email deliverability check (SPF/DKIM/DMARC for Resend).
 
 **Verify:**
+
 1. Lighthouse mobile: Performance ≥ 90, Accessibility ≥ 95, SEO ≥ 95 on `/`, `/en/`, `/suggest`, `/en/suggest`.
 2. Real-device test on iOS Safari + Android Chrome.
 3. Test suggestion from a real (non-localhost) browser succeeds end-to-end.

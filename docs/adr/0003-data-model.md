@@ -57,12 +57,14 @@ A single Postgres function `is_admin()` is the common predicate. Suggestion appr
 ## Consequences
 
 **Positive**
+
 - Anonymous writes to `suggestions` and `subscribers` are safe by RLS construction — no server-side gatekeeping required.
 - Bilingual reads are single-row, single-query.
 - Adding a third locale is a schema migration, not a rewrite.
 - Author-level status keeps the admin form trivial (one dropdown), and accepted suggestions default to `discovery` — the natural state for an author the owner hasn't read yet.
 
 **Negative / risks**
+
 - Adding a fourth locale starts to feel awkward — we'd revisit JSON or a translations table at that point.
 - RLS bugs are silent (rows just don't appear). Mitigation: integration tests that hit each policy from each role.
 - `book_links.retailer` enum will need migration as we add retailers — accept it; it's clearer than a free-text column.

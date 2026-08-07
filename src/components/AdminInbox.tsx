@@ -53,11 +53,11 @@ export default function AdminInbox({ labels }: Props) {
   return (
     <section className="mx-auto max-w-4xl">
       <h1 className="font-serif text-2xl text-ink mb-4">{labels.title}</h1>
-      {state.kind === "loading" && (
-        <p className="text-ink/60">{labels.loading}</p>
-      )}
+      {state.kind === "loading" && <p className="text-ink/60">{labels.loading}</p>}
       {state.kind === "error" && (
-        <p className="text-oxblood" role="alert">{labels.error}</p>
+        <p className="text-oxblood" role="alert">
+          {labels.error}
+        </p>
       )}
       {state.kind === "loaded" && state.rows.length === 0 && (
         <p className="text-ink/60">{labels.empty}</p>
@@ -81,10 +81,7 @@ export default function AdminInbox({ labels }: Props) {
                 <td className="py-2 pr-4 text-ink/80">{row.proposed_country_iso_a3}</td>
                 <td className="py-2 pr-4 text-ink/70">{row.submitter_email}</td>
                 <td className="py-2">
-                  <a
-                    href={`/admin/suggestion?id=${row.id}`}
-                    className="text-oxblood underline"
-                  >
+                  <a href={`/admin/suggestion?id=${row.id}`} className="text-oxblood underline">
                     {labels.view} →
                   </a>
                 </td>

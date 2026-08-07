@@ -31,8 +31,7 @@ interface TriggerPayload {
 const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, X-Webhook-Source",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Webhook-Source",
 };
 
 function json(body: unknown, status: number): Response {
@@ -64,8 +63,7 @@ function buildEmailBody(
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS")
-    return new Response(null, { status: 204, headers: CORS_HEADERS });
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS_HEADERS });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
 
   let payload: TriggerPayload;
@@ -75,11 +73,7 @@ Deno.serve(async (req: Request) => {
     return json({ error: "invalid_json" }, 400);
   }
 
-  if (
-    payload.type !== "INSERT" ||
-    payload.table !== "suggestions" ||
-    !payload.record
-  ) {
+  if (payload.type !== "INSERT" || payload.table !== "suggestions" || !payload.record) {
     return json({ error: "unexpected_payload" }, 400);
   }
 

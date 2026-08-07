@@ -14,12 +14,14 @@ type AuthorWithBooksRow = {
   birth_year: number | null;
   death_year: number | null;
   country_iso_a3: string;
-  books: {
-    id: string;
-    title: string;
-    year: number | null;
-    display_order: number;
-  }[] | null;
+  books:
+    | {
+        id: string;
+        title: string;
+        year: number | null;
+        display_order: number;
+      }[]
+    | null;
 };
 
 /**

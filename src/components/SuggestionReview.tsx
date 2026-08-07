@@ -79,22 +79,30 @@ export default function SuggestionReview({ labels }: Props) {
     return <p className="text-ink/60">{labels.loading}</p>;
   }
   if (state.kind === "error") {
-    return <p className="text-oxblood">{labels.error}: {state.msg}</p>;
+    return (
+      <p className="text-oxblood">
+        {labels.error}: {state.msg}
+      </p>
+    );
   }
   if (state.kind === "not_found") {
     return (
       <div className="space-y-2">
         <p className="text-ink/60">{labels.not_found}</p>
-        <a href="/admin/inbox" className="text-oxblood underline">← {labels.back_to_inbox}</a>
+        <a href="/admin/inbox" className="text-oxblood underline">
+          ← {labels.back_to_inbox}
+        </a>
       </div>
     );
   }
 
   const s = state.suggestion;
   const statusLabel =
-    s.status === "pending" ? labels.status_pending
-    : s.status === "approved" ? labels.status_approved
-    : labels.status_rejected;
+    s.status === "pending"
+      ? labels.status_pending
+      : s.status === "approved"
+        ? labels.status_approved
+        : labels.status_rejected;
 
   async function onConfirmReject() {
     setRejectStatus("submitting");
@@ -109,10 +117,16 @@ export default function SuggestionReview({ labels }: Props) {
   return (
     <section className="mx-auto max-w-2xl space-y-6">
       <div>
-        <a href="/admin/inbox" className="text-sm text-ink/70 underline">← {labels.back_to_inbox}</a>
+        <a href="/admin/inbox" className="text-sm text-ink/70 underline">
+          ← {labels.back_to_inbox}
+        </a>
         <h1 className="mt-2 font-serif text-2xl text-ink">{labels.title}</h1>
-        <p className="text-xs text-ink/50">{labels.submitted_on}: {formatDate(s.created_at)}</p>
-        <p className="text-xs text-ink/50">{labels.status}: <span className="font-medium">{statusLabel}</span></p>
+        <p className="text-xs text-ink/50">
+          {labels.submitted_on}: {formatDate(s.created_at)}
+        </p>
+        <p className="text-xs text-ink/50">
+          {labels.status}: <span className="font-medium">{statusLabel}</span>
+        </p>
       </div>
 
       <dl className="grid grid-cols-[140px_1fr] gap-y-2 text-sm">

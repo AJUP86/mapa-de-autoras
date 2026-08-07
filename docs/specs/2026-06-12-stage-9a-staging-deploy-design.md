@@ -43,20 +43,20 @@ Stage 9 was scheduled after 7b-ii + 8 in the original roadmap. We're pulling sta
 
 ## Decisions
 
-| # | Decision | Choice | Rationale |
-|---|---|---|---|
-| 1 | Branch → environment mapping | `development` auto-deploys to staging; `master` deploys to production in 9b | Matches existing `master ← development ← feature/NN` flow; client sees every merged feature within minutes |
-| 2 | Supabase project count | Two projects (`mapa-staging` now, `mapa-prod` in 9b) | Free tier allows two; staging writes never pollute production data |
-| 3 | Initial staging DB state | Empty (migrations + 249-country seed + admin user only — no dev-authors seed) | Clean cutover pattern matches production; client first impression shows the real "no data yet" state honestly |
-| 4 | Auth email transport | Supabase built-in mailer (free-tier: 4 emails/hour) | One admin user; rate limit is irrelevant; defers Resend domain auth to 9b |
-| 5 | `notify_owner` on staging | Stays in console-log mode (no `RESEND_API_KEY` set) | No Resend setup until 9b; suggestion writes still succeed because `pg_net.http_post` is async non-blocking |
-| 6 | DeepL key | Same `DEEPL_API_KEY` value as dev (one free-tier quota shared) | 500k chars/month is ~12× MVP volume; quota separation not warranted yet |
-| 7 | Turnstile | Same site as dev, extended with `staging.mapadeautoras.com` as an allowed hostname | One site key + secret to manage in 9a; 9b gets a fresh site for production isolation |
-| 8 | Heartbeat scope | Included in 9a, workflow parameterised so 9b is a 1-line matrix addition | Avoids forgetting it; protects staging from auto-pause while we work on 7b-ii / 8 |
-| 9 | Runbook location | `docs/30-ops/staging-deploy.md` | Matches original Stage 9 plan's path; introduces the `30-ops/` folder for future runbooks (deploy, key rotation, incident response) |
-| 10 | Secrets management | All actual values live in Cloudflare Pages env vars + Supabase function settings + GitHub Actions secrets. Repo only documents what's needed (extends `.env.example`) | Never commit hosted secrets |
-| 11 | Slice structure | Three functional bundles (Supabase env / Cloudflare env / heartbeat + docs) | Each slice end-to-end verifiable; matches 7b-i cadence |
-| 12 | Supabase region (staging + production) | `eu-west-1` (Ireland) | Static site assets ship from Cloudflare Pages' 300+ edge POPs, so Supabase region only affects dynamic calls (~50 KB initial fetch + low-frequency admin actions). London is optimal for Spain + NL (admin + client) at ~30 ms; Latin-American users pay ~200 ms on the initial fetch, acceptable for a mostly-static site. Free tier = one region per project, no read replicas — same region must be used for production in 9b |
+| #   | Decision                               | Choice                                                                                                                                                                | Rationale                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| --- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Branch → environment mapping           | `development` auto-deploys to staging; `master` deploys to production in 9b                                                                                           | Matches existing `master ← development ← feature/NN` flow; client sees every merged feature within minutes                                                                                                                                                                                                                                                                                                                       |
+| 2   | Supabase project count                 | Two projects (`mapa-staging` now, `mapa-prod` in 9b)                                                                                                                  | Free tier allows two; staging writes never pollute production data                                                                                                                                                                                                                                                                                                                                                               |
+| 3   | Initial staging DB state               | Empty (migrations + 249-country seed + admin user only — no dev-authors seed)                                                                                         | Clean cutover pattern matches production; client first impression shows the real "no data yet" state honestly                                                                                                                                                                                                                                                                                                                    |
+| 4   | Auth email transport                   | Supabase built-in mailer (free-tier: 4 emails/hour)                                                                                                                   | One admin user; rate limit is irrelevant; defers Resend domain auth to 9b                                                                                                                                                                                                                                                                                                                                                        |
+| 5   | `notify_owner` on staging              | Stays in console-log mode (no `RESEND_API_KEY` set)                                                                                                                   | No Resend setup until 9b; suggestion writes still succeed because `pg_net.http_post` is async non-blocking                                                                                                                                                                                                                                                                                                                       |
+| 6   | DeepL key                              | Same `DEEPL_API_KEY` value as dev (one free-tier quota shared)                                                                                                        | 500k chars/month is ~12× MVP volume; quota separation not warranted yet                                                                                                                                                                                                                                                                                                                                                          |
+| 7   | Turnstile                              | Same site as dev, extended with `staging.mapadeautoras.com` as an allowed hostname                                                                                    | One site key + secret to manage in 9a; 9b gets a fresh site for production isolation                                                                                                                                                                                                                                                                                                                                             |
+| 8   | Heartbeat scope                        | Included in 9a, workflow parameterised so 9b is a 1-line matrix addition                                                                                              | Avoids forgetting it; protects staging from auto-pause while we work on 7b-ii / 8                                                                                                                                                                                                                                                                                                                                                |
+| 9   | Runbook location                       | `docs/30-ops/staging-deploy.md`                                                                                                                                       | Matches original Stage 9 plan's path; introduces the `30-ops/` folder for future runbooks (deploy, key rotation, incident response)                                                                                                                                                                                                                                                                                              |
+| 10  | Secrets management                     | All actual values live in Cloudflare Pages env vars + Supabase function settings + GitHub Actions secrets. Repo only documents what's needed (extends `.env.example`) | Never commit hosted secrets                                                                                                                                                                                                                                                                                                                                                                                                      |
+| 11  | Slice structure                        | Three functional bundles (Supabase env / Cloudflare env / heartbeat + docs)                                                                                           | Each slice end-to-end verifiable; matches 7b-i cadence                                                                                                                                                                                                                                                                                                                                                                           |
+| 12  | Supabase region (staging + production) | `eu-west-1` (Ireland)                                                                                                                                                 | Static site assets ship from Cloudflare Pages' 300+ edge POPs, so Supabase region only affects dynamic calls (~50 KB initial fetch + low-frequency admin actions). London is optimal for Spain + NL (admin + client) at ~30 ms; Latin-American users pay ~200 ms on the initial fetch, acceptable for a mostly-static site. Free tier = one region per project, no read replicas — same region must be used for production in 9b |
 
 ---
 
@@ -100,6 +100,7 @@ Stage 9 was scheduled after 7b-ii + 8 in the original roadmap. We're pulling sta
 ### Slice A — Supabase staging environment
 
 **Build:**
+
 - New migration `supabase/migrations/0006_heartbeat_rpc.sql`:
   ```sql
   create or replace function public.heartbeat() returns text language sql stable as $$ select 'ok' $$;
@@ -118,6 +119,7 @@ Stage 9 was scheduled after 7b-ii + 8 in the original roadmap. We're pulling sta
 - Configure auth in dashboard: `site_url = https://staging.mapadeautoras.com`; `additional_redirect_urls` includes `/`, `/admin`, `/admin/inbox`.
 
 **Verify:**
+
 - `curl https://<staging-ref>.supabase.co/rest/v1/countries?select=count -H "apikey: <staging-anon-key>"` returns `[{"count":249}]`.
 - From Studio SQL Editor (service-role): `select * from auth.users` shows the admin user with `app_metadata.role = 'admin'`.
 - `curl -X POST` against the deployed `translate` function with an admin JWT returns translated text.
@@ -126,6 +128,7 @@ Stage 9 was scheduled after 7b-ii + 8 in the original roadmap. We're pulling sta
 ### Slice B — Cloudflare Pages + DNS
 
 **Build:**
+
 - Create Cloudflare Pages project in dashboard, connect to GitHub repo.
 - Build config: framework = Astro, build command = `npm run build`, output = `dist`, Node version = 20.
 - Set **production branch = `development`** (Pages-speak — the branch that gets the custom domain).
@@ -137,6 +140,7 @@ Stage 9 was scheduled after 7b-ii + 8 in the original roadmap. We're pulling sta
 - Add `staging.mapadeautoras.com` as a custom domain on the Pages project. Cloudflare auto-creates the CNAME since the registrar is the same account. Wait ~5 min for SSL provisioning.
 
 **Verify:**
+
 - `https://staging.mapadeautoras.com` loads with the map rendered, no authors visible (empty DB).
 - Devtools network panel shows successful 200s to `<staging-ref>.supabase.co`.
 - Submit a real suggestion via `/suggest` form (with Turnstile widget passing).
@@ -147,6 +151,7 @@ Stage 9 was scheduled after 7b-ii + 8 in the original roadmap. We're pulling sta
 ### Slice C — Heartbeat workflow + runbook + STATUS
 
 **Build:**
+
 - New workflow `.github/workflows/heartbeat.yml` — cron `0 6 * * 1` (Monday 06:00 UTC weekly); matrix-ready for prod in 9b. Uses GitHub Actions secrets `STAGING_SUPABASE_URL` + `STAGING_SUPABASE_ANON_KEY` to POST `/rest/v1/rpc/heartbeat` (the function shipped with Slice A).
 - New folder + file `docs/30-ops/staging-deploy.md` — runbook covering: env-var inventory (where each var lives), key rotation, Pages rollback to previous deployment, Supabase auto-pause recovery, common gotchas (magic-link redirect, `app.functions_url`).
 - `docs/01-implementation-plan.md` — split Stage 9 into 9a (Done after merge) + 9b (Pending). Update branch table.
@@ -156,6 +161,7 @@ Stage 9 was scheduled after 7b-ii + 8 in the original roadmap. We're pulling sta
 - `supabase/README.md` — add "Hosted (staging)" section linking to the runbook.
 
 **Verify:**
+
 - GitHub Actions → "Run workflow" button → workflow run → green, returns `"ok"`.
 - Re-run the workflow → still green (function is idempotent).
 - Read the runbook front-to-back — every step is followable without referring to the spec.
@@ -164,15 +170,15 @@ Stage 9 was scheduled after 7b-ii + 8 in the original roadmap. We're pulling sta
 
 ## Risks + mitigations
 
-| # | Risk | Mitigation |
-|---|---|---|
-| 1 | Magic-link redirect mismatch (`site_url` typo) breaks admin login on staging | Explicit verification step in Slice A; same gotcha as Stage 7a locally — solution is documented in `supabase/README.md` and the new runbook |
-| 2 | `app.functions_url` typo → notify trigger silently fails | Smoke test in Slice A: insert a test suggestion, check `net._http_response` for the POST result |
-| 3 | Pages build env vars wrong → site builds but PostgREST calls 401 | Slice B verification explicitly hits PostgREST from devtools console before sign-off |
-| 4 | Turnstile rejects staging hostname → suggestion form fails silently | Add hostname to Turnstile site BEFORE first Slice B deploy; verify form submission as part of Slice B sign-off |
-| 5 | Supabase free-tier auto-pause kicks in between sessions | Heartbeat workflow in Slice C; manual recovery path documented in runbook |
-| 6 | Client visits URL before Slice B completes and sees a blank page | Don't share the URL until Slice B verification passes |
-| 7 | Hosted DeepL quota shared with dev exhausts during testing | Quota is 500k chars/month; MVP usage is ~40k. Mitigation only needed in 9b if this proves wrong |
+| #   | Risk                                                                         | Mitigation                                                                                                                                  |
+| --- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Magic-link redirect mismatch (`site_url` typo) breaks admin login on staging | Explicit verification step in Slice A; same gotcha as Stage 7a locally — solution is documented in `supabase/README.md` and the new runbook |
+| 2   | `app.functions_url` typo → notify trigger silently fails                     | Smoke test in Slice A: insert a test suggestion, check `net._http_response` for the POST result                                             |
+| 3   | Pages build env vars wrong → site builds but PostgREST calls 401             | Slice B verification explicitly hits PostgREST from devtools console before sign-off                                                        |
+| 4   | Turnstile rejects staging hostname → suggestion form fails silently          | Add hostname to Turnstile site BEFORE first Slice B deploy; verify form submission as part of Slice B sign-off                              |
+| 5   | Supabase free-tier auto-pause kicks in between sessions                      | Heartbeat workflow in Slice C; manual recovery path documented in runbook                                                                   |
+| 6   | Client visits URL before Slice B completes and sees a blank page             | Don't share the URL until Slice B verification passes                                                                                       |
+| 7   | Hosted DeepL quota shared with dev exhausts during testing                   | Quota is 500k chars/month; MVP usage is ~40k. Mitigation only needed in 9b if this proves wrong                                             |
 
 ---
 
@@ -215,11 +221,11 @@ Captured here so 9b's brainstorm has a starting point. None of these block 9a or
 
 Restating the breakdown from conversation:
 
-| Phase | Hours |
-|---|---|
-| Spec + plan | 1.5–2 |
-| Slice A — Supabase staging | 1–1.5 |
-| Slice B — Cloudflare Pages + DNS | 1–1.5 |
-| Slice C — Heartbeat + docs | 1 |
-| First-deploy debug buffer | 1.5–2 |
-| **Total realistic** | **6–8h** spread over 2–3 sessions |
+| Phase                            | Hours                             |
+| -------------------------------- | --------------------------------- |
+| Spec + plan                      | 1.5–2                             |
+| Slice A — Supabase staging       | 1–1.5                             |
+| Slice B — Cloudflare Pages + DNS | 1–1.5                             |
+| Slice C — Heartbeat + docs       | 1                                 |
+| First-deploy debug buffer        | 1.5–2                             |
+| **Total realistic**              | **6–8h** spread over 2–3 sessions |

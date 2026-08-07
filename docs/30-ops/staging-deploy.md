@@ -4,28 +4,28 @@
 
 ## Environment inventory
 
-| Resource | Provider | Region | Console URL |
-|---|---|---|---|
-| Hosted DB + Auth + Edge Functions | Supabase | `eu-west-1` (Ireland) | `https://supabase.com/dashboard/project/kkdjrzuewnwrlokhemnl` |
-| Static site hosting | Cloudflare Pages | global edge | Cloudflare dashboard → Workers & Pages → `mapa-de-autoras` |
-| Domain | Cloudflare Registrar | n/a | Cloudflare dashboard → Domain Registration → `mapadeautoras.com` |
-| Heartbeat cron | GitHub Actions | GitHub-hosted | `https://github.com/AJUP86/mapa-de-autoras/actions/workflows/heartbeat.yml` |
-| Turnstile (bot defence) | Cloudflare Turnstile | n/a | Cloudflare dashboard → Turnstile → `mapa-de-autoras` widget |
+| Resource                          | Provider             | Region                | Console URL                                                                 |
+| --------------------------------- | -------------------- | --------------------- | --------------------------------------------------------------------------- |
+| Hosted DB + Auth + Edge Functions | Supabase             | `eu-west-1` (Ireland) | `https://supabase.com/dashboard/project/kkdjrzuewnwrlokhemnl`               |
+| Static site hosting               | Cloudflare Pages     | global edge           | Cloudflare dashboard → Workers & Pages → `mapa-de-autoras`                  |
+| Domain                            | Cloudflare Registrar | n/a                   | Cloudflare dashboard → Domain Registration → `mapadeautoras.com`            |
+| Heartbeat cron                    | GitHub Actions       | GitHub-hosted         | `https://github.com/AJUP86/mapa-de-autoras/actions/workflows/heartbeat.yml` |
+| Turnstile (bot defence)           | Cloudflare Turnstile | n/a                   | Cloudflare dashboard → Turnstile → `mapa-de-autoras` widget                 |
 
 ## Env vars — where each one lives
 
-| Variable | Location | Scope | Why there |
-|---|---|---|---|
-| `PUBLIC_SUPABASE_URL` | Cloudflare Pages env vars | **Production** scope (critical) | Read by Astro at build time; baked into the static bundle |
-| `PUBLIC_SUPABASE_ANON_KEY` | Cloudflare Pages env vars | **Production** scope | Same |
-| `PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Pages env vars | **Production** scope | Same |
-| `NODE_VERSION` | Cloudflare Pages env vars | **Production** scope | Must be `22` minimum (Node 20 EOL + Supabase Realtime needs WebSocket) |
-| `TURNSTILE_SECRET_KEY` | Supabase function settings (staging project) | n/a | Read by `submit_suggestion` at invocation |
-| `DEEPL_API_KEY` | Supabase function settings (staging project) | n/a | Read by `translate` at invocation |
-| `RESEND_API_KEY` | **Intentionally unset on staging** | n/a | Absence keeps `notify_owner` in console-log mode for 9a |
-| `STAGING_SUPABASE_URL` | GitHub Actions secrets | repo-level | Heartbeat workflow |
-| `STAGING_SUPABASE_ANON_KEY` | GitHub Actions secrets | repo-level | Heartbeat workflow |
-| `app.settings.functions_url` | (intentionally not set) | n/a | Supabase hosted blocks user-defined GUCs even in `app.settings.*` namespace; the notify trigger falls back to a dev URL on staging which fails silently (acceptable — `notify_owner` is console-only on staging). 9b switches to Supabase Database Webhooks. |
+| Variable                     | Location                                     | Scope                           | Why there                                                                                                                                                                                                                                                    |
+| ---------------------------- | -------------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `PUBLIC_SUPABASE_URL`        | Cloudflare Pages env vars                    | **Production** scope (critical) | Read by Astro at build time; baked into the static bundle                                                                                                                                                                                                    |
+| `PUBLIC_SUPABASE_ANON_KEY`   | Cloudflare Pages env vars                    | **Production** scope            | Same                                                                                                                                                                                                                                                         |
+| `PUBLIC_TURNSTILE_SITE_KEY`  | Cloudflare Pages env vars                    | **Production** scope            | Same                                                                                                                                                                                                                                                         |
+| `NODE_VERSION`               | Cloudflare Pages env vars                    | **Production** scope            | Must be `22` minimum (Node 20 EOL + Supabase Realtime needs WebSocket)                                                                                                                                                                                       |
+| `TURNSTILE_SECRET_KEY`       | Supabase function settings (staging project) | n/a                             | Read by `submit_suggestion` at invocation                                                                                                                                                                                                                    |
+| `DEEPL_API_KEY`              | Supabase function settings (staging project) | n/a                             | Read by `translate` at invocation                                                                                                                                                                                                                            |
+| `RESEND_API_KEY`             | **Intentionally unset on staging**           | n/a                             | Absence keeps `notify_owner` in console-log mode for 9a                                                                                                                                                                                                      |
+| `STAGING_SUPABASE_URL`       | GitHub Actions secrets                       | repo-level                      | Heartbeat workflow                                                                                                                                                                                                                                           |
+| `STAGING_SUPABASE_ANON_KEY`  | GitHub Actions secrets                       | repo-level                      | Heartbeat workflow                                                                                                                                                                                                                                           |
+| `app.settings.functions_url` | (intentionally not set)                      | n/a                             | Supabase hosted blocks user-defined GUCs even in `app.settings.*` namespace; the notify trigger falls back to a dev URL on staging which fails silently (acceptable — `notify_owner` is console-only on staging). 9b switches to Supabase Database Webhooks. |
 
 ## Key rotation
 

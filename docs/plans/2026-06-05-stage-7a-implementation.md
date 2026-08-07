@@ -11,6 +11,7 @@
 **Companion spec:** [docs/specs/2026-06-05-stage-7a-design.md](../specs/2026-06-05-stage-7a-design.md)
 
 **Workflow notes specific to this repo:**
+
 - Alejandro commits, pushes, and merges manually. **Do not run `git commit`, `git push`, or `git merge`.** Every commit step in this plan is a **suggested message** for Alejandro to run.
 - After each Slice (A, B, C), pause for Alejandro's review before continuing.
 - All paths are relative to repo root `D:\alejandro\personal_projects\mapa-de-autoras\`.
@@ -21,6 +22,7 @@
 ## File map
 
 **Created**
+
 - `supabase/migrations/0003_notify_owner_trigger.sql`
 - `supabase/functions/notify_owner/index.ts`
 - `src/lib/admin-session.ts`
@@ -33,6 +35,7 @@
 - `src/pages/admin/suggestions/[id].astro`
 
 **Modified**
+
 - `.env.example` — add `PUBLIC_SITE_URL`
 - `supabase/config.toml` — register `notify_owner` function
 - `package.json` — `dev:functions` serves all functions, not just `submit_suggestion`
@@ -51,6 +54,7 @@ Goal: a suggestion INSERT triggers an HTTP POST to the `notify_owner` Edge Funct
 ## Task A1 — Add `PUBLIC_SITE_URL` to `.env.example`
 
 **Files:**
+
 - Modify: `.env.example`
 
 - [ ] **Step 1: Add the new env var entry**
@@ -79,11 +83,13 @@ Open `.env` and add the same `PUBLIC_SITE_URL=http://localhost:4321` line. The E
 ```sh
 grep PUBLIC_SITE_URL .env.example
 ```
+
 Expected: prints the `PUBLIC_SITE_URL=...` line.
 
 ```sh
 grep PUBLIC_SITE_URL .env
 ```
+
 Expected: prints the line from `.env`.
 
 ---
@@ -91,6 +97,7 @@ Expected: prints the line from `.env`.
 ## Task A2 — Create the trigger migration
 
 **Files:**
+
 - Create: `supabase/migrations/0003_notify_owner_trigger.sql`
 
 - [ ] **Step 1: Write the migration**
@@ -161,22 +168,28 @@ comment on function public.notify_owner_of_suggestion() is
 - [ ] **Step 2: Verify the migration applies cleanly**
 
 Make sure `supabase start` is running, then:
+
 ```sh
 npm run dev:db:reset
 ```
+
 Expected output ends with:
+
 ```
 Finished supabase db reset on branch ...
 ```
+
 No errors. The migration should appear in the reset log: `Applying migration 0003_notify_owner_trigger.sql...`.
 
 - [ ] **Step 3: Verify the trigger exists**
 
 In Studio's SQL Editor (`http://127.0.0.1:54323`):
+
 ```sql
 select tgname, tgenabled from pg_trigger
 where tgrelid = 'public.suggestions'::regclass and not tgisinternal;
 ```
+
 Expected: one row, `notify_owner_after_insert | O` (O = enabled, origin).
 
 ---
@@ -184,6 +197,7 @@ Expected: one row, `notify_owner_after_insert | O` (O = enabled, origin).
 ## Task A3 — Create the `notify_owner` Edge Function
 
 **Files:**
+
 - Create: `supabase/functions/notify_owner/index.ts`
 
 - [ ] **Step 1: Write the function**
@@ -224,8 +238,7 @@ interface TriggerPayload {
 const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, X-Webhook-Source",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Webhook-Source",
 };
 
 function json(body: unknown, status: number): Response {
@@ -257,8 +270,7 @@ function buildEmailBody(
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS")
-    return new Response(null, { status: 204, headers: CORS_HEADERS });
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS_HEADERS });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
 
   let payload: TriggerPayload;
@@ -268,11 +280,7 @@ Deno.serve(async (req: Request) => {
     return json({ error: "invalid_json" }, 400);
   }
 
-  if (
-    payload.type !== "INSERT" ||
-    payload.table !== "suggestions" ||
-    !payload.record
-  ) {
+  if (payload.type !== "INSERT" || payload.table !== "suggestions" || !payload.record) {
     return json({ error: "unexpected_payload" }, 400);
   }
 
@@ -332,6 +340,7 @@ Open `.env` and confirm `OWNER_NOTIFICATION_EMAIL=<your-email>` is present and n
 ```sh
 grep OWNER_NOTIFICATION_EMAIL .env
 ```
+
 Expected: prints a non-empty value.
 
 ---
@@ -339,6 +348,7 @@ Expected: prints a non-empty value.
 ## Task A4 — Register the function in `config.toml` and update `dev:functions`
 
 **Files:**
+
 - Modify: `supabase/config.toml`
 - Modify: `package.json`
 
@@ -355,10 +365,13 @@ verify_jwt = false
 - [ ] **Step 2: Update `dev:functions` script to serve all functions**
 
 Open `package.json`. The current script is:
+
 ```json
 "dev:functions": "supabase functions serve submit_suggestion --env-file .env",
 ```
+
 Change to:
+
 ```json
 "dev:functions": "supabase functions serve --env-file .env",
 ```
@@ -370,6 +383,7 @@ The unnamed form serves every function listed in `config.toml` (currently `submi
 ```sh
 grep "dev:functions" package.json
 ```
+
 Expected: `"dev:functions": "supabase functions serve --env-file .env",`
 
 ---
@@ -379,30 +393,37 @@ Expected: `"dev:functions": "supabase functions serve --env-file .env",`
 - [ ] **Step 1: Restart the Edge runtime**
 
 If `npm run dev:functions` was running, stop it (Ctrl+C) and restart so it picks up the new function:
+
 ```sh
 npm run dev:functions
 ```
+
 Expected: serves both `submit_suggestion` and `notify_owner`. You should see startup logs mentioning both function names. Leave this terminal running.
 
 - [ ] **Step 2: Apply the migration**
 
 In another terminal:
+
 ```sh
 npm run dev:db:reset
 ```
+
 Expected: applies migrations 0001, 0002, 0003 cleanly, then runs both seeds. No errors.
 
 - [ ] **Step 3: Submit a suggestion via the public form**
 
 In a third terminal, ensure Astro is running:
+
 ```sh
 npm run dev
 ```
+
 Then open `http://localhost:4321/suggest` in your browser, fill in the form, and submit.
 
 - [ ] **Step 4: Verify the trigger fired and the function logged the payload**
 
 Switch to the `dev:functions` terminal. Within a couple of seconds of the submit, you should see lines like:
+
 ```
 [notify_owner] RESEND_API_KEY empty — log-only mode
   To:      <your-email>
@@ -412,17 +433,20 @@ Switch to the `dev:functions` terminal. Within a couple of seconds of the submit
   ...
   Revisar: http://localhost:4321/admin/suggestions/<uuid>
 ```
+
 Expected: the log block prints exactly once per submitted suggestion.
 
 - [ ] **Step 5: (Optional) Verify pg_net actually sent the request**
 
 In Studio's SQL Editor:
+
 ```sql
 select status_code, content_type, created
 from net._http_response
 order by created desc
 limit 5;
 ```
+
 Expected: most recent row has `status_code = 200`.
 
 - [ ] **Step 6: Suggested commit (Alejandro runs)**
@@ -449,6 +473,7 @@ Goal: `/admin/login` accepts an email, sends a magic-link via Supabase Auth, and
 ## Task B1 — Add admin i18n strings
 
 **Files:**
+
 - Modify: `src/i18n/es.json`
 - Modify: `src/i18n/en.json`
 
@@ -457,6 +482,7 @@ Goal: `/admin/login` accepts an email, sends a magic-link via Supabase Auth, and
 ```sh
 type src\i18n\es.json
 ```
+
 (or open it in the IDE)
 
 - [ ] **Step 2: Add the `admin` namespace to `src/i18n/es.json`**
@@ -511,6 +537,7 @@ Mirror the structure with empty strings (bilingual-readiness; we'll fill these l
 node -e "JSON.parse(require('fs').readFileSync('src/i18n/es.json','utf8')); console.log('es ok')"
 node -e "JSON.parse(require('fs').readFileSync('src/i18n/en.json','utf8')); console.log('en ok')"
 ```
+
 Expected: `es ok` and `en ok` on separate lines.
 
 ---
@@ -518,6 +545,7 @@ Expected: `es ok` and `en ok` on separate lines.
 ## Task B2 — Create `src/lib/admin-session.ts`
 
 **Files:**
+
 - Create: `src/lib/admin-session.ts`
 
 - [ ] **Step 1: Write the module**
@@ -573,6 +601,7 @@ export async function signOut(): Promise<void> {
 ```sh
 npx astro check
 ```
+
 Expected: zero errors. (Warnings about other files are not from this task.)
 
 ---
@@ -580,6 +609,7 @@ Expected: zero errors. (Warnings about other files are not from this task.)
 ## Task B3 — Create `<AdminGate>`
 
 **Files:**
+
 - Create: `src/components/AdminGate.tsx`
 
 - [ ] **Step 1: Write the component**
@@ -655,6 +685,7 @@ export default function AdminGate({ loginUrl, notAdminLabel, children }: Props) 
 ```sh
 npx astro check
 ```
+
 Expected: zero errors.
 
 ---
@@ -662,6 +693,7 @@ Expected: zero errors.
 ## Task B4 — Create `<AdminLoginForm>`
 
 **Files:**
+
 - Create: `src/components/AdminLoginForm.tsx`
 
 - [ ] **Step 1: Write the component**
@@ -752,6 +784,7 @@ export default function AdminLoginForm({ redirectTo, labels }: Props) {
 ```sh
 npx astro check
 ```
+
 Expected: zero errors.
 
 ---
@@ -759,6 +792,7 @@ Expected: zero errors.
 ## Task B5 — Create `/admin/login` page
 
 **Files:**
+
 - Create: `src/pages/admin/login.astro`
 
 - [ ] **Step 1: Write the page**
@@ -794,6 +828,7 @@ const labels = {
 ```sh
 npx astro check
 ```
+
 Expected: zero errors.
 
 ---
@@ -801,6 +836,7 @@ Expected: zero errors.
 ## Task B6 — Create `/admin/index` placeholder page
 
 **Files:**
+
 - Create: `src/pages/admin/index.astro`
 
 - [ ] **Step 1: Write the page (placeholder; Slice C will wire `<AdminInbox>`)**
@@ -830,6 +866,7 @@ const notAdminLabel = t(lang, "admin.login.error_not_admin");
 ```sh
 npx astro check
 ```
+
 Expected: zero errors.
 
 ---
@@ -845,11 +882,13 @@ This step is **only needed once per local DB reset** — your owner user must ex
 - [ ] **Step 2: Mark the user as admin**
 
 In Studio's SQL Editor, run (replace the email):
+
 ```sql
 update auth.users
 set raw_app_meta_data = jsonb_set(coalesce(raw_app_meta_data, '{}'::jsonb), '{role}', '"admin"')
 where email = 'YOUR-OWNER-EMAIL@example.com';
 ```
+
 Expected: `UPDATE 1`.
 
 - [ ] **Step 3: Verify the role landed**
@@ -857,6 +896,7 @@ Expected: `UPDATE 1`.
 ```sql
 select email, raw_app_meta_data from auth.users where email = 'YOUR-OWNER-EMAIL@example.com';
 ```
+
 Expected: `raw_app_meta_data` includes `"role": "admin"`.
 
 ---
@@ -866,6 +906,7 @@ Expected: `raw_app_meta_data` includes `"role": "admin"`.
 - [ ] **Step 1: Start everything**
 
 Three terminals (one each):
+
 ```sh
 npm run dev:db        # if not already up
 npm run dev:functions
@@ -890,17 +931,21 @@ Expected: the link opens `http://localhost:4321/admin#access_token=...&...` → 
 - [ ] **Step 5: Verify a non-admin is bounced**
 
 In Studio, temporarily strip the admin role:
+
 ```sql
 update auth.users set raw_app_meta_data = '{}'::jsonb where email = 'YOUR-OWNER-EMAIL@example.com';
 ```
+
 Refresh `/admin`. Expected: shows the "Esta cuenta no tiene acceso de administrador." message and an "OK" button that signs out.
 
 Restore the role:
+
 ```sql
 update auth.users
 set raw_app_meta_data = jsonb_set(coalesce(raw_app_meta_data, '{}'::jsonb), '{role}', '"admin"')
 where email = 'YOUR-OWNER-EMAIL@example.com';
 ```
+
 Sign in again to verify access is back.
 
 - [ ] **Step 6: Suggested commit (Alejandro runs)**
@@ -926,6 +971,7 @@ Goal: `/admin` shows pending suggestions newest-first. Clicking a row goes to a 
 ## Task C1 — Add inbox i18n strings
 
 **Files:**
+
 - Modify: `src/i18n/es.json`
 - Modify: `src/i18n/en.json`
 
@@ -952,6 +998,7 @@ Add the `inbox` subkey to the existing `admin` object:
 ```
 
 The full `admin` block in `es.json` should now look like:
+
 ```json
 "admin": {
   "login": { ... },
@@ -971,6 +1018,7 @@ Add the same `inbox` and `detail` subkeys with empty strings, just like the `log
 node -e "JSON.parse(require('fs').readFileSync('src/i18n/es.json','utf8')); console.log('es ok')"
 node -e "JSON.parse(require('fs').readFileSync('src/i18n/en.json','utf8')); console.log('en ok')"
 ```
+
 Expected: both print `ok`.
 
 ---
@@ -978,6 +1026,7 @@ Expected: both print `ok`.
 ## Task C2 — Create `src/lib/suggestions.ts`
 
 **Files:**
+
 - Create: `src/lib/suggestions.ts`
 
 - [ ] **Step 1: Write the query helper**
@@ -1018,6 +1067,7 @@ export async function listPendingSuggestions(): Promise<PendingSuggestion[]> {
 ```sh
 npx astro check
 ```
+
 Expected: zero errors.
 
 ---
@@ -1025,6 +1075,7 @@ Expected: zero errors.
 ## Task C3 — Create `<AdminInbox>`
 
 **Files:**
+
 - Create: `src/components/AdminInbox.tsx`
 
 - [ ] **Step 1: Write the component**
@@ -1085,11 +1136,11 @@ export default function AdminInbox({ labels }: Props) {
   return (
     <section className="mx-auto max-w-4xl">
       <h1 className="font-serif text-2xl text-ink mb-4">{labels.title}</h1>
-      {state.kind === "loading" && (
-        <p className="text-ink/60">{labels.loading}</p>
-      )}
+      {state.kind === "loading" && <p className="text-ink/60">{labels.loading}</p>}
       {state.kind === "error" && (
-        <p className="text-oxblood" role="alert">{labels.error}</p>
+        <p className="text-oxblood" role="alert">
+          {labels.error}
+        </p>
       )}
       {state.kind === "loaded" && state.rows.length === 0 && (
         <p className="text-ink/60">{labels.empty}</p>
@@ -1113,10 +1164,7 @@ export default function AdminInbox({ labels }: Props) {
                 <td className="py-2 pr-4 text-ink/80">{row.proposed_country_iso_a3}</td>
                 <td className="py-2 pr-4 text-ink/70">{row.submitter_email}</td>
                 <td className="py-2">
-                  <a
-                    href={`/admin/suggestions/${row.id}`}
-                    className="text-oxblood underline"
-                  >
+                  <a href={`/admin/suggestions/${row.id}`} className="text-oxblood underline">
                     {labels.view} →
                   </a>
                 </td>
@@ -1135,6 +1183,7 @@ export default function AdminInbox({ labels }: Props) {
 ```sh
 npx astro check
 ```
+
 Expected: zero errors.
 
 ---
@@ -1142,6 +1191,7 @@ Expected: zero errors.
 ## Task C4 — Wire `<AdminInbox>` into `/admin/index.astro`
 
 **Files:**
+
 - Modify: `src/pages/admin/index.astro`
 
 - [ ] **Step 1: Replace the placeholder body with the inbox**
@@ -1185,6 +1235,7 @@ const inboxLabels = {
 ```sh
 npx astro check
 ```
+
 Expected: zero errors.
 
 ---
@@ -1192,6 +1243,7 @@ Expected: zero errors.
 ## Task C5 — Create the suggestion detail placeholder
 
 **Files:**
+
 - Create: `src/pages/admin/suggestions/[id].astro`
 
 - [ ] **Step 1: Write the page**
@@ -1243,9 +1295,11 @@ export const prerender = false;
 ```sh
 npx astro check
 ```
+
 Expected: may complain that `output: 'static'` doesn't support `prerender = false` without an adapter. If so, **STOP** and flag to Alejandro — we have two options:
-  - **(a)** Keep the route static. Drop `export const prerender = false` and `getStaticPaths` returns a stub like `return [{ params: { id: 'placeholder' } }]`. The detail page becomes a build-time route that can only be hit via client navigation. Acceptable for 7a since the page is a placeholder.
-  - **(b)** Install `@astrojs/cloudflare` adapter now — pulls Stage 9 work into 7a.
+
+- **(a)** Keep the route static. Drop `export const prerender = false` and `getStaticPaths` returns a stub like `return [{ params: { id: 'placeholder' } }]`. The detail page becomes a build-time route that can only be hit via client navigation. Acceptable for 7a since the page is a placeholder.
+- **(b)** Install `@astrojs/cloudflare` adapter now — pulls Stage 9 work into 7a.
 
 **Recommended:** if `astro check` errors, switch to option (a) by replacing the page content with:
 
@@ -1262,7 +1316,7 @@ const detailTitle = t(lang, "admin.detail.placeholder_title");
 const detailBody = t(lang, "admin.detail.placeholder_body");
 
 export async function getStaticPaths() {
-  return [{ params: { id: 'placeholder' } }];
+  return [{ params: { id: "placeholder" } }];
 }
 ---
 
@@ -1273,7 +1327,9 @@ export async function getStaticPaths() {
         <h1 class="font-serif text-2xl text-ink">{detailTitle}</h1>
         <p class="mt-2 text-ink/70">{detailBody}</p>
         <p class="mt-4 text-xs text-ink/50">ID: {id}</p>
-        <a href="/admin" class="mt-6 inline-block text-oxblood underline">← {t(lang, "admin.inbox.title")}</a>
+        <a href="/admin" class="mt-6 inline-block text-oxblood underline"
+          >← {t(lang, "admin.inbox.title")}</a
+        >
       </section>
     </AdminGate>
   </main>
@@ -1287,12 +1343,14 @@ Then `npx astro check` again. Expected: zero errors.
 ## Task C6 — Update `supabase/README.md` and `docs/STATUS.md`
 
 **Files:**
+
 - Modify: `supabase/README.md`
 - Modify: `docs/STATUS.md`
 
 - [ ] **Step 1: Add the notification flow to `supabase/README.md`**
 
 Read the existing README, then add a new section "## Suggestion notifications (Stage 7a)" near the "Run the Edge Function" section, explaining:
+
 - Trigger `notify_owner_after_insert` on `public.suggestions` calls `notify_owner` via `pg_net`.
 - In dev with `RESEND_API_KEY` empty, the function logs to console.
 - `npm run dev:functions` now serves both functions.
@@ -1323,6 +1381,7 @@ Expected: "No hay sugerencias pendientes." (the seed includes authors but no pen
 
 In an incognito window: `http://localhost:4321/suggest` → fill in → submit. Then refresh `/admin` in your authed window.
 Expected:
+
 - The Edge Function console logs the notification (Slice A still works).
 - The inbox shows one row: today's date, the author name, country code, submitter email, "Revisar →" link.
 
@@ -1337,6 +1396,7 @@ Expected: lands on `/admin/suggestions/<uuid>` showing the placeholder title + b
 npx astro check
 npm run build
 ```
+
 Expected: zero errors from `astro check`; `npm run build` produces a clean `dist/`.
 
 - [ ] **Step 6: Suggested final commit (Alejandro runs)**

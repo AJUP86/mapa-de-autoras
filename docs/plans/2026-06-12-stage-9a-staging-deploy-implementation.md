@@ -30,6 +30,7 @@
 - [ ] **Step 1: Check current branch + recent log**
 
 Run:
+
 ```powershell
 git log --oneline -5 development
 ```
@@ -41,6 +42,7 @@ Expected: the topmost commit contains `Merge pull request #9 from AJUP86/feature
 - [ ] **Step 1: Branch off `development`**
 
 Run:
+
 ```powershell
 git checkout development
 git pull
@@ -58,6 +60,7 @@ Expected: `git status` shows `On branch feature/09a-staging-deploy` with a clean
 ## Task A1 — `[Subagent]` Add heartbeat migration `0006_heartbeat_rpc.sql`
 
 **Files:**
+
 - Create: `supabase/migrations/0006_heartbeat_rpc.sql`
 
 - [ ] **Step 1: Write the migration**
@@ -90,6 +93,7 @@ grant execute on function public.heartbeat() to anon, authenticated;
 - [ ] **Step 2: Apply locally to make sure it runs clean**
 
 Run:
+
 ```powershell
 npm run dev:db:reset
 ```
@@ -99,6 +103,7 @@ Expected: all six migrations apply cleanly, no errors. The reset reapplies migra
 - [ ] **Step 3: Verify in Studio (`http://127.0.0.1:54323`) — SQL editor**
 
 Run:
+
 ```sql
 select public.heartbeat();
 ```
@@ -140,6 +145,7 @@ Once the project is ready, go to **Project Settings → API** and copy these int
 - [ ] **Step 1: Link the CLI to the new project**
 
 Run:
+
 ```powershell
 supabase link --project-ref <staging-ref>
 ```
@@ -151,11 +157,12 @@ Expected: `Finished supabase link.`
 - [ ] **Step 2: Push migrations to the hosted DB**
 
 Run:
+
 ```powershell
 supabase db push
 ```
 
-Expected: all six migrations apply against the remote DB. No errors. The seed (`supabase/seed.sql` — 249 countries) runs as part of the push *only if `[db.seed].sql_paths` includes it for remote* — confirm in `supabase/config.toml` if uncertain. If countries aren't seeded, run Step 3 below.
+Expected: all six migrations apply against the remote DB. No errors. The seed (`supabase/seed.sql` — 249 countries) runs as part of the push _only if `[db.seed].sql_paths` includes it for remote_ — confirm in `supabase/config.toml` if uncertain. If countries aren't seeded, run Step 3 below.
 
 - [ ] **Step 3 (only if countries are empty): Manually run the seed in Studio**
 
@@ -166,6 +173,7 @@ Expected: `INSERT 0 249` (or similar).
 - [ ] **Step 4: Verify the schema landed**
 
 Run from the same SQL editor:
+
 ```sql
 select count(*) from public.countries;            -- 249
 select count(*) from public.authors;              -- 0 (no dev-authors seed on staging)
@@ -192,6 +200,7 @@ Go to https://supabase.com/dashboard/project/<staging-ref>/auth/users → **Add 
 - [ ] **Step 2: Mark them as admin via SQL editor**
 
 Go to the SQL editor and run:
+
 ```sql
 update auth.users
 set raw_app_meta_data = jsonb_set(coalesce(raw_app_meta_data, '{}'::jsonb), '{role}', '"admin"')
@@ -205,6 +214,7 @@ Expected: `UPDATE 1`.
 - [ ] **Step 3: Verify**
 
 Run:
+
 ```sql
 select email, raw_app_meta_data from auth.users;
 ```
@@ -220,6 +230,7 @@ Expected: one row with `raw_app_meta_data` containing `"role": "admin"`.
 - [ ] **Step 1: Deploy all three functions**
 
 Run:
+
 ```powershell
 supabase functions deploy submit_suggestion --project-ref <staging-ref>
 supabase functions deploy notify_owner --project-ref <staging-ref>
@@ -244,10 +255,10 @@ Expected: three functions listed — `submit_suggestion`, `notify_owner`, `trans
 
 In the staging project's Function Settings (https://supabase.com/dashboard/project/<staging-ref>/settings/functions → **Secrets**), add:
 
-| Variable | Value | Why |
-|---|---|---|
+| Variable               | Value                     | Why                                               |
+| ---------------------- | ------------------------- | ------------------------------------------------- |
 | `TURNSTILE_SECRET_KEY` | same as your local `.env` | `submit_suggestion` validates the Turnstile token |
-| `DEEPL_API_KEY` | same as your local `.env` | `translate` proxies to DeepL |
+| `DEEPL_API_KEY`        | same as your local `.env` | `translate` proxies to DeepL                      |
 
 **Do NOT set:** `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `OWNER_NOTIFICATION_EMAIL`. Their absence keeps `notify_owner` in console-log mode for 9a (per spec decision #5).
 
@@ -270,6 +281,7 @@ It is `https://<staging-ref>.supabase.co/functions/v1`. Copy.
 - [ ] **Step 2: Set the database setting via SQL editor**
 
 Run:
+
 ```sql
 alter database postgres set "app.functions_url" = 'https://<staging-ref>.supabase.co/functions/v1';
 ```
@@ -279,6 +291,7 @@ Expected: `ALTER DATABASE`.
 - [ ] **Step 3: Verify**
 
 Run:
+
 ```sql
 show "app.functions_url";
 ```
@@ -297,9 +310,9 @@ Go to https://supabase.com/dashboard/project/<staging-ref>/auth/url-configuratio
 
 - [ ] **Step 2: Set the values**
 
-| Field | Value |
-|---|---|
-| Site URL | `https://staging.mapadeautoras.com` |
+| Field                        | Value                                                                                                                               |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Site URL                     | `https://staging.mapadeautoras.com`                                                                                                 |
 | Redirect URLs (one per line) | `https://staging.mapadeautoras.com`<br>`https://staging.mapadeautoras.com/admin`<br>`https://staging.mapadeautoras.com/admin/inbox` |
 
 Save.
@@ -313,6 +326,7 @@ Save.
 - [ ] **Step 1: Smoke-test PostgREST from local laptop**
 
 Run (replace `<staging-ref>` and `<staging-anon-key>` with real values):
+
 ```powershell
 curl.exe "https://<staging-ref>.supabase.co/rest/v1/countries?select=count" `
   -H "apikey: <staging-anon-key>"
@@ -323,6 +337,7 @@ Expected: `[{"count":249}]`.
 - [ ] **Step 2: Smoke-test the heartbeat RPC**
 
 Run:
+
 ```powershell
 curl.exe -X POST "https://<staging-ref>.supabase.co/rest/v1/rpc/heartbeat" `
   -H "apikey: <staging-anon-key>" `
@@ -377,15 +392,15 @@ Go to https://dash.cloudflare.com/?to=/:account/workers-and-pages → **Create a
 
 - [ ] **Step 2: Set the build configuration**
 
-| Field | Value |
-|---|---|
-| Project name | `mapa-de-autoras` |
-| Production branch | **`development`** (yes, "production branch" in Pages-speak just means the branch that gets the custom domain) |
-| Framework preset | Astro |
-| Build command | `npm run build` |
-| Build output directory | `dist` |
-| Root directory | `/` (default) |
-| Node.js version | `20` (set via env var `NODE_VERSION=20` if there's no UI field) |
+| Field                  | Value                                                                                                         |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Project name           | `mapa-de-autoras`                                                                                             |
+| Production branch      | **`development`** (yes, "production branch" in Pages-speak just means the branch that gets the custom domain) |
+| Framework preset       | Astro                                                                                                         |
+| Build command          | `npm run build`                                                                                               |
+| Build output directory | `dist`                                                                                                        |
+| Root directory         | `/` (default)                                                                                                 |
+| Node.js version        | `20` (set via env var `NODE_VERSION=20` if there's no UI field)                                               |
 
 Do **not** start the first deploy yet — env vars aren't set. Click **Save and Deploy** if you can't avoid it; the first build will fail, that's fine.
 
@@ -401,12 +416,12 @@ Go to the project → **Settings → Environment variables** → **Production** 
 
 - [ ] **Step 2: Add the three public env vars**
 
-| Variable | Value |
-|---|---|
-| `PUBLIC_SUPABASE_URL` | `https://<staging-ref>.supabase.co` |
-| `PUBLIC_SUPABASE_ANON_KEY` | `<staging-anon-key>` (from Task A2) |
-| `PUBLIC_TURNSTILE_SITE_KEY` | same as your local `.env` |
-| `NODE_VERSION` | `20` (if you didn't set it as a build setting in B2) |
+| Variable                    | Value                                                |
+| --------------------------- | ---------------------------------------------------- |
+| `PUBLIC_SUPABASE_URL`       | `https://<staging-ref>.supabase.co`                  |
+| `PUBLIC_SUPABASE_ANON_KEY`  | `<staging-anon-key>` (from Task A2)                  |
+| `PUBLIC_TURNSTILE_SITE_KEY` | same as your local `.env`                            |
+| `NODE_VERSION`              | `20` (if you didn't set it as a build setting in B2) |
 
 Save.
 
@@ -424,7 +439,7 @@ Decision: skip a noop trigger commit. Instead, manually retry the first build:
 
 Go to Pages project → **Deployments** → find the failed (or pending) first build → **Retry deployment**.
 
-If there is no build yet because Cloudflare didn't try one, push the 09a branch — Pages will build the *preview*, not the production deployment. To produce a production deployment from `development` while still on `feature/09a-staging-deploy`, just merge a small no-op commit (e.g., updating the runbook) into `development` later — for now, the preview deployment is enough to test the build pipeline works.
+If there is no build yet because Cloudflare didn't try one, push the 09a branch — Pages will build the _preview_, not the production deployment. To produce a production deployment from `development` while still on `feature/09a-staging-deploy`, just merge a small no-op commit (e.g., updating the runbook) into `development` later — for now, the preview deployment is enough to test the build pipeline works.
 
 - [ ] **Step 2: Wait for the build**
 
@@ -479,6 +494,7 @@ Expected: one row with the data you submitted.
 - [ ] **Step 4: Confirm the notify trigger fired**
 
 Run in SQL editor:
+
 ```sql
 select created, status_code, content from net._http_response order by created desc limit 1;
 ```
@@ -514,6 +530,7 @@ Alejandro: there's nothing to commit from Slice B (all changes are in Cloudflare
 ## Task C1 — `[Subagent]` Create the heartbeat GitHub Actions workflow
 
 **Files:**
+
 - Create: `.github/workflows/heartbeat.yml`
 
 - [ ] **Step 1: Write the workflow**
@@ -529,7 +546,7 @@ name: Supabase heartbeat
 
 on:
   schedule:
-    - cron: '0 6 * * 1'  # Monday 06:00 UTC weekly
+    - cron: "0 6 * * 1" # Monday 06:00 UTC weekly
   workflow_dispatch:
 
 jobs:
@@ -578,10 +595,10 @@ Go to https://github.com/AJUP86/mapa-de-autoras/settings/secrets/actions
 
 - [ ] **Step 2: Add two secrets**
 
-| Secret name | Value |
-|---|---|
-| `STAGING_SUPABASE_URL` | `https://<staging-ref>.supabase.co` |
-| `STAGING_SUPABASE_ANON_KEY` | `<staging-anon-key>` |
+| Secret name                 | Value                               |
+| --------------------------- | ----------------------------------- |
+| `STAGING_SUPABASE_URL`      | `https://<staging-ref>.supabase.co` |
+| `STAGING_SUPABASE_ANON_KEY` | `<staging-anon-key>`                |
 
 - [ ] **Step 3: STOP — Task C2 done.**
 
@@ -592,6 +609,7 @@ Go to https://github.com/AJUP86/mapa-de-autoras/settings/secrets/actions
 - [ ] **Step 1: Commit Task C1's file**
 
 Alejandro commits the workflow file:
+
 ```
 ci(stage-9a): heartbeat workflow for staging Supabase
 ```
@@ -619,6 +637,7 @@ Run it again. Same result.
 ## Task C4 — `[Subagent]` Write the runbook
 
 **Files:**
+
 - Create: `docs/30-ops/staging-deploy.md`
 
 - [ ] **Step 1: Write the runbook**
@@ -630,34 +649,35 @@ Run it again. Same result.
 
 ## Environment inventory
 
-| Resource | Provider | Region | Console URL |
-|---|---|---|---|
-| Hosted DB + Auth + Edge Functions | Supabase | `eu-west-1` (Ireland) | `https://supabase.com/dashboard/project/<staging-ref>` |
-| Static site hosting | Cloudflare Pages | global edge | Cloudflare dashboard → Workers & Pages → `mapa-de-autoras` |
-| Domain | Cloudflare Registrar | n/a | Cloudflare dashboard → Domain Registration |
-| Heartbeat cron | GitHub Actions | GitHub-hosted | `https://github.com/AJUP86/mapa-de-autoras/actions/workflows/heartbeat.yml` |
-| Turnstile (bot defence) | Cloudflare Turnstile | n/a | Cloudflare dashboard → Turnstile |
+| Resource                          | Provider             | Region                | Console URL                                                                 |
+| --------------------------------- | -------------------- | --------------------- | --------------------------------------------------------------------------- |
+| Hosted DB + Auth + Edge Functions | Supabase             | `eu-west-1` (Ireland) | `https://supabase.com/dashboard/project/<staging-ref>`                      |
+| Static site hosting               | Cloudflare Pages     | global edge           | Cloudflare dashboard → Workers & Pages → `mapa-de-autoras`                  |
+| Domain                            | Cloudflare Registrar | n/a                   | Cloudflare dashboard → Domain Registration                                  |
+| Heartbeat cron                    | GitHub Actions       | GitHub-hosted         | `https://github.com/AJUP86/mapa-de-autoras/actions/workflows/heartbeat.yml` |
+| Turnstile (bot defence)           | Cloudflare Turnstile | n/a                   | Cloudflare dashboard → Turnstile                                            |
 
 ## Env vars — where each one lives
 
-| Variable | Location | Why there |
-|---|---|---|
-| `PUBLIC_SUPABASE_URL` | Cloudflare Pages env vars (Production scope) | Read by Astro at build time; baked into the static bundle |
-| `PUBLIC_SUPABASE_ANON_KEY` | Cloudflare Pages env vars (Production scope) | Same |
-| `PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Pages env vars (Production scope) | Same |
-| `NODE_VERSION` | Cloudflare Pages env vars (Production scope) | Forces Node 20 for the build |
-| `TURNSTILE_SECRET_KEY` | Supabase function settings (staging project) | Read by `submit_suggestion` at invocation |
-| `DEEPL_API_KEY` | Supabase function settings (staging project) | Read by `translate` at invocation |
-| `RESEND_API_KEY` | **Intentionally unset on staging** | Absence keeps `notify_owner` in console-log mode for 9a |
-| `STAGING_SUPABASE_URL` | GitHub Actions secrets | Heartbeat workflow |
-| `STAGING_SUPABASE_ANON_KEY` | GitHub Actions secrets | Heartbeat workflow |
-| `app.functions_url` | Postgres database setting on staging project | Read by the `notify_owner_trigger` to know where to POST |
+| Variable                    | Location                                     | Why there                                                 |
+| --------------------------- | -------------------------------------------- | --------------------------------------------------------- |
+| `PUBLIC_SUPABASE_URL`       | Cloudflare Pages env vars (Production scope) | Read by Astro at build time; baked into the static bundle |
+| `PUBLIC_SUPABASE_ANON_KEY`  | Cloudflare Pages env vars (Production scope) | Same                                                      |
+| `PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Pages env vars (Production scope) | Same                                                      |
+| `NODE_VERSION`              | Cloudflare Pages env vars (Production scope) | Forces Node 20 for the build                              |
+| `TURNSTILE_SECRET_KEY`      | Supabase function settings (staging project) | Read by `submit_suggestion` at invocation                 |
+| `DEEPL_API_KEY`             | Supabase function settings (staging project) | Read by `translate` at invocation                         |
+| `RESEND_API_KEY`            | **Intentionally unset on staging**           | Absence keeps `notify_owner` in console-log mode for 9a   |
+| `STAGING_SUPABASE_URL`      | GitHub Actions secrets                       | Heartbeat workflow                                        |
+| `STAGING_SUPABASE_ANON_KEY` | GitHub Actions secrets                       | Heartbeat workflow                                        |
+| `app.functions_url`         | Postgres database setting on staging project | Read by the `notify_owner_trigger` to know where to POST  |
 
 ## Key rotation
 
 ### Supabase anon key
 
 Rotation is rare (only on suspected leak — anon key is public). To rotate:
+
 1. Supabase dashboard → Project Settings → API → **Reset anon key**.
 2. Update `PUBLIC_SUPABASE_ANON_KEY` in Cloudflare Pages env vars.
 3. Update `STAGING_SUPABASE_ANON_KEY` in GitHub Actions secrets.
@@ -687,6 +707,7 @@ Never used in client code. Only used briefly in SQL editor / Studio. Rotation is
 ### Pages deployment rollback
 
 If a bad build hits `staging.mapadeautoras.com`:
+
 1. Pages project → **Deployments** tab.
 2. Find the last known-good production deployment (highest `development` commit that worked).
 3. Click the `⋯` menu → **Rollback to this deployment**.
@@ -697,6 +718,7 @@ No code changes needed; the bad commit can be fixed in a follow-up PR.
 ### Migration rollback
 
 Supabase has no native rollback. If a bad migration lands:
+
 1. Write a forward-fix migration that reverses the damage.
 2. `supabase db push` to apply it.
 
@@ -705,6 +727,7 @@ The DB has no point-in-time-recovery on free tier — back up critical data manu
 ## Free-tier auto-pause recovery
 
 If the heartbeat fails to fire (e.g., GitHub Actions outage) and the project pauses:
+
 1. Visit https://supabase.com/dashboard/project/<staging-ref>.
 2. Click **Restore project**.
 3. Wait ~2 minutes for the project to come back online.
@@ -721,6 +744,7 @@ If the heartbeat fails to fire (e.g., GitHub Actions outage) and the project pau
 ## Adding production (9b) — what changes
 
 When Stage 9b lands:
+
 - Create `mapa-prod` Supabase project in same region (`eu-west-1`).
 - Create production runbook at `docs/30-ops/production-deploy.md` (copy this file, swap values).
 - Update this runbook's matrix in `.github/workflows/heartbeat.yml` to add `production` entry.
@@ -737,6 +761,7 @@ When Stage 9b lands:
 ## Task C5 — `[Subagent]` Update STATUS, implementation-plan, RAG, `.env.example`, supabase README
 
 **Files:**
+
 - Modify: `docs/STATUS.md`
 - Modify: `docs/01-implementation-plan.md`
 - Modify: `docs/RAG.md`
@@ -774,6 +799,7 @@ b. **New "Last session — 2026-06-12 (Stage 9a)" entry** at the top of the sess
 **Branch in progress:** `feature/09a-staging-deploy`.
 
 ### Hosted Supabase
+
 - Provisioned `mapa-staging` in region `eu-west-1`. All six migrations applied + 249-country seed. Admin user bootstrapped via Studio SQL.
 - Three edge functions deployed: `submit_suggestion`, `notify_owner`, `translate`.
 - `TURNSTILE_SECRET_KEY` + `DEEPL_API_KEY` set in function settings. `RESEND_API_KEY` intentionally unset → `notify_owner` stays console-log on staging.
@@ -781,17 +807,20 @@ b. **New "Last session — 2026-06-12 (Stage 9a)" entry** at the top of the sess
 - Auth `site_url` + redirects configured for `https://staging.mapadeautoras.com`.
 
 ### Cloudflare Pages
+
 - Pages project `mapa-de-autoras` connected to GitHub repo, auto-deploys `development` branch.
 - Public env vars (`PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`, `PUBLIC_TURNSTILE_SITE_KEY`) set in Production scope.
 - `staging.mapadeautoras.com` mapped as custom domain (one-click since registrar = same account).
 - Existing Turnstile site extended with the staging hostname.
 
 ### Heartbeat
+
 - New migration `0006_heartbeat_rpc.sql` adds `public.heartbeat()`.
 - New GitHub Actions workflow `.github/workflows/heartbeat.yml` pings the function weekly. Matrix-ready for 9b production entry.
 - `STAGING_SUPABASE_URL` + `STAGING_SUPABASE_ANON_KEY` set as GitHub Actions secrets.
 
 ### Docs
+
 - New runbook `docs/30-ops/staging-deploy.md` — env-var inventory, key rotation, rollback, auto-pause recovery, gotchas, 9b migration notes.
 - `docs/01-implementation-plan.md` — split Stage 9 into 9a (Done) + 9b (Pending).
 ```
@@ -799,6 +828,7 @@ b. **New "Last session — 2026-06-12 (Stage 9a)" entry** at the top of the sess
 c. **"Project facts worth remembering":** add a row noting staging URL + the region decision.
 
 d. **"Open items pending decision before Stage 9b starts":**
+
 - Resend account creation + DNS-propagation timing (~24h wait).
 - Whether `notify_owner` HTML email template lands in 9b or as a small follow-up.
 
@@ -871,6 +901,7 @@ Open `docs/STATUS.md`. The Stage 9 split is visible; the 2026-06-12 session log 
 - [ ] **Step 4: `npm run build` still passes**
 
 Run:
+
 ```powershell
 npm run build
 ```
@@ -900,25 +931,25 @@ Stage 9b starts in a separate session; this plan is closed at that point.
 
 ## Self-review checklist
 
-| Spec section | Plan coverage |
-|---|---|
-| Decision #1 (`development` auto-deploys) | Slice B / Task B2 sets `development` as Pages production branch ✓ |
-| Decision #2 (two Supabase projects) | Slice A provisions `mapa-staging`; `mapa-prod` deferred to 9b ✓ |
-| Decision #3 (empty DB) | Slice A Step 3 confirms `authors` count = 0; dev-authors seed not run on staging ✓ |
-| Decision #4 (built-in mailer for auth) | Slice A Task A8 configures Supabase auth without overriding SMTP ✓ |
-| Decision #5 (notify_owner console-log on staging) | Slice A Task A6 explicitly skips `RESEND_API_KEY` ✓ |
-| Decision #6 (shared DeepL key) | Slice A Task A6 reuses `.env` value ✓ |
-| Decision #7 (Turnstile single site, multi-hostname) | Slice B Task B1 extends existing site ✓ |
-| Decision #8 (heartbeat in 9a, matrix-ready) | Slice A Task A1 + Slice C Task C1 ✓ |
-| Decision #9 (runbook at `docs/30-ops/staging-deploy.md`) | Slice C Task C4 ✓ |
-| Decision #10 (no committed secrets) | All `[Manual]` tasks set values in dashboards; only env-var keys documented in `.env.example` ✓ |
-| Decision #11 (three slices, end-to-end verifiable) | Plan structure ✓ |
-| Decision #12 (`eu-west-1` region) | Slice A Task A2 ✓ |
-| Risk #1 (magic-link redirect mismatch) | Slice A Task A8 + Slice B Task B6 Step 5 verify ✓ |
-| Risk #2 (`app.functions_url` typo) | Slice A Task A7 + Slice B Task B6 Step 4 verify ✓ |
-| Risk #3 (Pages env vars wrong) | Slice B Task B4 Step 3 + B6 ✓ |
-| Risk #4 (Turnstile rejecting staging) | Slice B Task B1 (before deploy) ✓ |
-| Risk #5 (auto-pause) | Slice C Task C1 + C3 ✓ |
-| Risk #6 (client visits before slice B ready) | Operational note in B5 ✓ |
-| Risk #7 (DeepL quota shared) | Acknowledged in spec; no plan action needed ✓ |
-| Full verification checklist | Distributed across Slice A/B/C verify steps ✓ |
+| Spec section                                             | Plan coverage                                                                                   |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Decision #1 (`development` auto-deploys)                 | Slice B / Task B2 sets `development` as Pages production branch ✓                               |
+| Decision #2 (two Supabase projects)                      | Slice A provisions `mapa-staging`; `mapa-prod` deferred to 9b ✓                                 |
+| Decision #3 (empty DB)                                   | Slice A Step 3 confirms `authors` count = 0; dev-authors seed not run on staging ✓              |
+| Decision #4 (built-in mailer for auth)                   | Slice A Task A8 configures Supabase auth without overriding SMTP ✓                              |
+| Decision #5 (notify_owner console-log on staging)        | Slice A Task A6 explicitly skips `RESEND_API_KEY` ✓                                             |
+| Decision #6 (shared DeepL key)                           | Slice A Task A6 reuses `.env` value ✓                                                           |
+| Decision #7 (Turnstile single site, multi-hostname)      | Slice B Task B1 extends existing site ✓                                                         |
+| Decision #8 (heartbeat in 9a, matrix-ready)              | Slice A Task A1 + Slice C Task C1 ✓                                                             |
+| Decision #9 (runbook at `docs/30-ops/staging-deploy.md`) | Slice C Task C4 ✓                                                                               |
+| Decision #10 (no committed secrets)                      | All `[Manual]` tasks set values in dashboards; only env-var keys documented in `.env.example` ✓ |
+| Decision #11 (three slices, end-to-end verifiable)       | Plan structure ✓                                                                                |
+| Decision #12 (`eu-west-1` region)                        | Slice A Task A2 ✓                                                                               |
+| Risk #1 (magic-link redirect mismatch)                   | Slice A Task A8 + Slice B Task B6 Step 5 verify ✓                                               |
+| Risk #2 (`app.functions_url` typo)                       | Slice A Task A7 + Slice B Task B6 Step 4 verify ✓                                               |
+| Risk #3 (Pages env vars wrong)                           | Slice B Task B4 Step 3 + B6 ✓                                                                   |
+| Risk #4 (Turnstile rejecting staging)                    | Slice B Task B1 (before deploy) ✓                                                               |
+| Risk #5 (auto-pause)                                     | Slice C Task C1 + C3 ✓                                                                          |
+| Risk #6 (client visits before slice B ready)             | Operational note in B5 ✓                                                                        |
+| Risk #7 (DeepL quota shared)                             | Acknowledged in spec; no plan action needed ✓                                                   |
+| Full verification checklist                              | Distributed across Slice A/B/C verify steps ✓                                                   |

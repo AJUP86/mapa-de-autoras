@@ -110,9 +110,7 @@ export default function PromoteForm({ labels }: Props) {
   // /admin/promote and /admin/promote?suggestion=<uuid> without the Astro
   // page needing to parse the query string (which is awkward with static
   // output).
-  const [suggestionId, setSuggestionId] = useState<string | undefined>(
-    undefined,
-  );
+  const [suggestionId, setSuggestionId] = useState<string | undefined>(undefined);
   const [suggestion, setSuggestion] = useState<SuggestionDetail | null>(null);
   const [suggestionLoading, setSuggestionLoading] = useState<boolean>(
     typeof window !== "undefined"
@@ -194,9 +192,7 @@ export default function PromoteForm({ labels }: Props) {
         birth_year: author.birth_year ? Number(author.birth_year) : undefined,
         death_year: author.death_year ? Number(author.death_year) : undefined,
         published: author.published,
-        reviewer_notes: suggestionId
-          ? reviewerNotes.trim() || undefined
-          : undefined,
+        reviewer_notes: suggestionId ? reviewerNotes.trim() || undefined : undefined,
       },
       books.map((b) => ({
         title: b.title.trim(),
@@ -218,15 +214,15 @@ export default function PromoteForm({ labels }: Props) {
   // E2: while the suggestion is fetching, render a small loading message
   // instead of the empty form (which would flash the unprefilled defaults).
   if (suggestionLoading) {
-    return (
-      <p className="mx-auto max-w-2xl p-6 text-ink/60">{labels.saving}</p>
-    );
+    return <p className="mx-auto max-w-2xl p-6 text-ink/60">{labels.saving}</p>;
   }
 
   const formMarkup = (
     <form onSubmit={onSubmit} className="mx-auto max-w-3xl space-y-6 p-6">
       <div>
-        <a href="/es/" className="text-sm text-ink/70 underline">← {labels.back}</a>
+        <a href="/es/" className="text-sm text-ink/70 underline">
+          ← {labels.back}
+        </a>
         <h1 className="mt-2 font-serif text-2xl text-ink">
           {suggestionId ? labels.title_review : labels.title_new}
         </h1>
@@ -253,9 +249,13 @@ export default function PromoteForm({ labels }: Props) {
             onChange={(e) => update("country_iso_a3", e.target.value)}
             className="mt-1 block w-full rounded border border-ink/20 bg-parchment px-3 py-1.5"
           >
-            <option value="" disabled>—</option>
+            <option value="" disabled>
+              —
+            </option>
             {countries.map((c) => (
-              <option key={c.iso_a3} value={c.iso_a3}>{c.name_es}</option>
+              <option key={c.iso_a3} value={c.iso_a3}>
+                {c.name_es}
+              </option>
             ))}
           </select>
         </label>
@@ -272,9 +272,11 @@ export default function PromoteForm({ labels }: Props) {
                   checked={author.status === s}
                   onChange={() => update("status", s)}
                 />
-                {s === "read" ? labels.status_read
-                  : s === "currently_reading" ? labels.status_currently_reading
-                  : labels.status_discovery}
+                {s === "read"
+                  ? labels.status_read
+                  : s === "currently_reading"
+                    ? labels.status_currently_reading
+                    : labels.status_discovery}
               </label>
             ))}
           </div>
@@ -388,10 +390,15 @@ export default function PromoteForm({ labels }: Props) {
       </label>
 
       {status === "error" && error && (
-        <div role="alert" className="rounded border border-oxblood/40 bg-oxblood/5 p-3 text-sm text-oxblood">
-          {error.kind === "duplicate" ? labels.error_duplicate
-          : error.kind === "validation" ? labels.error_validation
-          : labels.error_unknown}
+        <div
+          role="alert"
+          className="rounded border border-oxblood/40 bg-oxblood/5 p-3 text-sm text-oxblood"
+        >
+          {error.kind === "duplicate"
+            ? labels.error_duplicate
+            : error.kind === "validation"
+              ? labels.error_validation
+              : labels.error_unknown}
         </div>
       )}
 
@@ -403,7 +410,9 @@ export default function PromoteForm({ labels }: Props) {
         >
           {status === "saving" ? labels.saving : labels.save}
         </button>
-        <a href="/es/" className="text-sm text-ink/70 underline">{labels.cancel}</a>
+        <a href="/es/" className="text-sm text-ink/70 underline">
+          {labels.cancel}
+        </a>
       </div>
     </form>
   );
@@ -442,9 +451,7 @@ export default function PromoteForm({ labels }: Props) {
           </div>
           <div>
             <dt className="text-ink/60">{labels.context_note}</dt>
-            <dd className="whitespace-pre-wrap text-ink">
-              {suggestion.note ?? "—"}
-            </dd>
+            <dd className="whitespace-pre-wrap text-ink">{suggestion.note ?? "—"}</dd>
           </div>
           <div>
             <dt className="text-ink/60">{labels.context_submitter}</dt>

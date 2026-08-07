@@ -27,12 +27,14 @@
 ## File structure (lock-in before tasks)
 
 **New files:**
+
 - `supabase/migrations/0010_stage8_notify_submitter.sql` — adds 3 columns to `suggestions`, re-declares `promote_suggestion` RPC with the one-line addition.
 - `supabase/functions/notify_submitter/index.ts` — the Edge Function handler (auth, load, idempotency, send, error revert).
 - `supabase/functions/notify_submitter/email.ts` — inlined ES/EN strings + `renderEmail()` pure function.
 - `docs/30-ops/notify-submitter-debug.md` — ops runbook: webhook location, delivery-log path, manual retry SQL, common failure modes.
 
 **Modified files:**
+
 - `supabase/functions/submit_suggestion/index.ts` — one line: add `locale: body.locale` to the `suggestions` insert.
 - `src/i18n/es.json` — tighten `suggest.form.newsletter_label`; reframe 5 `privacy.*_body` strings.
 - `src/i18n/en.json` — same, EN mirror.
@@ -43,6 +45,7 @@
 - `.env.example` — document `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `SITE_URL`.
 
 **Unchanged:**
+
 - `src/pages/suggest.astro`, `src/pages/en/suggest.astro` — the checkbox label reads from an i18n key we only re-string; no code change.
 - `src/pages/privacy.astro`, `src/pages/en/privacy.astro` — same rationale.
 - `src/components/SuggestionForm.tsx` — the checkbox field remains named `newsletterOptIn`; only the visible label changes via i18n.
@@ -58,6 +61,7 @@
 ## Task A1 — `[Subagent]` Write migration `0010_stage8_notify_submitter.sql`
 
 **Files:**
+
 - Create: `supabase/migrations/0010_stage8_notify_submitter.sql`
 
 - [ ] **Step 1: Write the migration file**
@@ -223,6 +227,7 @@ where table_schema = 'public'
 ```
 
 Expected rows:
+
 - `locale text NO 'es'::text`
 - `promoted_author_id uuid YES NULL`
 - `notified_at timestamp with time zone YES NULL`
@@ -242,37 +247,38 @@ Expected: `true`.
 ## Task A3 — `[Subagent]` Update `submit_suggestion` to store locale
 
 **Files:**
+
 - Modify: `supabase/functions/submit_suggestion/index.ts:118-127`
 
 - [ ] **Step 1:** Add `locale: body.locale` to the `suggestions` insert. Find the block:
 
 ```ts
-  const { error: insertErr } = await sb.from("suggestions").insert({
-    submitter_email: email,
-    submitter_name: body.submitterName?.trim() || null,
-    proposed_author_name: authorName,
-    proposed_country_iso_a3: countryIsoA3,
-    proposed_books_text: body.booksText?.trim() || null,
-    note: body.note?.trim() || null,
-    accepted_newsletter: body.newsletterOptIn === true,
-    turnstile_verified: true,
-  });
+const { error: insertErr } = await sb.from("suggestions").insert({
+  submitter_email: email,
+  submitter_name: body.submitterName?.trim() || null,
+  proposed_author_name: authorName,
+  proposed_country_iso_a3: countryIsoA3,
+  proposed_books_text: body.booksText?.trim() || null,
+  note: body.note?.trim() || null,
+  accepted_newsletter: body.newsletterOptIn === true,
+  turnstile_verified: true,
+});
 ```
 
 Replace with:
 
 ```ts
-  const { error: insertErr } = await sb.from("suggestions").insert({
-    submitter_email: email,
-    submitter_name: body.submitterName?.trim() || null,
-    proposed_author_name: authorName,
-    proposed_country_iso_a3: countryIsoA3,
-    proposed_books_text: body.booksText?.trim() || null,
-    note: body.note?.trim() || null,
-    accepted_newsletter: body.newsletterOptIn === true,
-    turnstile_verified: true,
-    locale: body.locale,
-  });
+const { error: insertErr } = await sb.from("suggestions").insert({
+  submitter_email: email,
+  submitter_name: body.submitterName?.trim() || null,
+  proposed_author_name: authorName,
+  proposed_country_iso_a3: countryIsoA3,
+  proposed_books_text: body.booksText?.trim() || null,
+  note: body.note?.trim() || null,
+  accepted_newsletter: body.newsletterOptIn === true,
+  turnstile_verified: true,
+  locale: body.locale,
+});
 ```
 
 - [ ] **Step 2: Verify build**
@@ -323,6 +329,7 @@ git commit -m "feat(stage8): add locale/promoted_author_id/notified_at to sugges
 ## Task B1 — `[Subagent]` Create `email.ts` (strings + renderEmail)
 
 **Files:**
+
 - Create: `supabase/functions/notify_submitter/email.ts`
 
 - [ ] **Step 1: Write the module**
@@ -336,22 +343,22 @@ git commit -m "feat(stage8): add locale/promoted_author_id/notified_at to sugges
 
 const STRINGS = {
   es: {
-    subject:      "Tu sugerencia está en el mapa",
+    subject: "Tu sugerencia está en el mapa",
     greetingWith: (name: string) => `Hola, ${name},`,
     greetingBare: "Hola,",
-    body:         (authorName: string) =>
+    body: (authorName: string) =>
       `Acabo de añadir a ${authorName} al mapa de autoras — gracias por la sugerencia.`,
-    ctaLabel:     "Ver el mapa",
-    signature:    "Danny",
+    ctaLabel: "Ver el mapa",
+    signature: "Danny",
   },
   en: {
-    subject:      "Your suggestion is on the map",
+    subject: "Your suggestion is on the map",
     greetingWith: (name: string) => `Hi ${name},`,
     greetingBare: "Hi,",
-    body:         (authorName: string) =>
+    body: (authorName: string) =>
       `I just added ${authorName} to the map — thanks for the suggestion.`,
-    ctaLabel:     "See the map",
-    signature:    "Danny",
+    ctaLabel: "See the map",
+    signature: "Danny",
   },
 } as const;
 
@@ -379,9 +386,7 @@ function escapeHtml(s: string): string {
 
 export function renderEmail(input: RenderInput): RenderOutput {
   const s = STRINGS[input.locale];
-  const greeting = input.submitterName
-    ? s.greetingWith(input.submitterName)
-    : s.greetingBare;
+  const greeting = input.submitterName ? s.greetingWith(input.submitterName) : s.greetingBare;
   const bodyLine = s.body(input.authorName);
 
   const textBody = [
@@ -411,6 +416,7 @@ export function renderEmail(input: RenderInput): RenderOutput {
 ## Task B2 — `[Subagent]` Create `notify_submitter/index.ts` (handler)
 
 **Files:**
+
 - Create: `supabase/functions/notify_submitter/index.ts`
 
 - [ ] **Step 1: Write the handler**
@@ -569,7 +575,7 @@ Deno.serve(async (req: Request) => {
   const resendRes = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${resendKey}`,
+      Authorization: `Bearer ${resendKey}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -583,16 +589,9 @@ Deno.serve(async (req: Request) => {
 
   if (!resendRes.ok) {
     const bodyText = await resendRes.text();
-    console.error(
-      "[notify_submitter] Resend send failed:",
-      resendRes.status,
-      bodyText,
-    );
+    console.error("[notify_submitter] Resend send failed:", resendRes.status, bodyText);
     // Revert the claim so a retry can succeed.
-    await sb
-      .from("suggestions")
-      .update({ notified_at: null })
-      .eq("id", suggestionId);
+    await sb.from("suggestions").update({ notified_at: null }).eq("id", suggestionId);
     return json({ error: "resend_failed", status: resendRes.status }, 500);
   }
 
@@ -629,6 +628,7 @@ Expected: 500 `{"error":"load_failed"}` (no such row) or 200 `{"ok":true,"skippe
 ## Task B3 — `[Subagent]` Update `.env.example`
 
 **Files:**
+
 - Modify: `.env.example`
 
 - [ ] **Step 1:** Append to `.env.example`:
@@ -669,6 +669,7 @@ git commit -m "feat(stage8): notify_submitter Edge Function (renderEmail + handl
 ## Task C1 — `[Subagent]` Tighten opt-in label in `es.json` + `en.json`
 
 **Files:**
+
 - Modify: `src/i18n/es.json:101`
 - Modify: `src/i18n/en.json:101`
 
@@ -712,6 +713,7 @@ Run: `npm run dev` — open `http://localhost:4321/suggest` and `http://localhos
 ## Task C2 — `[Subagent]` Reframe privacy policy — ES
 
 **Files:**
+
 - Modify: `src/i18n/es.json` (5 `privacy.*_body` keys)
 
 - [ ] **Step 1:** Find `privacy.collect_body`, current value:
@@ -790,6 +792,7 @@ Run: `npm run dev` — open `http://localhost:4321/privacy`. Each of the 5 secti
 ## Task C3 — `[Subagent]` Reframe privacy policy — EN
 
 **Files:**
+
 - Modify: `src/i18n/en.json` (5 `privacy.*_body` keys)
 
 - [ ] **Step 1:** In `src/i18n/en.json`, find `privacy.collect_body`:
@@ -907,11 +910,11 @@ Expected: `Deployed Functions on project kkdjrzuewnwrlokhemnl: notify_submitter`
 
 - [ ] **Step 2:** Add three secrets:
 
-| Name | Value |
-|---|---|
-| `RESEND_API_KEY` | (from Task D1, Step 3) |
-| `RESEND_FROM_EMAIL` | `onboarding@resend.dev` |
-| `SITE_URL` | `https://staging.mapadeautoras.com` |
+| Name                | Value                               |
+| ------------------- | ----------------------------------- |
+| `RESEND_API_KEY`    | (from Task D1, Step 3)              |
+| `RESEND_FROM_EMAIL` | `onboarding@resend.dev`             |
+| `SITE_URL`          | `https://staging.mapadeautoras.com` |
 
 - [ ] **Step 3:** Save. `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` are auto-provisioned by Supabase (do not add).
 
@@ -925,22 +928,22 @@ Expected: `Deployed Functions on project kkdjrzuewnwrlokhemnl: notify_submitter`
 
 - [ ] **Step 2:** Fill in:
 
-| Field | Value |
-|---|---|
-| Name | `notify_submitter_on_promote` |
-| Schema | `public` |
-| Table | `suggestions` |
-| Events | ✅ Update (only) |
-| Type | HTTP Request |
-| HTTP method | POST |
-| URL | `https://kkdjrzuewnwrlokhemnl.supabase.co/functions/v1/notify_submitter` |
+| Field       | Value                                                                    |
+| ----------- | ------------------------------------------------------------------------ |
+| Name        | `notify_submitter_on_promote`                                            |
+| Schema      | `public`                                                                 |
+| Table       | `suggestions`                                                            |
+| Events      | ✅ Update (only)                                                         |
+| Type        | HTTP Request                                                             |
+| HTTP method | POST                                                                     |
+| URL         | `https://kkdjrzuewnwrlokhemnl.supabase.co/functions/v1/notify_submitter` |
 
 - [ ] **Step 3:** HTTP Headers — add:
 
-| Header | Value |
-|---|---|
+| Header          | Value                                                                                      |
+| --------------- | ------------------------------------------------------------------------------------------ |
 | `Authorization` | `Bearer <service_role_key>` (from dashboard → Project Settings → API → `service_role` key) |
-| `Content-Type` | `application/json` |
+| `Content-Type`  | `application/json`                                                                         |
 
 - [ ] **Step 4:** Filters — try the compound expression first:
 
@@ -976,6 +979,7 @@ Expected: redirect to `/thanks`.
 - [ ] **Step 2: Verify the row landed correctly**
 
 Staging Studio → Table Editor → `suggestions` → most recent row:
+
 - `accepted_newsletter = true`
 - `locale` = `es` or `en` (matches the form you used)
 - `status = pending`
@@ -996,6 +1000,7 @@ Supabase dashboard → Database → Webhooks → `notify_submitter_on_promote` �
 - [ ] **Step 5: Verify email arrived**
 
 Check the inbox of the email you used in Step 1. Within ~30 seconds an email arrives:
+
 - Subject matches the locale (`Tu sugerencia está en el mapa` / `Your suggestion is on the map`).
 - Body contains the author name you set during promote.
 - "Ver el mapa" / "See the map" link points to `https://staging.mapadeautoras.com`.
@@ -1008,6 +1013,7 @@ Staging Studio → `suggestions` row → `notified_at` is now populated with the
 
 Repeat Steps 1-3 with the checkbox UNTICKED.
 Expected after promote:
+
 - No email arrives at any inbox.
 - `notified_at` remains `NULL` on the second row.
 - Webhook Recent deliveries either shows no delivery (compound filter caught it) OR a 200 with `{"ok":true,"reason":"not_opted_in"}` (function guard caught it).
@@ -1030,6 +1036,7 @@ Expected: 200 with `{"ok":true,"reason":"already_notified"}` (or `already_claime
 ## Task E1 — `[Subagent]` Rewrite Stage 8 section in `01-implementation-plan.md`
 
 **Files:**
+
 - Modify: `docs/01-implementation-plan.md:227-247`
 
 - [ ] **Step 1:** Find the Stage 8 section (starts with `## Stage 8 — Newsletter double-opt-in confirmation + Resend audience sync`) and replace it entirely with:
@@ -1044,6 +1051,7 @@ Expected: 200 with `{"ok":true,"reason":"already_notified"}` (or `already_claime
 **Design:** [docs/specs/2026-07-20-stage-8-notify-submitter-design.md](specs/2026-07-20-stage-8-notify-submitter-design.md) — full scope, decisions table, architecture, verification.
 
 **Build:**
+
 - Migration `0010_stage8_notify_submitter.sql` — adds `locale`, `promoted_author_id`, `notified_at` columns to `suggestions`; re-declares `promote_suggestion` RPC to populate `promoted_author_id`.
 - `supabase/functions/notify_submitter/index.ts` — webhook-triggered Edge Function; auth on service-role bearer; conditional `notified_at` claim for at-most-once semantics; renders + sends via Resend.
 - `supabase/functions/notify_submitter/email.ts` — inlined ES/EN strings + `renderEmail()`.
@@ -1055,6 +1063,7 @@ Expected: 200 with `{"ok":true,"reason":"already_notified"}` (or `already_claime
 - `docs/30-ops/notify-submitter-debug.md` runbook.
 
 **Verify (staging):**
+
 1. Opt-in submission → promote → email delivered (subject + body match locale) → `notified_at` populated.
 2. Opt-out submission → promote → no email, `notified_at` remains `NULL`.
 3. Idempotency: redeliver the webhook → 200 with `already_notified`, no second email.
@@ -1072,6 +1081,7 @@ Expected: 200 with `{"ok":true,"reason":"already_notified"}` (or `already_claime
 ## Task E2 — `[Subagent]` Update launch checklist item 3
 
 **Files:**
+
 - Modify: `docs/50-launch-checklist.md` (find `### 3. Newsletter (Stage 8 — elevated to launch-blocking)`)
 
 - [ ] **Step 1:** Replace the entire `### 3. Newsletter (...)` block with:
@@ -1097,6 +1107,7 @@ Expected: 200 with `{"ok":true,"reason":"already_notified"}` (or `already_claime
 ## Task E3 — `[Subagent]` Create debug runbook
 
 **Files:**
+
 - Create: `docs/30-ops/notify-submitter-debug.md`
 
 - [ ] **Step 1: Write the runbook**
@@ -1107,14 +1118,15 @@ Expected: 200 with `{"ok":true,"reason":"already_notified"}` (or `already_claime
 Operational reference for the Stage 8 notification flow: submitter opts in → admin promotes → submitter receives one email.
 
 ## Architecture cheat-sheet
+```
 
-```
 suggestions UPDATE (status → 'approved')
-  → Supabase Database Webhook `notify_submitter_on_promote`
-  → POST /functions/v1/notify_submitter (Authorization: Bearer <service_role>)
-  → guard checks → claim notified_at → POST to Resend API
-  → return 200
-```
+→ Supabase Database Webhook `notify_submitter_on_promote`
+→ POST /functions/v1/notify_submitter (Authorization: Bearer <service_role>)
+→ guard checks → claim notified_at → POST to Resend API
+→ return 200
+
+````
 
 ## Where to look when it breaks
 
@@ -1154,7 +1166,7 @@ update public.suggestions set notified_at = null where id = '<uuid>';
 
 -- Then trigger a no-op UPDATE to fire the webhook:
 update public.suggestions set status = status where id = '<uuid>';
-```
+````
 
 ## Local dev
 
@@ -1178,6 +1190,7 @@ The webhook config lives in the Supabase dashboard, not in git. If someone delet
 
 - **Staging:** `<filled in during Task D4, Step 4>`
 - **Prod (9b):** `<filled in during Stage 9b webhook config>`
+
 ```
 
 - [ ] **Step 2: Post-verify D4:** Alejandro fills the "Filter expression currently in use" placeholder for staging with whichever filter variant was accepted by the dashboard.
@@ -1196,20 +1209,26 @@ The webhook config lives in the Supabase dashboard, not in git. If someone delet
 For specs:
 
 ```
+
 | `specs/2026-07-20-stage-8-notify-submitter-design.md` | Stage 8 design — transactional email to submitter on promote (scope pivot from newsletter). | Read when working on Stage 8 code, or when questioning the notify architecture / webhook decision. |
+
 ```
 
 For plans:
 
 ```
+
 | `plans/2026-07-20-stage-8-notify-submitter-implementation.md` | Stage 8 implementation plan — task-by-task migration + Edge Function + i18n + docs. | Read when picking up Stage 8 work or resuming mid-slice. |
+
 ```
 
 For ops:
 
 ```
+
 | `30-ops/notify-submitter-debug.md` | Runbook for the notify_submitter Edge Function — where to look when emails don't arrive, manual retry SQL, filter-expression note. | Consult when a submitter reports no email, or before touching the webhook config. |
-```
+
+````
 
 - [ ] **Step 2:** STOP — Task E4 done.
 
@@ -1238,7 +1257,7 @@ For ops:
 **Verified on staging:** end-to-end promote → email delivered → `notified_at` set. Opt-out regression + webhook redeliver idempotency both green.
 
 **Pending for 9b:** Resend domain auth for `mapadeautoras.com`; swap `RESEND_FROM_EMAIL` to `hola@mapadeautoras.com`; re-create webhook + function secrets on the prod Supabase project.
-```
+````
 
 - [ ] **Step 2:** Update the roadmap snapshot section (if present) — tick Stage 8 as done, leave Stage 9b as the next launch-blocking item.
 

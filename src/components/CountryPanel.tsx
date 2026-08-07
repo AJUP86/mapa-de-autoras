@@ -8,12 +8,7 @@ interface Props {
   onClose: () => void;
 }
 
-export default function CountryPanel({
-  countryName,
-  authors,
-  labels,
-  onClose,
-}: Props) {
+export default function CountryPanel({ countryName, authors, labels, onClose }: Props) {
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
 
   // Esc closes; focus the close button on open for keyboard accessibility.
@@ -76,9 +71,7 @@ export default function CountryPanel({
 
         <div className="px-6 py-5 space-y-6">
           {authors.length === 0 ? (
-            <p className="text-sm text-ink/70 font-body italic">
-              {labels.panel.empty}
-            </p>
+            <p className="text-sm text-ink/70 font-body italic">{labels.panel.empty}</p>
           ) : (
             authors.map((author) => (
               <article
@@ -106,12 +99,8 @@ export default function CountryPanel({
                       <li key={i} className="flex items-baseline gap-2">
                         <span className="text-ochre">·</span>
                         <span>
-                          <em className="not-italic font-medium">
-                            {book.title}
-                          </em>
-                          {book.year && (
-                            <span className="text-ink/50"> · {book.year}</span>
-                          )}
+                          <em className="not-italic font-medium">{book.title}</em>
+                          {book.year && <span className="text-ink/50"> · {book.year}</span>}
                         </span>
                       </li>
                     ))}
