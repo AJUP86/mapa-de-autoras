@@ -11,12 +11,14 @@
 ## Scope
 
 **In:**
+
 - Owner gets an email within seconds when a public suggestion lands in `public.suggestions`.
 - Owner can log in via magic-link at `/admin/login`.
 - Owner sees a read-only inbox at `/admin` listing pending suggestions (newest first).
 - Clicking a row navigates to `/admin/suggestions/[id]` — a placeholder page in 7a, full review form in 7b.
 
 **Out (lives in 7b):**
+
 - Promote-suggestion form (write `authors` + `books` + `book_links`).
 - Author / book / book_links CRUD pages.
 - The translation-strategy ADR (only matters for 7b's bilingual content forms).
@@ -25,14 +27,14 @@
 
 ## Decisions
 
-| # | Decision | Choice | Rationale |
-| --- | --- | --- | --- |
-| 1 | Page rendering | Static Astro pages + client-side auth check, RLS-gated PostgREST | Matches existing architecture; no SSR adapter change before Stage 9 |
-| 2 | i18n | Spanish-only, bilingual-ready via `t()` + `admin.*` namespace | Owner-facing UI; zero refactor cost to add EN later |
-| 3 | Email transport | Inbucket in dev (magic-links); `notify_owner` Edge Function logs to console when `RESEND_API_KEY` is empty, sends via Resend when present | Defers Resend account setup to Stage 8 (newsletter); function code is identical dev↔prod |
-| 4 | Notification mechanism | Postgres `AFTER INSERT` trigger calling `pg_net.http_post()` to the Edge Function | Single source of truth in migration; works dev + prod identically; no dashboard webhook UI to configure |
-| 5 | Auth API | `supabase.auth.signInWithOtp({ email })` with `emailRedirectTo: '/admin'` | Magic-link flow with the existing GoTrue setup; `enable_signup = false` already in `config.toml` |
-| 6 | Authorization gate | RLS `is_admin()` on every read; client-side `<AdminGate>` just redirects unauthenticated to login (UX) | RLS is the real authorization boundary; client redirect is convenience |
+| #   | Decision               | Choice                                                                                                                                    | Rationale                                                                                               |
+| --- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| 1   | Page rendering         | Static Astro pages + client-side auth check, RLS-gated PostgREST                                                                          | Matches existing architecture; no SSR adapter change before Stage 9                                     |
+| 2   | i18n                   | Spanish-only, bilingual-ready via `t()` + `admin.*` namespace                                                                             | Owner-facing UI; zero refactor cost to add EN later                                                     |
+| 3   | Email transport        | Inbucket in dev (magic-links); `notify_owner` Edge Function logs to console when `RESEND_API_KEY` is empty, sends via Resend when present | Defers Resend account setup to Stage 8 (newsletter); function code is identical dev↔prod                |
+| 4   | Notification mechanism | Postgres `AFTER INSERT` trigger calling `pg_net.http_post()` to the Edge Function                                                         | Single source of truth in migration; works dev + prod identically; no dashboard webhook UI to configure |
+| 5   | Auth API               | `supabase.auth.signInWithOtp({ email })` with `emailRedirectTo: '/admin'`                                                                 | Magic-link flow with the existing GoTrue setup; `enable_signup = false` already in `config.toml`        |
+| 6   | Authorization gate     | RLS `is_admin()` on every read; client-side `<AdminGate>` just redirects unauthenticated to login (UX)                                    | RLS is the real authorization boundary; client redirect is convenience                                  |
 
 ---
 
@@ -149,6 +151,7 @@ interface Props {
 ### `notify_owner` Edge Function
 
 **Input** (trigger payload):
+
 ```json
 {
   "type": "INSERT",
@@ -158,12 +161,14 @@ interface Props {
 ```
 
 **Behavior:**
+
 1. Read `OWNER_NOTIFICATION_EMAIL` and `RESEND_API_KEY` from env.
 2. If no `RESEND_API_KEY`: `console.log` the payload and return `{ ok: true, sent: false }`.
 3. Else: POST to `https://api.resend.com/emails` with a short text body containing the suggestion details and a link to `/admin/suggestions/:id`.
 4. Return `{ ok: true, sent: true }` on success; log + return 500 on Resend failure.
 
 **Env it reads:**
+
 - `OWNER_NOTIFICATION_EMAIL` (already in `.env.example`)
 - `RESEND_API_KEY` (already in `.env.example`, may be empty in dev)
 - `RESEND_FROM_EMAIL` (already in `.env.example`, defaults to `hola@mapadeautoras.com`)

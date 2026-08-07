@@ -28,8 +28,9 @@ interface Props {
 const worldTopology = worldData as unknown as Parameters<typeof feature>[0];
 const worldGeoJson = feature(
   worldTopology,
-  (worldTopology as unknown as { objects: { countries: unknown } }).objects
-    .countries as Parameters<typeof feature>[1],
+  (worldTopology as unknown as { objects: { countries: unknown } }).objects.countries as Parameters<
+    typeof feature
+  >[1],
 ) as unknown as Parameters<typeof Geographies>[0]["geography"];
 
 export default function AuthorsMap({
@@ -52,13 +53,7 @@ export default function AuthorsMap({
         role="img"
       >
         <defs>
-          <filter
-            id="land-shadow"
-            x="-2%"
-            y="-2%"
-            width="104%"
-            height="104%"
-          >
+          <filter id="land-shadow" x="-2%" y="-2%" width="104%" height="104%">
             <feDropShadow
               dx="0"
               dy="0.6"
@@ -84,54 +79,49 @@ export default function AuthorsMap({
           <g filter="url(#land-shadow)">
             <Geographies geography={worldGeoJson}>
               {({ geographies }) =>
-                (geographies as Array<typeof geographies[number] & { rsmKey: string; id?: string | number }>).map((geo) => {
-                  const numericRaw =
-                    typeof geo.id === "string"
-                      ? parseInt(geo.id, 10)
-                      : geo.id;
+                (
+                  geographies as Array<
+                    (typeof geographies)[number] & { rsmKey: string; id?: string | number }
+                  >
+                ).map((geo) => {
+                  const numericRaw = typeof geo.id === "string" ? parseInt(geo.id, 10) : geo.id;
                   const iso_a3 =
-                    typeof numericRaw === "number"
-                      ? isoNumericToA3[numericRaw]
-                      : undefined;
+                    typeof numericRaw === "number" ? isoNumericToA3[numericRaw] : undefined;
                   const state: CountryState =
-                    iso_a3 && countryStates[iso_a3]
-                      ? countryStates[iso_a3]
-                      : "empty";
+                    iso_a3 && countryStates[iso_a3] ? countryStates[iso_a3] : "empty";
                   const isSelected = iso_a3 && iso_a3 === selectedIso;
                   const { fill, stroke } = fillFor(state, filter);
                   const name =
-                    (geo.properties as { name?: string } | undefined)?.name ??
-                    iso_a3 ??
-                    "";
+                    (geo.properties as { name?: string } | undefined)?.name ?? iso_a3 ?? "";
 
                   return (
                     <Geography
                       key={geo.rsmKey}
                       geography={geo}
-                      onClick={() =>
-                        iso_a3 && onSelectCountry(iso_a3, name)
-                      }
+                      onClick={() => iso_a3 && onSelectCountry(iso_a3, name)}
                       fill={fill}
                       stroke={isSelected ? "var(--c-ink)" : stroke}
                       strokeWidth={isSelected ? 1 : 0.6}
                       tabIndex={-1}
-                      style={{
-                        default: {
-                          outline: "none",
-                          transition: "fill 200ms ease-out",
-                        },
-                        hover: {
-                          fill: "var(--c-ochre)",
-                          outline: "none",
-                          cursor: "pointer",
-                        },
-                        pressed: { outline: "none" },
-                        // The focus state isn't a default style key in
-                        // react-simple-maps, but a few of its forks (including
-                        // the React-19 fork) read it. Belt-and-suspenders with
-                        // tabIndex={-1} and the CSS rule below.
-                        focus: { outline: "none" },
-                      } as Parameters<typeof Geography>[0]["style"]}
+                      style={
+                        {
+                          default: {
+                            outline: "none",
+                            transition: "fill 200ms ease-out",
+                          },
+                          hover: {
+                            fill: "var(--c-ochre)",
+                            outline: "none",
+                            cursor: "pointer",
+                          },
+                          pressed: { outline: "none" },
+                          // The focus state isn't a default style key in
+                          // react-simple-maps, but a few of its forks (including
+                          // the React-19 fork) read it. Belt-and-suspenders with
+                          // tabIndex={-1} and the CSS rule below.
+                          focus: { outline: "none" },
+                        } as Parameters<typeof Geography>[0]["style"]
+                      }
                     />
                   );
                 })

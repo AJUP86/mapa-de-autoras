@@ -10,20 +10,20 @@
 
 ## Decision
 
-| Concern | Choice |
-| --- | --- |
-| Frontend framework | **Astro 5** (static output) |
-| Map island | **React 18** + **`@vnedyalk0v/react19-simple-maps`** (active fork of the dormant original) |
-| Map data | **`world-atlas/countries-110m.json`** (Natural Earth, public domain) |
-| Styling | **Tailwind CSS** |
-| i18n | Astro built-in (`locales: ["es","en"]`, `defaultLocale: "es"`) |
-| Backend / DB / Auth | **Supabase** (Postgres + magic-link Auth + RLS + Edge Functions + DB Webhooks) |
-| Bot defense | **Cloudflare Turnstile** |
-| Email — transactional | **Resend** (free tier: 3 000/mo, 100/day) |
-| Email — newsletter | **Resend Broadcasts** (free: 1 000 contacts, unlimited sends) |
-| Frontend hosting | **Cloudflare Pages** free tier |
-| Liveness | Weekly GitHub Actions cron pinging Supabase (free-tier projects pause after 7 days idle) |
-| Future native | **Capacitor** wrapping Astro's static `dist/` |
+| Concern               | Choice                                                                                     |
+| --------------------- | ------------------------------------------------------------------------------------------ |
+| Frontend framework    | **Astro 5** (static output)                                                                |
+| Map island            | **React 18** + **`@vnedyalk0v/react19-simple-maps`** (active fork of the dormant original) |
+| Map data              | **`world-atlas/countries-110m.json`** (Natural Earth, public domain)                       |
+| Styling               | **Tailwind CSS**                                                                           |
+| i18n                  | Astro built-in (`locales: ["es","en"]`, `defaultLocale: "es"`)                             |
+| Backend / DB / Auth   | **Supabase** (Postgres + magic-link Auth + RLS + Edge Functions + DB Webhooks)             |
+| Bot defense           | **Cloudflare Turnstile**                                                                   |
+| Email — transactional | **Resend** (free tier: 3 000/mo, 100/day)                                                  |
+| Email — newsletter    | **Resend Broadcasts** (free: 1 000 contacts, unlimited sends)                              |
+| Frontend hosting      | **Cloudflare Pages** free tier                                                             |
+| Liveness              | Weekly GitHub Actions cron pinging Supabase (free-tier projects pause after 7 days idle)   |
+| Future native         | **Capacitor** wrapping Astro's static `dist/`                                              |
 
 ## Alternatives considered
 
@@ -38,13 +38,15 @@
 ## Consequences
 
 **Positive**
+
 - Zero monthly cost at launch; predictable upgrade path on every layer.
 - Static output means SEO and Lighthouse scores are easy wins.
 - One vendor for DB + Auth + serverless (Supabase) and one for email (Resend) keeps the mental model tight.
-- The map is the *only* JS island, so bundle size stays small.
+- The map is the _only_ JS island, so bundle size stays small.
 - Capacitor wrap is a near-drop-in for phase 2.
 
 **Negative / risks**
+
 - Supabase free projects pause after 7 days of DB inactivity. **Mitigation:** weekly GitHub Actions heartbeat.
 - Resend's 100 emails/day cap could bite during a viral submission spike. **Mitigation:** broadcasts are not counted against this; transactional volume is unlikely to approach it.
 - We depend on a community fork (`@vnedyalk0v/react19-simple-maps`). **Mitigation:** documented fallback path — ~80 LOC `d3-geo` + `topojson-client` component with identical props.

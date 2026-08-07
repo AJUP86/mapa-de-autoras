@@ -8,24 +8,36 @@
  * bg-parchment / text-ink / font-display resolve to the CSS variables.
  * Editing tokens.css repaints the site — no Tailwind rebuild needed. */
 @theme {
-  --color-ink:       var(--c-ink);
+  --color-ink: var(--c-ink);
   --color-parchment: var(--c-parchment);
-  --color-bone:      var(--c-bone);
-  --color-oxblood:   var(--c-oxblood);
+  --color-bone: var(--c-bone);
+  --color-oxblood: var(--c-oxblood);
   --color-oxblood-2: var(--c-oxblood-2);
   --color-oxblood-3: var(--c-oxblood-3);
-  --color-ochre:     var(--c-ochre);
-  --color-penguin:   var(--c-penguin);
-  --color-sage:      var(--c-sage);
-  --color-water:      var(--c-water);
+  --color-ochre: var(--c-ochre);
+  --color-penguin: var(--c-penguin);
+  --color-sage: var(--c-sage);
+  --color-water: var(--c-water);
 
   --font-display: var(--font-display);
-  --font-body:    var(--font-body);
+  --font-body: var(--font-body);
 }
 
-html, body { background: var(--c-parchment); color: var(--c-ink); }
-body { font-family: var(--font-body); -webkit-font-smoothing: antialiased; }
-h1, h2, h3, h4, h5, h6 {
+html,
+body {
+  background: var(--c-parchment);
+  color: var(--c-ink);
+}
+body {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-display);
   font-weight: 600;
   letter-spacing: -0.01em;

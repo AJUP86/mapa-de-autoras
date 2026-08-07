@@ -21,20 +21,20 @@ Out of scope for MVP: native wrapper build, multi-admin/RBAC, author analytics, 
 
 ## Recommended stack at a glance
 
-| Layer | Choice | Why |
-| --- | --- | --- |
-| Frontend framework | **Astro 5** (static output) | Ships zero JS by default; map is the only React island; built-in i18n works with `output: 'static'`; clean Capacitor wrap. Next.js App Router would force `output: 'export'` and lose half its value (built-in i18n, ISR, route handlers). |
-| UI library on the map island | **React 18 + `@vnedyalk0v/react19-simple-maps` fork** (the original `zcreativelabs/react-simple-maps` is dormant since 2022) | Fork is ESM, TS types, React 19 peer dep. Thin wrapper over d3-geo → easy fallback. |
-| Map data | **`world-atlas/countries-110m.json`** (TopoJSON) | Underlying Natural Earth data is public domain, commercial use OK. ISO numeric IDs in `geo.id` → map to ISO 3166-1 alpha-3 with a tiny lookup. |
-| Styling | **Tailwind CSS** + a handful of custom components | Astro's first-class Tailwind integration; no heavy component framework needed for this scope. |
-| i18n | **Astro built-in i18n** (`locales: ["es","en"]`, `defaultLocale: "es"`, prefix routing) | No middleware, no third-party lib. |
-| Backend / DB / Auth | **Supabase** (Postgres + Auth magic-link + RLS + Edge Functions + Database Webhooks) | Free tier covers this easily. RLS makes the public/private split trivial. |
-| Bot protection | **Cloudflare Turnstile** | Unlimited free; no tracking cookies (GDPR-friendly for ES/EN audiences); reCAPTCHA v3 free tier was cut to 10k/mo in 2024 and is Google-tracking. |
-| Email — transactional | **Resend** (free tier: 3 000 emails/mo, 100/day, 1 domain) | Best DX, cleanest API; powers owner-notification and double-opt-in confirmation. |
-| Email — newsletter | **Resend Broadcasts** (free: 1 000 contacts, unlimited sends) | One vendor for both flows. Subscribers live in Supabase, confirmed contacts sync to a Resend audience. |
-| Frontend hosting | **Cloudflare Pages** (or Netlify) free tier | Astro static output deploys cleanly; no Vercel lock-in pressure. |
-| Liveness | **Weekly GitHub Actions cron** that pings Supabase | Free Supabase projects pause after 7 days of DB inactivity; the heartbeat prevents that during launch. |
-| Future native wrapper | **Capacitor** wrapping the static `dist/` | Astro static output is a near-perfect fit; community PoC: [somenoe/astro-capacitor-poc](https://github.com/somenoe/astro-capacitor-poc). |
+| Layer                        | Choice                                                                                                                       | Why                                                                                                                                                                                                                                        |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Frontend framework           | **Astro 5** (static output)                                                                                                  | Ships zero JS by default; map is the only React island; built-in i18n works with `output: 'static'`; clean Capacitor wrap. Next.js App Router would force `output: 'export'` and lose half its value (built-in i18n, ISR, route handlers). |
+| UI library on the map island | **React 18 + `@vnedyalk0v/react19-simple-maps` fork** (the original `zcreativelabs/react-simple-maps` is dormant since 2022) | Fork is ESM, TS types, React 19 peer dep. Thin wrapper over d3-geo → easy fallback.                                                                                                                                                        |
+| Map data                     | **`world-atlas/countries-110m.json`** (TopoJSON)                                                                             | Underlying Natural Earth data is public domain, commercial use OK. ISO numeric IDs in `geo.id` → map to ISO 3166-1 alpha-3 with a tiny lookup.                                                                                             |
+| Styling                      | **Tailwind CSS** + a handful of custom components                                                                            | Astro's first-class Tailwind integration; no heavy component framework needed for this scope.                                                                                                                                              |
+| i18n                         | **Astro built-in i18n** (`locales: ["es","en"]`, `defaultLocale: "es"`, prefix routing)                                      | No middleware, no third-party lib.                                                                                                                                                                                                         |
+| Backend / DB / Auth          | **Supabase** (Postgres + Auth magic-link + RLS + Edge Functions + Database Webhooks)                                         | Free tier covers this easily. RLS makes the public/private split trivial.                                                                                                                                                                  |
+| Bot protection               | **Cloudflare Turnstile**                                                                                                     | Unlimited free; no tracking cookies (GDPR-friendly for ES/EN audiences); reCAPTCHA v3 free tier was cut to 10k/mo in 2024 and is Google-tracking.                                                                                          |
+| Email — transactional        | **Resend** (free tier: 3 000 emails/mo, 100/day, 1 domain)                                                                   | Best DX, cleanest API; powers owner-notification and double-opt-in confirmation.                                                                                                                                                           |
+| Email — newsletter           | **Resend Broadcasts** (free: 1 000 contacts, unlimited sends)                                                                | One vendor for both flows. Subscribers live in Supabase, confirmed contacts sync to a Resend audience.                                                                                                                                     |
+| Frontend hosting             | **Cloudflare Pages** (or Netlify) free tier                                                                                  | Astro static output deploys cleanly; no Vercel lock-in pressure.                                                                                                                                                                           |
+| Liveness                     | **Weekly GitHub Actions cron** that pings Supabase                                                                           | Free Supabase projects pause after 7 days of DB inactivity; the heartbeat prevents that during launch.                                                                                                                                     |
+| Future native wrapper        | **Capacitor** wrapping the static `dist/`                                                                                    | Astro static output is a near-perfect fit; community PoC: [somenoe/astro-capacitor-poc](https://github.com/somenoe/astro-capacitor-poc).                                                                                                   |
 
 ---
 
@@ -64,6 +64,7 @@ Out of scope for MVP: native wrapper build, multi-admin/RBAC, author analytics, 
 ```
 
 Two protected client paths:
+
 - `/admin/login` → magic-link via Supabase Auth.
 - `/admin/...` → Astro page renders an empty shell + a React island that calls Supabase with the session.
 
@@ -83,6 +84,7 @@ Six tables, all in one Supabase schema. Names in English to keep code clean; UI 
 - **`subscribers`** — `id`, `email` unique, `status` (`pending` | `confirmed` | `unsubscribed`), `locale`, `confirm_token`, `created_at`, `confirmed_at`. Self-rolled double-opt-in; confirmed emails are mirrored to a Resend audience.
 
 **RLS policies (prose):**
+
 - `anon` role: can `INSERT` into `suggestions` (with `status = 'pending'` enforced by CHECK constraint) and `INSERT` into `subscribers` (with `status = 'pending'`); no `SELECT` on either. Can `SELECT` on `countries`, `authors WHERE published`, `books`, `book_links`.
 - `authenticated` role (the owner): full CRUD on everything; `SELECT/UPDATE` on `suggestions` gated by an `admins` table or a hardcoded UID check.
 
@@ -94,18 +96,18 @@ Designed to feel **warm, intelligent, sophisticated** — a curated bookshelf, n
 
 **Color palette** — defined once in `src/styles/tokens.css` as CSS variables; Tailwind aliases (`bg-parchment`, `text-ink`, `fill-oxblood`) reference them via `var(--c-*)`. Changing the brand is a **one-file edit**. A `/styleguide` route (built in Stage 1) shows every token live for visual iteration.
 
-| Token | Hex | Use |
-| --- | --- | --- |
-| `ink` (primary text) | `#1B2A41` | Body text, headings on light bg |
-| `parchment` (background) | `#F5EFE6` | Page background, cards |
-| `bone` (surface) | `#FAF6EE` | Elevated surface vs `parchment` |
-| `oxblood` (primary brand) | `#7A1F2E` | CTAs, "read" country fill, link accents |
-| `oxblood-2` | `#9C3A47` | "Mixed" country fill (read + discoveries) |
-| `oxblood-3` | `#C97F87` | "Discoveries only" country fill |
-| `ochre` (secondary) | `#C68B3C` | Link underlines, subtle highlights |
-| `penguin` (vintage accent) | `#E87722` | Discovery badge · Featured / spine-band cards (classic Penguin paperback orange — used sparingly, never on map fills or CTAs) |
-| `sage` (tertiary) | `#7A9B82` | Successful/confirmed states, subtle dividers |
-| `shadow` | `#1B2A41 @ 10%` | Soft shadows |
+| Token                      | Hex             | Use                                                                                                                           |
+| -------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `ink` (primary text)       | `#1B2A41`       | Body text, headings on light bg                                                                                               |
+| `parchment` (background)   | `#F5EFE6`       | Page background, cards                                                                                                        |
+| `bone` (surface)           | `#FAF6EE`       | Elevated surface vs `parchment`                                                                                               |
+| `oxblood` (primary brand)  | `#7A1F2E`       | CTAs, "read" country fill, link accents                                                                                       |
+| `oxblood-2`                | `#9C3A47`       | "Mixed" country fill (read + discoveries)                                                                                     |
+| `oxblood-3`                | `#C97F87`       | "Discoveries only" country fill                                                                                               |
+| `ochre` (secondary)        | `#C68B3C`       | Link underlines, subtle highlights                                                                                            |
+| `penguin` (vintage accent) | `#E87722`       | Discovery badge · Featured / spine-band cards (classic Penguin paperback orange — used sparingly, never on map fills or CTAs) |
+| `sage` (tertiary)          | `#7A9B82`       | Successful/confirmed states, subtle dividers                                                                                  |
+| `shadow`                   | `#1B2A41 @ 10%` | Soft shadows                                                                                                                  |
 
 This pairs warm cream + ink for readability, a wine/oxblood as the brand anchor (book-binding gravitas), with ochre and sage as complementary accents. Passes WCAG AA contrast in the obvious combinations (`ink` on `parchment` ≈ 11:1; `parchment` on `oxblood` ≈ 7:1). Full token detail and the map filter highlight scale: [adr/0002-style-guide.md](adr/0002-style-guide.md).
 
@@ -117,6 +119,7 @@ This pairs warm cream + ink for readability, a wine/oxblood as the brand anchor 
 Heading scale `1.250` (major third); base body `16px` mobile / `17px` desktop.
 
 **Tone & motion:**
+
 - Soft, slow transitions (250–400 ms) for country hover/select.
 - Subtle paper-grain texture (SVG noise overlay at ~3% opacity) on `parchment` — optional, can be cut for perf.
 - No emoji-heavy UI; small Lucide-style icons.
@@ -140,6 +143,7 @@ Heading scale `1.250` (major third); base body `16px` mobile / `17px` desktop.
 **Public form (`/suggest`)** — fields: country (select, populated from `countries`), author name, books (free text), submitter email, submitter name (optional), newsletter opt-in checkbox, Turnstile widget.
 
 Submit flow:
+
 1. Astro form posts to a tiny Supabase Edge Function `submit_suggestion`.
 2. Function verifies the Turnstile token server-side (`POST challenges.cloudflare.com/turnstile/v0/siteverify`, single-use, 300 s expiry).
 3. If newsletter opt-in: upserts into `subscribers` as `pending`, sends a double-opt-in email via Resend with a signed confirm link.
@@ -147,6 +151,7 @@ Submit flow:
 5. A **Postgres Database Webhook** on `suggestions INSERT` POSTs to a second Edge Function `notify_owner` that emails the owner via Resend (one-click links into `/admin/suggestions/:id`).
 
 **Admin (`/admin`)** — magic-link login (Supabase Auth, email allowlist). Pages:
+
 - `Inbox` — list of `pending` suggestions, approve/reject buttons. Approving opens a "promote to catalog" form pre-filled with the suggestion data so the owner can clean up the author name, add a slug, paste a photo URL, etc. New authors default to `status = 'discovery'`; the owner flips to `'read'` only when she has actually read at least one of the books.
 - `Authors` — table with inline edit, "Add author" button, drag-reorder books per author.
 - `Subscribers` — list + manual unsubscribe / resync to Resend audience.
@@ -180,7 +185,7 @@ Decisions live in `docs/` (committed); scratch in `.work/` (gitignored). See [..
 
 ## Critical files to create (when implementation begins)
 
-> *Reference only — no code yet.*
+> _Reference only — no code yet._
 
 - `package.json`, `astro.config.mjs` — Astro 5, integrations: `@astrojs/react`, `@astrojs/tailwind`, `@astrojs/sitemap`.
 - `tailwind.config.mjs` — palette tokens + Fraunces/Inter font families.

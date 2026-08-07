@@ -37,20 +37,20 @@ Staging surfaced the gap immediately: an admin promoted a suggestion, the row la
 
 ## Decisions
 
-| # | Decision | Choice | Rationale |
-|---|---|---|---|
-| 1 | Initial render | Map outline + filter buttons + empty side panel; no countries highlighted until catalog loads | Skeleton flash <500ms is acceptable; map shell alone signals "loading" |
-| 2 | Initial data fetch | `MapSection` calls `getCatalog()` on mount via `useEffect` | Same SQL shape as the old build-time call; one query, reusable function |
-| 3 | Realtime scope | Subscribe to BOTH `public.authors` and `public.books`, events `*` (INSERT/UPDATE/DELETE) | Covers promote (author + N books), edit (7b-ii), delete (7b-ii) without future refactor |
-| 4 | Event handling | **Granular patching**: INSERT appends, UPDATE replaces by id, DELETE removes by id. Books are matched to parent author by `author_id` and appended in `display_order` | Industry-standard streaming pattern; zero extra queries per event; UI updates within ~50ms of DB commit |
-| 5 | Countries data | Stays build-time, passed as Astro prop to `<MapSection>` (or sourced from a static module) | Static 249-entry ISO list; refetching wasteful |
-| 6 | EN locale parity | Both `index.astro` and `en/index.astro` lose `getCatalog()`; both pass the same labels into one shared `<MapSection>` | Symmetric, no per-locale code |
-| 7 | Migration | New `0008_realtime_authors.sql`: `alter publication supabase_realtime add table public.authors, public.books;` | Realtime is opt-in per table on Supabase |
-| 8 | RLS posture | Unchanged — anon already filtered to `published = true` via existing policy on `authors`; books inherit via FK + their own policy | Subscriptions inherit table RLS; no new security surface |
-| 9 | Connection lifecycle | `useEffect` mounts the subscription; cleanup unsubscribes on unmount | Prevents leaks across SPA-style navigation and HMR reloads in dev |
-| 10 | Reconnect / resync | On WebSocket reconnect → one-time `getCatalog()` to re-sync (events missed during disconnect would otherwise leave state stale) | Standard "rejoin and resync" pattern; supabase-js exposes connection state via the `system` event |
-| 11 | Failure mode | If initial fetch fails OR Realtime fails to connect → render the existing "empty map" gracefully + log to console; do not block the rest of the page | Defensive; the suggest form, navigation, and styleguide still work |
-| 12 | ADR | New [ADR 0005](../adr/0005-realtime-map-data.md) — captures the architecture flip from Stages 4-5 + the public/private rationale | Decisions live in committed `docs/`, not memory |
+| #   | Decision             | Choice                                                                                                                                                                | Rationale                                                                                               |
+| --- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| 1   | Initial render       | Map outline + filter buttons + empty side panel; no countries highlighted until catalog loads                                                                         | Skeleton flash <500ms is acceptable; map shell alone signals "loading"                                  |
+| 2   | Initial data fetch   | `MapSection` calls `getCatalog()` on mount via `useEffect`                                                                                                            | Same SQL shape as the old build-time call; one query, reusable function                                 |
+| 3   | Realtime scope       | Subscribe to BOTH `public.authors` and `public.books`, events `*` (INSERT/UPDATE/DELETE)                                                                              | Covers promote (author + N books), edit (7b-ii), delete (7b-ii) without future refactor                 |
+| 4   | Event handling       | **Granular patching**: INSERT appends, UPDATE replaces by id, DELETE removes by id. Books are matched to parent author by `author_id` and appended in `display_order` | Industry-standard streaming pattern; zero extra queries per event; UI updates within ~50ms of DB commit |
+| 5   | Countries data       | Stays build-time, passed as Astro prop to `<MapSection>` (or sourced from a static module)                                                                            | Static 249-entry ISO list; refetching wasteful                                                          |
+| 6   | EN locale parity     | Both `index.astro` and `en/index.astro` lose `getCatalog()`; both pass the same labels into one shared `<MapSection>`                                                 | Symmetric, no per-locale code                                                                           |
+| 7   | Migration            | New `0008_realtime_authors.sql`: `alter publication supabase_realtime add table public.authors, public.books;`                                                        | Realtime is opt-in per table on Supabase                                                                |
+| 8   | RLS posture          | Unchanged — anon already filtered to `published = true` via existing policy on `authors`; books inherit via FK + their own policy                                     | Subscriptions inherit table RLS; no new security surface                                                |
+| 9   | Connection lifecycle | `useEffect` mounts the subscription; cleanup unsubscribes on unmount                                                                                                  | Prevents leaks across SPA-style navigation and HMR reloads in dev                                       |
+| 10  | Reconnect / resync   | On WebSocket reconnect → one-time `getCatalog()` to re-sync (events missed during disconnect would otherwise leave state stale)                                       | Standard "rejoin and resync" pattern; supabase-js exposes connection state via the `system` event       |
+| 11  | Failure mode         | If initial fetch fails OR Realtime fails to connect → render the existing "empty map" gracefully + log to console; do not block the rest of the page                  | Defensive; the suggest form, navigation, and styleguide still work                                      |
+| 12  | ADR                  | New [ADR 0005](../adr/0005-realtime-map-data.md) — captures the architecture flip from Stages 4-5 + the public/private rationale                                      | Decisions live in committed `docs/`, not memory                                                         |
 
 ---
 
@@ -114,15 +114,18 @@ Staging surfaced the gap immediately: an admin promoted a suggestion, the row la
 ## Component contract — `<MapSection>` (refactored)
 
 **Props (after refactor):**
+
 - `labels: MapLabels` — i18n strings (same as today).
 - `countries: CountryRow[]` — ISO 3166-1 list, build-time prop (same as today; used for country names + topojson lookup).
 - ~~`catalog: CountryEntry[]`~~ — **removed**. Catalog is now internal state.
 
 **Internal state:**
+
 - `catalog: CountryEntry[] | null` — `null` = loading, `[]` = loaded but empty, `CountryEntry[]` = loaded with data.
 - `connectionState: 'connecting' | 'open' | 'reconnecting' | 'closed'` — surfaces Realtime status for optional UI indicator (small dot or nothing; default nothing).
 
 **Lifecycle (useEffect):**
+
 1. Mount → `getCatalog()` → `setCatalog(result)`.
 2. After catalog loads → `supabase.channel('public-map-realtime')` → register `.on('postgres_changes', ...)` listeners for authors + books, all event types → `.subscribe()`.
 3. On each event → call the matching reducer (`addAuthor`, `updateAuthor`, `removeAuthor`, `addBook`, `updateBook`, `removeBook`) on local catalog state.
@@ -130,6 +133,7 @@ Staging surfaced the gap immediately: an admin promoted a suggestion, the row la
 5. Unmount → `supabase.removeChannel(channel)`.
 
 **Render:**
+
 - If `catalog === null` → render map outline, filter buttons, "all countries default-colored" baseline. No author dots or panel content.
 - If `catalog !== null` → render full map as today.
 
@@ -150,6 +154,7 @@ export function removeBook(catalog: CountryEntry[], id: string): CountryEntry[];
 ```
 
 Rules:
+
 - `published = false` authors are filtered out before patching (anon RLS would not deliver such rows, but defence-in-depth).
 - New author lands in its `country_iso_a3` bucket; bucket is created if it doesn't exist.
 - Removing the last author from a country bucket removes the bucket.
@@ -177,16 +182,16 @@ alter publication supabase_realtime add table public.books;
 
 ## Risks + mitigations
 
-| # | Risk | Mitigation |
-|---|---|---|
-| 1 | Skeleton flash feels janky on slow connections | Map outline + filter UI render immediately; only the country highlights wait for data. Visual experience is "map loads, then comes alive" — same pattern as Google Maps and other map-heavy sites |
-| 2 | Supabase Realtime free-tier limit (200 concurrent connections) | MVP traffic estimate is dozens of visitors at peak. Well within limit; revisit if traffic grows 10× |
-| 3 | Events arrive out of order (author INSERT vs. its book INSERTs from the same promote transaction) | Granular patcher tolerates this: author can land with empty books; subsequent book events append. Inter-event delay is milliseconds; user-perceptible latency is zero |
-| 4 | RLS leak — Realtime emits a row that shouldn't be visible | Already covered: RLS policies apply to Realtime subscriptions. `published = false` rows are filtered server-side before emission. Reducer also re-checks `published === true` as defence-in-depth |
-| 5 | WebSocket disconnect leaves catalog stale | supabase-js auto-reconnects with exponential backoff. On reconnect, fire one-shot `getCatalog()` to resync; resume granular patching |
-| 6 | Initial fetch fails (e.g., Supabase down) | `MapSection` catches the error, renders the empty-map baseline; logs to console. Rest of the page (suggest form, nav, footer) keeps working |
-| 7 | New author lacks books at the moment its INSERT event arrives | Country is colored, author shows in side panel with empty books list; books appear within milliseconds as their INSERT events arrive (granular patcher appends) |
-| 8 | Astro build no longer fails on missing local DB (since `getCatalog()` is no longer called at build time) | Bonus side effect — removes the `[authors] getCatalog() failed: TypeError: fetch failed` noise from recent build logs when Docker isn't running. Build is now data-independent |
+| #   | Risk                                                                                                     | Mitigation                                                                                                                                                                                        |
+| --- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Skeleton flash feels janky on slow connections                                                           | Map outline + filter UI render immediately; only the country highlights wait for data. Visual experience is "map loads, then comes alive" — same pattern as Google Maps and other map-heavy sites |
+| 2   | Supabase Realtime free-tier limit (200 concurrent connections)                                           | MVP traffic estimate is dozens of visitors at peak. Well within limit; revisit if traffic grows 10×                                                                                               |
+| 3   | Events arrive out of order (author INSERT vs. its book INSERTs from the same promote transaction)        | Granular patcher tolerates this: author can land with empty books; subsequent book events append. Inter-event delay is milliseconds; user-perceptible latency is zero                             |
+| 4   | RLS leak — Realtime emits a row that shouldn't be visible                                                | Already covered: RLS policies apply to Realtime subscriptions. `published = false` rows are filtered server-side before emission. Reducer also re-checks `published === true` as defence-in-depth |
+| 5   | WebSocket disconnect leaves catalog stale                                                                | supabase-js auto-reconnects with exponential backoff. On reconnect, fire one-shot `getCatalog()` to resync; resume granular patching                                                              |
+| 6   | Initial fetch fails (e.g., Supabase down)                                                                | `MapSection` catches the error, renders the empty-map baseline; logs to console. Rest of the page (suggest form, nav, footer) keeps working                                                       |
+| 7   | New author lacks books at the moment its INSERT event arrives                                            | Country is colored, author shows in side panel with empty books list; books appear within milliseconds as their INSERT events arrive (granular patcher appends)                                   |
+| 8   | Astro build no longer fails on missing local DB (since `getCatalog()` is no longer called at build time) | Bonus side effect — removes the `[authors] getCatalog() failed: TypeError: fetch failed` noise from recent build logs when Docker isn't running. Build is now data-independent                    |
 
 ---
 
@@ -244,12 +249,12 @@ alter publication supabase_realtime add table public.books;
 
 ## Hours estimate
 
-| Phase | Hours |
-|---|---|
-| Spec (this doc) | 1 |
-| Plan (next) | 0.5 |
-| Slice A — Migration + ADR + RAG | 0.5 |
-| Slice B — MapSection refactor + reducers + Astro pages | 3-4 |
-| Slice C — STATUS + plan + docs + 40-phase2-backlog updates | 0.5-1 |
-| Verify on staging (incl. tab-to-tab demo) | 0.5 |
-| **Total realistic** | **5-7h** spread over 1-2 sessions |
+| Phase                                                      | Hours                             |
+| ---------------------------------------------------------- | --------------------------------- |
+| Spec (this doc)                                            | 1                                 |
+| Plan (next)                                                | 0.5                               |
+| Slice A — Migration + ADR + RAG                            | 0.5                               |
+| Slice B — MapSection refactor + reducers + Astro pages     | 3-4                               |
+| Slice C — STATUS + plan + docs + 40-phase2-backlog updates | 0.5-1                             |
+| Verify on staging (incl. tab-to-tab demo)                  | 0.5                               |
+| **Total realistic**                                        | **5-7h** spread over 1-2 sessions |

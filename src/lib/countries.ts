@@ -22,9 +22,7 @@ export interface CountryRow {
   name_en: string;
 }
 
-export async function getCountries(
-  lang: "es" | "en",
-): Promise<CountryOption[]> {
+export async function getCountries(lang: "es" | "en"): Promise<CountryOption[]> {
   const nameCol = lang === "es" ? "name_es" : "name_en";
 
   const { data, error } = await supabase
@@ -37,12 +35,10 @@ export async function getCountries(
     return [];
   }
 
-  return ((data ?? []) as unknown as Array<Record<string, string>>).map(
-    (row) => ({
-      iso_a3: row.iso_a3,
-      name: row[nameCol],
-    }),
-  );
+  return ((data ?? []) as unknown as Array<Record<string, string>>).map((row) => ({
+    iso_a3: row.iso_a3,
+    name: row[nameCol],
+  }));
 }
 
 let bilingualCache: CountryRow[] | null = null;

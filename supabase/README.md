@@ -26,14 +26,14 @@ npm run dev
 
 First-run only: `npm run dev:db:reset` after the stack is up, to apply migrations + seeds. See **Apply migrations + seed** below for what that runs.
 
-| Script | What it does |
-| --- | --- |
-| `npm run dev:db` | `supabase start` — brings up the local stack |
-| `npm run dev:db:reset` | `supabase db reset` — replays migrations + seeds |
-| `npm run dev:db:stop` | `supabase stop` — tears the stack down |
+| Script                  | What it does                                                                                                     |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `npm run dev:db`        | `supabase start` — brings up the local stack                                                                     |
+| `npm run dev:db:reset`  | `supabase db reset` — replays migrations + seeds                                                                 |
+| `npm run dev:db:stop`   | `supabase stop` — tears the stack down                                                                           |
 | `npm run dev:functions` | Serves all registered Edge Functions (`submit_suggestion` + `notify_owner` + `translate`) with `--env-file .env` |
-| `npm run dev:types` | Regenerates `src/types/supabase.ts` from the running DB |
-| `npm run dev` | Astro dev server on `http://localhost:4321` |
+| `npm run dev:types`     | Regenerates `src/types/supabase.ts` from the running DB                                                          |
+| `npm run dev`           | Astro dev server on `http://localhost:4321`                                                                      |
 
 ## Start the local stack
 
@@ -80,10 +80,10 @@ Migration `0003_notify_owner_trigger.sql` adds an AFTER INSERT trigger on `publi
 
 ### `notify_owner` modes
 
-| `RESEND_API_KEY` set? | Behaviour |
-| --- | --- |
-| No (default in dev) | Logs the suggestion payload to the `dev:functions` console — no email sent |
-| Yes | POSTs to Resend API using `RESEND_FROM_EMAIL` as sender and `OWNER_NOTIFICATION_EMAIL` as recipient |
+| `RESEND_API_KEY` set? | Behaviour                                                                                           |
+| --------------------- | --------------------------------------------------------------------------------------------------- |
+| No (default in dev)   | Logs the suggestion payload to the `dev:functions` console — no email sent                          |
+| Yes                   | POSTs to Resend API using `RESEND_FROM_EMAIL` as sender and `OWNER_NOTIFICATION_EMAIL` as recipient |
 
 Both env vars are read from `.env` (passed via `--env-file`).
 
@@ -163,12 +163,12 @@ Production deployment to `mapadeautoras.com` is deferred to Stage 9b.
 
 ## Local URLs
 
-| Service | URL |
-| --- | --- |
-| API (PostgREST + GoTrue) | http://127.0.0.1:54321 |
-| Studio (Postgres GUI) | http://127.0.0.1:54323 |
-| Postgres DB | postgresql://postgres:postgres@127.0.0.1:54322/postgres |
-| Mailpit (local SMTP sandbox) | http://127.0.0.1:54324 |
+| Service                      | URL                                                     |
+| ---------------------------- | ------------------------------------------------------- |
+| API (PostgREST + GoTrue)     | http://127.0.0.1:54321                                  |
+| Studio (Postgres GUI)        | http://127.0.0.1:54323                                  |
+| Postgres DB                  | postgresql://postgres:postgres@127.0.0.1:54322/postgres |
+| Mailpit (local SMTP sandbox) | http://127.0.0.1:54324                                  |
 
 ## Schema overview
 
@@ -185,11 +185,11 @@ See [docs/adr/0003-data-model.md](../docs/adr/0003-data-model.md) for the canoni
 
 Row-Level Security enforces the security boundary. The public site uses the `anon` key; the admin page (Stage 6+) uses an authenticated session with `app_metadata.role = 'admin'`.
 
-| Role | Tables it can read | Tables it can write |
-| --- | --- | --- |
-| `anon` | `countries`, **published** `authors` + their `books` + `book_links` | **None directly** — `suggestions` + `subscribers` writes flow through the Edge Function (service-role, after Turnstile) |
-| Admin (`app_metadata.role = 'admin'`) | All | All |
-| `service_role` (server-side only) | All (RLS bypassed) | All (RLS bypassed) |
+| Role                                  | Tables it can read                                                  | Tables it can write                                                                                                     |
+| ------------------------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `anon`                                | `countries`, **published** `authors` + their `books` + `book_links` | **None directly** — `suggestions` + `subscribers` writes flow through the Edge Function (service-role, after Turnstile) |
+| Admin (`app_metadata.role = 'admin'`) | All                                                                 | All                                                                                                                     |
+| `service_role` (server-side only)     | All (RLS bypassed)                                                  | All (RLS bypassed)                                                                                                      |
 
 The common predicate is the SQL function `public.is_admin()`, which checks `auth.jwt() -> 'app_metadata' ->> 'role' = 'admin'`.
 
@@ -228,11 +228,11 @@ To verify the full write path works, POST to the Edge Function instead — easie
 
 ## Reset workflow
 
-| Goal | Command |
-| --- | --- |
-| Apply new migrations + reseed | `npm run dev:db:reset` |
-| Wipe everything and start fresh | `npm run dev:db:stop && npm run dev:db` |
-| Regenerate frontend types from the live schema | `npm run dev:types` |
+| Goal                                           | Command                                 |
+| ---------------------------------------------- | --------------------------------------- |
+| Apply new migrations + reseed                  | `npm run dev:db:reset`                  |
+| Wipe everything and start fresh                | `npm run dev:db:stop && npm run dev:db` |
+| Regenerate frontend types from the live schema | `npm run dev:types`                     |
 
 ## Production
 

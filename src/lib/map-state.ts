@@ -7,12 +7,7 @@ export type AuthorStatus = "read" | "currently_reading" | "discovery";
 
 export type Filter = "all" | "read" | "currently_reading" | "discoveries";
 
-export type CountryState =
-  | "read"
-  | "currently_reading"
-  | "discovery"
-  | "mixed"
-  | "empty";
+export type CountryState = "read" | "currently_reading" | "discovery" | "mixed" | "empty";
 
 export interface Book {
   title: string;
@@ -65,8 +60,7 @@ export function computeCountryStates(
       else hasDiscovery = true;
       if (hasRead && hasCurrent && hasDiscovery) break;
     }
-    const distinct =
-      (hasRead ? 1 : 0) + (hasCurrent ? 1 : 0) + (hasDiscovery ? 1 : 0);
+    const distinct = (hasRead ? 1 : 0) + (hasCurrent ? 1 : 0) + (hasDiscovery ? 1 : 0);
     if (distinct === 0) continue;
     if (distinct >= 2) result[entry.iso_a3] = "mixed";
     else if (hasRead) result[entry.iso_a3] = "read";
@@ -120,18 +114,14 @@ export function fillFor(state: CountryState, filter: Filter): CountryStyle {
     return state === "read" || state === "mixed" ? READ_STYLE : EMPTY_STYLE;
   }
   if (filter === "currently_reading") {
-    return state === "currently_reading" || state === "mixed"
-      ? CURRENT_STYLE
-      : EMPTY_STYLE;
+    return state === "currently_reading" || state === "mixed" ? CURRENT_STYLE : EMPTY_STYLE;
   }
   if (filter === "discoveries") {
-    return state === "discovery" || state === "mixed"
-      ? DISCOVERY_STYLE
-      : EMPTY_STYLE;
+    return state === "discovery" || state === "mixed" ? DISCOVERY_STYLE : EMPTY_STYLE;
   }
 
   // filter === "all" — priority for mixed and the per-state shortcuts
-  if (state === "read" || (state === "mixed")) {
+  if (state === "read" || state === "mixed") {
     // Mixed: pick by priority. computeCountryStates collapses 2+ statuses
     // to "mixed" without telling us which; we re-derive from the entry at
     // the call site, OR we accept the simple rule: any country labelled

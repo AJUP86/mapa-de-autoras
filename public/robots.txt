@@ -1,11 +1,11 @@
 # mapadeautoras.com — robots.txt
 #
-# Allow all crawlers on all paths. This is a public-by-design content site.
-# The admin surface (/admin/*) does its own auth check client-side and never
-# renders private data to unauthenticated visitors, so no need to disallow
-# indexing there.
+# Public content site: allow everything except the admin surface. /admin/*
+# renders no private data to unauthenticated visitors (client-side auth
+# gate), but it has no business in a search index either.
 
 User-agent: *
 Allow: /
+Disallow: /admin
 
 Sitemap: https://mapadeautoras.com/sitemap-index.xml

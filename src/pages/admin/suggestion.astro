@@ -32,7 +32,7 @@ const labels = {
 };
 ---
 
-<Base lang={lang} title={labels.title}>
+<Base lang={lang} title={labels.title} noindex>
   <main class="min-h-screen bg-parchment p-6">
     <AdminGate client:load loginUrl="/admin" notAdminLabel={notAdminLabel}>
       <SuggestionReview client:load labels={labels} />

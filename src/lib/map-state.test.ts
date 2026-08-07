@@ -7,7 +7,7 @@ import {
   type Filter,
 } from "./map-state";
 
-function author(status: AuthorStatus, id = status) {
+function author(status: AuthorStatus, id: string = status) {
   return { id, name: id, status, books: [] };
 }
 
@@ -22,17 +22,15 @@ describe("computeCountryStates", () => {
   });
 
   it("labels a single-status country by that status", () => {
+    expect(computeCountryStates([{ iso_a3: "AUS", authors: [author("read")] }])).toEqual({
+      AUS: "read",
+    });
     expect(
-      computeCountryStates([{ iso_a3: "AUS", authors: [author("read")] }]),
-    ).toEqual({ AUS: "read" });
-    expect(
-      computeCountryStates([
-        { iso_a3: "ARG", authors: [author("currently_reading")] },
-      ]),
+      computeCountryStates([{ iso_a3: "ARG", authors: [author("currently_reading")] }]),
     ).toEqual({ ARG: "currently_reading" });
-    expect(
-      computeCountryStates([{ iso_a3: "ESP", authors: [author("discovery")] }]),
-    ).toEqual({ ESP: "discovery" });
+    expect(computeCountryStates([{ iso_a3: "ESP", authors: [author("discovery")] }])).toEqual({
+      ESP: "discovery",
+    });
   });
 
   it("labels a country with two distinct statuses as mixed", () => {
@@ -126,8 +124,6 @@ describe("fillFor", () => {
     expect(fillFor("currently_reading", "all").stroke).toBe(
       "var(--c-state-currently-reading-line)",
     );
-    expect(fillFor("discovery", "all").stroke).toBe(
-      "var(--c-state-discovery-line)",
-    );
+    expect(fillFor("discovery", "all").stroke).toBe("var(--c-state-discovery-line)");
   });
 });

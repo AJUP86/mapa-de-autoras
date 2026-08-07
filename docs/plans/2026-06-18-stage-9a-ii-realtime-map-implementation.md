@@ -26,11 +26,13 @@
 ## File structure (lock-in before tasks)
 
 **New files:**
+
 - `supabase/migrations/0008_realtime_authors.sql` — adds `authors` + `books` to the `supabase_realtime` publication.
 - `src/lib/realtime-reducers.ts` — six pure reducer helpers (addAuthor, updateAuthor, removeAuthor, addBook, updateBook, removeBook) for granular patching.
 - `docs/adr/0005-realtime-map-data.md` — architecture-flip ADR (static shell + client-side data + Realtime).
 
 **Modified files:**
+
 - `src/components/MapSection.tsx` — drop `catalog` prop, add internal state + two useEffect hooks (fetch + subscribe).
 - `src/pages/index.astro` — remove `getCatalog()` import + call, remove `catalog` prop from `<MapSection>`.
 - `src/pages/en/index.astro` — same.
@@ -41,6 +43,7 @@
 - `docs/30-ops/staging-deploy.md` — remove "Public map data is built at compile time" gotcha; add brief Realtime connection note.
 
 **Unchanged:**
+
 - `src/lib/authors.ts` — `getCatalog()` already uses `supabase` client, works from React without modification.
 - `src/lib/map-state.ts` — types stay; reducers in a separate file to keep this one focused on type definitions + `computeCountryStates`.
 - `src/lib/supabase.ts` — already exports the shared `supabase` client for both fetch and Realtime.
@@ -54,6 +57,7 @@
 ## Task A1 — `[Subagent]` Migration `0008_realtime_authors.sql`
 
 **Files:**
+
 - Create: `supabase/migrations/0008_realtime_authors.sql`
 
 - [ ] **Step 1: Write the migration**
@@ -89,6 +93,7 @@ alter publication supabase_realtime add table public.books;
 Expected: `ALTER PUBLICATION` (twice).
 
 Verify:
+
 ```sql
 select schemaname, tablename
 from pg_publication_tables
@@ -103,6 +108,7 @@ If the local Supabase stack isn't running, skip this step — the migration will
 - [ ] **Step 2 (staging): push the new migration**
 
 Run:
+
 ```powershell
 supabase db push
 ```
@@ -129,6 +135,7 @@ Expected: rows for `authors` and `books` present.
 ## Task A3 — `[Subagent]` ADR 0005 — Realtime map data
 
 **Files:**
+
 - Create: `docs/adr/0005-realtime-map-data.md`
 
 - [ ] **Step 1: Write the ADR**
@@ -188,6 +195,7 @@ See [docs/40-phase2-backlog.md](../40-phase2-backlog.md) for the full deferred l
 ## Task A4 — `[Subagent]` Add ADR 0005 row to RAG index
 
 **Files:**
+
 - Modify: `docs/RAG.md`
 
 - [ ] **Step 1: Add the row in alphabetical-by-filename order in the existing table**
@@ -205,6 +213,7 @@ Insert this row immediately after the row for `adr/0004-translation-strategy.md`
 ## Slice A wrap-up
 
 **Verify:**
+
 - `supabase/migrations/0008_realtime_authors.sql` exists with the two `alter publication` statements.
 - `pg_publication_tables` query returns `authors` + `books` on staging (verified in Task A2 Step 3).
 - `docs/adr/0005-realtime-map-data.md` exists with the full ADR.
@@ -227,6 +236,7 @@ feat(stage-9a-ii,migration): realtime publication + ADR 0005
 ## Task B1 — `[Subagent]` Create `src/lib/realtime-reducers.ts`
 
 **Files:**
+
 - Create: `src/lib/realtime-reducers.ts`
 
 - [ ] **Step 1: Write the reducer helpers**
@@ -287,10 +297,7 @@ function rowToBook(row: BookRow): Book {
   };
 }
 
-export function addAuthor(
-  catalog: CountryEntry[],
-  row: AuthorRow,
-): CountryEntry[] {
+export function addAuthor(catalog: CountryEntry[], row: AuthorRow): CountryEntry[] {
   if (!row.published) return catalog;
   const author = rowToAuthor(row);
 
@@ -309,10 +316,7 @@ export function addAuthor(
   return next;
 }
 
-export function updateAuthor(
-  catalog: CountryEntry[],
-  row: AuthorRow,
-): CountryEntry[] {
+export function updateAuthor(catalog: CountryEntry[], row: AuthorRow): CountryEntry[] {
   if (!row.published) {
     // Going from published=true to published=false → remove from view.
     return removeAuthor(catalog, row.id);
@@ -329,10 +333,7 @@ export function updateAuthor(
   // Find existing books for this author (preserved from any previous state).
   // Since updateAuthor only changes top-level fields, we look up the books
   // before we filtered.
-  const existingBooks =
-    catalog
-      .flatMap((c) => c.authors)
-      .find((a) => a.id === row.id)?.books ?? [];
+  const existingBooks = catalog.flatMap((c) => c.authors).find((a) => a.id === row.id)?.books ?? [];
 
   const author = rowToAuthor(row, existingBooks);
   const bucketIndex = next.findIndex((c) => c.iso_a3 === row.country_iso_a3);
@@ -348,19 +349,13 @@ export function updateAuthor(
   return next;
 }
 
-export function removeAuthor(
-  catalog: CountryEntry[],
-  id: string,
-): CountryEntry[] {
+export function removeAuthor(catalog: CountryEntry[], id: string): CountryEntry[] {
   return catalog
     .map((c) => ({ ...c, authors: c.authors.filter((a) => a.id !== id) }))
     .filter((c) => c.authors.length > 0);
 }
 
-export function addBook(
-  catalog: CountryEntry[],
-  row: BookRow,
-): CountryEntry[] {
+export function addBook(catalog: CountryEntry[], row: BookRow): CountryEntry[] {
   const book = rowToBook(row);
   return catalog.map((c) => ({
     ...c,
@@ -369,9 +364,7 @@ export function addBook(
       if (a.books.some((b) => b.title === row.title && b.year === book.year)) {
         return a; // idempotent — already present
       }
-      const books = [...a.books, book].sort(
-        (x, y) => (x.year ?? 0) - (y.year ?? 0),
-      );
+      const books = [...a.books, book].sort((x, y) => (x.year ?? 0) - (y.year ?? 0));
       // display_order is preserved at fetch time; on incremental updates we
       // fall back to year sort, which matches the visible order in the panel.
       return { ...a, books };
@@ -379,10 +372,7 @@ export function addBook(
   }));
 }
 
-export function updateBook(
-  catalog: CountryEntry[],
-  row: BookRow,
-): CountryEntry[] {
+export function updateBook(catalog: CountryEntry[], row: BookRow): CountryEntry[] {
   const book = rowToBook(row);
   return catalog.map((c) => ({
     ...c,
@@ -395,17 +385,12 @@ export function updateBook(
       // For now: simple swap-by-position is not reliable, so we drop any book
       // with the same year and replace with the new title+year.
       const books = a.books.filter((b) => b.year !== book.year);
-      return { ...a, books: [...books, book].sort(
-        (x, y) => (x.year ?? 0) - (y.year ?? 0),
-      ) };
+      return { ...a, books: [...books, book].sort((x, y) => (x.year ?? 0) - (y.year ?? 0)) };
     }),
   }));
 }
 
-export function removeBook(
-  catalog: CountryEntry[],
-  row: BookRow,
-): CountryEntry[] {
+export function removeBook(catalog: CountryEntry[], row: BookRow): CountryEntry[] {
   // Realtime DELETE payload has `old` populated; the reducer accepts the same
   // BookRow shape (callers pass payload.old).
   return catalog.map((c) => ({
@@ -430,6 +415,7 @@ export function removeBook(
 ## Task B2 — `[Subagent]` Refactor `MapSection.tsx` to own catalog + subscribe to Realtime
 
 **Files:**
+
 - Modify: `src/components/MapSection.tsx`
 
 - [ ] **Step 1: Replace the entire file with the refactored version**
@@ -470,9 +456,7 @@ export default function MapSection({ labels }: Props) {
   const [catalog, setCatalog] = useState<CountryEntry[] | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
   const [view, setView] = useState<MapView>(CONTINENT_VIEWS.world);
-  const [selected, setSelected] = useState<
-    { iso_a3: string; name: string } | null
-  >(null);
+  const [selected, setSelected] = useState<{ iso_a3: string; name: string } | null>(null);
 
   // Tracks whether we've completed an initial subscribe — used to detect
   // reconnects in the second useEffect's status callback.
@@ -499,18 +483,14 @@ export default function MapSection({ labels }: Props) {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "authors" },
         (payload) => {
-          setCatalog((prev) =>
-            prev ? addAuthor(prev, payload.new as AuthorRow) : prev,
-          );
+          setCatalog((prev) => (prev ? addAuthor(prev, payload.new as AuthorRow) : prev));
         },
       )
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "authors" },
         (payload) => {
-          setCatalog((prev) =>
-            prev ? updateAuthor(prev, payload.new as AuthorRow) : prev,
-          );
+          setCatalog((prev) => (prev ? updateAuthor(prev, payload.new as AuthorRow) : prev));
         },
       )
       .on(
@@ -522,33 +502,15 @@ export default function MapSection({ labels }: Props) {
           setCatalog((prev) => (prev ? removeAuthor(prev, old.id!) : prev));
         },
       )
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "books" },
-        (payload) => {
-          setCatalog((prev) =>
-            prev ? addBook(prev, payload.new as BookRow) : prev,
-          );
-        },
-      )
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "books" },
-        (payload) => {
-          setCatalog((prev) =>
-            prev ? updateBook(prev, payload.new as BookRow) : prev,
-          );
-        },
-      )
-      .on(
-        "postgres_changes",
-        { event: "DELETE", schema: "public", table: "books" },
-        (payload) => {
-          setCatalog((prev) =>
-            prev ? removeBook(prev, payload.old as BookRow) : prev,
-          );
-        },
-      )
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "books" }, (payload) => {
+        setCatalog((prev) => (prev ? addBook(prev, payload.new as BookRow) : prev));
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "books" }, (payload) => {
+        setCatalog((prev) => (prev ? updateBook(prev, payload.new as BookRow) : prev));
+      })
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "books" }, (payload) => {
+        setCatalog((prev) => (prev ? removeBook(prev, payload.old as BookRow) : prev));
+      })
       .subscribe((status) => {
         // First SUBSCRIBED after mount = initial subscribe; mark and skip resync.
         // Subsequent SUBSCRIBED transitions (after CHANNEL_ERROR / CLOSED) =
@@ -567,26 +529,17 @@ export default function MapSection({ labels }: Props) {
     };
   }, [catalog === null]);
 
-  const countryStates = useMemo(
-    () => (catalog ? computeCountryStates(catalog) : {}),
-    [catalog],
-  );
+  const countryStates = useMemo(() => (catalog ? computeCountryStates(catalog) : {}), [catalog]);
 
   const selectedAuthors = useMemo(() => {
     if (!selected || !catalog) return [];
-    return (
-      catalog.find((entry) => entry.iso_a3 === selected.iso_a3)?.authors ?? []
-    );
+    return catalog.find((entry) => entry.iso_a3 === selected.iso_a3)?.authors ?? [];
   }, [selected, catalog]);
 
   return (
     <div className="relative">
       <div className="mb-5 flex flex-col items-center gap-4">
-        <MapFilter
-          value={filter}
-          onChange={setFilter}
-          labels={labels.filter}
-        />
+        <MapFilter value={filter} onChange={setFilter} labels={labels.filter} />
         <ContinentNav
           view={view}
           onSetView={setView}
@@ -627,6 +580,7 @@ export default function MapSection({ labels }: Props) {
 ## Task B3 — `[Subagent]` Remove `getCatalog()` from `src/pages/index.astro`
 
 **Files:**
+
 - Modify: `src/pages/index.astro`
 
 - [ ] **Step 1: Remove the import + call + prop**
@@ -643,6 +597,7 @@ import { getCatalog } from "~/lib/authors";
 
 const lang = "es";
 const catalog = await getCatalog();
+---
 ```
 
 with:
@@ -655,18 +610,19 @@ import MapSection from "~/components/MapSection";
 import { t } from "~/i18n/t";
 
 const lang = "es";
+---
 ```
 
 And on the `<MapSection>` line (around line 86), change:
 
 ```astro
-    <MapSection client:visible labels={mapLabels} catalog={catalog} />
+<MapSection client:visible labels={mapLabels} catalog={catalog} />
 ```
 
 to:
 
 ```astro
-    <MapSection client:visible labels={mapLabels} />
+<MapSection client:visible labels={mapLabels} />
 ```
 
 - [ ] **Step 2: STOP — Task B3 done.**
@@ -676,6 +632,7 @@ to:
 ## Task B4 — `[Subagent]` Remove `getCatalog()` from `src/pages/en/index.astro`
 
 **Files:**
+
 - Modify: `src/pages/en/index.astro`
 
 - [ ] **Step 1: Apply the same edits as B3, but in the EN page**
@@ -695,11 +652,13 @@ The EN page structure mirrors `src/pages/index.astro` exactly (Stage 2's i18n-sk
 - [ ] **Step 1: Run the build**
 
 Run:
+
 ```powershell
 npm run build
 ```
 
 Expected:
+
 - No TypeScript errors related to `getCatalog` (it's no longer called from Astro front-matter).
 - No `catalog` prop missing on `<MapSection>` (we removed the prop from both the component definition AND the call sites).
 - 11 pages built successfully.
@@ -714,6 +673,7 @@ If the build fails with a missing-prop error or a `catalog is not defined` error
 ## Slice B wrap-up
 
 **Verify:**
+
 - Local: `npm run dev` → open `http://localhost:4321` → map outline renders immediately → country highlights appear after ~200-500ms (initial fetch) → devtools Network shows one `authors?select=...` query AND a WebSocket connection to `*.supabase.co/realtime/v1/websocket`.
 - Local: open Studio at `http://127.0.0.1:54323` → manually INSERT an author into `public.authors` → the country gets colored on the running dev site within ~1 second.
 - `npm run build` passes with no `getCatalog() failed` lines.
@@ -735,6 +695,7 @@ feat(stage-9a-ii,realtime): client-side catalog fetch + Realtime subscription wi
 ## Task C1 — `[Subagent]` Update `docs/STATUS.md`
 
 **Files:**
+
 - Modify: `docs/STATUS.md`
 
 - [ ] **Step 1: Update the roadmap table**
@@ -757,21 +718,25 @@ Immediately below the table and above the existing "Last session — 2026-06-18 
 **Branch in progress:** `feature/09a-ii-realtime-map` (not yet merged).
 
 ### Architecture flip
+
 - Public map data flow changed from Astro build-time fetch to client-side fetch + Supabase Realtime subscription with granular event-driven patching. See [ADR 0005](adr/0005-realtime-map-data.md) for the full rationale + alternatives considered.
 - `<MapSection>` is now the data owner: fetches catalog on mount, subscribes to `postgres_changes` events on `public.authors` and `public.books`, patches local state in place.
 - `src/pages/index.astro` and `src/pages/en/index.astro` no longer call `getCatalog()` at build time. The build is now data-independent (no more `[authors] getCatalog() failed` noise in build logs when local Supabase is off).
 
 ### DB + reducers
+
 - New migration `0008_realtime_authors.sql` — `alter publication supabase_realtime add table public.authors, public.books;`.
 - New `src/lib/realtime-reducers.ts` — six pure helpers (addAuthor / updateAuthor / removeAuthor / addBook / updateBook / removeBook) for granular patching.
 - Applied to staging via `supabase db push`; verified via `pg_publication_tables` query.
 
 ### Verification on staging
+
 - Two-tab demo: promote an author in tab 1's admin → country colors on tab 2's public map within ~1 second.
 - Books arrive incrementally as their per-row INSERT events flow through.
 - WebSocket connection persists across tab switches; one-shot resync on reconnect.
 
 ### Out of scope (deferred)
+
 - Realtime extension to admin pending-count badge — still polling every 60s (Phase 2).
 - Realtime extension to admin inbox suggestions table — still client-fetch on mount (Phase 2).
 ```
@@ -795,6 +760,7 @@ The 9b resume commands still apply; no changes needed there. Just confirm the se
 ## Task C2 — `[Subagent]` Update `docs/01-implementation-plan.md`
 
 **Files:**
+
 - Modify: `docs/01-implementation-plan.md`
 
 - [ ] **Step 1: Insert a new Stage 9a-ii section between 9a and 9b**
@@ -809,6 +775,7 @@ After the "Stage 9a — Staging deployment" section ends (look for "**Pause for 
 **Goal:** Flip public map data from Astro build-time fetch to client-side fetch + Supabase Realtime subscription with granular patching, so promoted authors land on every open tab within ~1 second without rebuilding.
 
 **Build:**
+
 - New migration `0008_realtime_authors.sql` — adds `public.authors` + `public.books` to the `supabase_realtime` publication.
 - New `src/lib/realtime-reducers.ts` — six pure reducers for granular Realtime patching (addAuthor / updateAuthor / removeAuthor + same trio for books).
 - Refactor `src/components/MapSection.tsx` — drop `catalog` prop, add internal state + two useEffect hooks (initial fetch + subscription).
@@ -816,6 +783,7 @@ After the "Stage 9a — Staging deployment" section ends (look for "**Pause for 
 - New ADR `docs/adr/0005-realtime-map-data.md` — captures the architecture flip + alternatives considered.
 
 **Verify:**
+
 1. `npm run build` passes with no `[authors] getCatalog() failed` lines.
 2. Local: open Studio, INSERT a test author, see country colored on the live dev site within ~1 second.
 3. Staging two-tab demo: tab 1 admin promotes → tab 2 public map updates without refresh.
@@ -833,6 +801,7 @@ If a stage table / TOC exists at the top of the file, add a 9a-ii row there too.
 ## Task C3 — `[Subagent]` Update `docs/40-phase2-backlog.md`
 
 **Files:**
+
 - Modify: `docs/40-phase2-backlog.md`
 
 - [ ] **Step 1: Update "Realtime pending-count badge" entry**
@@ -841,6 +810,7 @@ Find the existing entry in the "Operations & infrastructure" section. Replace it
 
 ```markdown
 ### Realtime pending-count badge
+
 **Discussed in:** Stage 7b-i brainstorming.
 **Why deferred:** 60-second polling is good enough for MVP and avoids a Realtime subscription. Now that Stage 9a-ii has wired Realtime infrastructure for the public map, extending to the admin pending-count badge is incremental — same `supabase.channel().on('postgres_changes', { table: 'suggestions' })` pattern as `<MapSection>`, just narrower (count delta, not full payload).
 **Where to add it later:** `src/components/AdminAwareNav.tsx` — replace the `setInterval` poll with a channel subscription scoped to `INSERT`/`UPDATE` events on `suggestions` table.
@@ -852,6 +822,7 @@ Find the existing entry. Replace its body with:
 
 ```markdown
 ### SSR via Cloudflare adapter
+
 **Discussed in:** Stage 7b-i brainstorming. Revisited Stage 9a-ii.
 **Why deferred:** Stage 9a-ii's "static shell + client-side fetch + Realtime" pattern solved the build-time-vs-runtime-data tension that originally motivated SSR consideration. Static output stays for the speed + CDN benefits; data is dynamic via Realtime. SSR is now only worth revisiting if Server-Side Rendering specifically (e.g., per-author detail pages for SEO indexing of bios) becomes important.
 **Where to add it later:** `astro.config.mjs` switches to `output: 'server'` (or `'hybrid'` for per-route opt-in), add `@astrojs/cloudflare` adapter, move data-fetching back into Astro components.
@@ -864,6 +835,7 @@ Find the existing entry. Replace its body with:
 ## Task C4 — `[Subagent]` Update `docs/30-ops/staging-deploy.md`
 
 **Files:**
+
 - Modify: `docs/30-ops/staging-deploy.md`
 
 - [ ] **Step 1: Remove the "Public map data is built at compile time" gotcha**
@@ -883,6 +855,7 @@ Find the bullet starting with "**Public map data is built at compile time, not r
 - [ ] **Step 1: `npm run build` final pass**
 
 Run:
+
 ```powershell
 npm run build
 ```
@@ -892,12 +865,14 @@ Expected: 11 pages built, no errors, no `getCatalog() failed` lines.
 - [ ] **Step 2: Read the diff one more time**
 
 Run:
+
 ```powershell
 git status
 git diff --stat
 ```
 
 Expected files modified across Slice A + B + C:
+
 - `supabase/migrations/0008_realtime_authors.sql` (new)
 - `src/lib/realtime-reducers.ts` (new)
 - `src/components/MapSection.tsx` (modified)
@@ -932,25 +907,25 @@ Stage 9b (production deploy) inherits this architecture by default — no migrat
 
 ## Self-review checklist
 
-| Spec section | Plan coverage |
-|---|---|
-| Decision #1 (skeleton initial render) | Slice B Task B2 — `catalog === null` renders empty map ✓ |
-| Decision #2 (`getCatalog()` on mount) | Slice B Task B2 — useEffect with `getCatalog().then(...)` ✓ |
-| Decision #3 (subscribe to authors + books, all events) | Slice B Task B2 — six `.on('postgres_changes', ...)` listeners ✓ |
-| Decision #4 (granular patching) | Slice B Task B1 — six reducers in `realtime-reducers.ts` ✓ |
-| Decision #5 (countries stays build-time) | Implicit — no changes to country data flow; B3/B4 only remove catalog, not countries ✓ |
-| Decision #6 (EN parity) | Slice B Task B4 ✓ |
-| Decision #7 (migration 0008) | Slice A Task A1 ✓ |
-| Decision #8 (RLS unchanged) | Implicit — migration doesn't touch policies; reducer re-checks `published === true` (defence in depth) ✓ |
-| Decision #9 (subscribe on mount, unsubscribe on unmount) | Slice B Task B2 — `supabase.removeChannel(channel)` cleanup ✓ |
-| Decision #10 (reconnect resync) | Slice B Task B2 — `hasSubscribedOnce` ref tracks first vs. subsequent SUBSCRIBED transitions; reconnect (subsequent SUBSCRIBED) calls `getCatalog()` to resync any missed events ✓ |
-| Decision #11 (defensive failure mode) | Slice B Task B2 — `getCatalog()` already returns `[]` on error; setCatalog handles null gracefully ✓ |
-| Decision #12 (ADR 0005) | Slice A Task A3 ✓ |
-| Risk #1 (skeleton flash) | Slice B Task B2 — map outline renders immediately, countries paint when catalog arrives ✓ |
-| Risk #2 (Realtime connection limit) | Documented in ADR; no plan action needed ✓ |
-| Risk #3 (event ordering) | Slice B Task B1 — `addAuthor` creates bucket if absent, `addBook` no-ops if author not yet present, then auto-fills when author arrives ✓ |
-| Risk #4 (RLS leak) | Slice B Task B1 — reducers re-check `published === true` ✓ |
-| Risk #5 (WebSocket disconnect) | Slice B Task B2 — supabase-js auto-reconnects; resync placeholder ready for future enhancement ✓ |
-| Risk #6 (initial fetch fails) | Slice B Task B2 — `getCatalog()` already returns `[]` on error (per `authors.ts:55-58`) ✓ |
-| Risk #7 (author lacks books at INSERT time) | Slice B Task B1 — `addAuthor` initializes with empty books; subsequent `addBook` events append ✓ |
-| Risk #8 (build no longer needs Supabase) | Slice B Task B5 — explicit verify step confirms no `getCatalog() failed` lines ✓ |
+| Spec section                                             | Plan coverage                                                                                                                                                                      |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Decision #1 (skeleton initial render)                    | Slice B Task B2 — `catalog === null` renders empty map ✓                                                                                                                           |
+| Decision #2 (`getCatalog()` on mount)                    | Slice B Task B2 — useEffect with `getCatalog().then(...)` ✓                                                                                                                        |
+| Decision #3 (subscribe to authors + books, all events)   | Slice B Task B2 — six `.on('postgres_changes', ...)` listeners ✓                                                                                                                   |
+| Decision #4 (granular patching)                          | Slice B Task B1 — six reducers in `realtime-reducers.ts` ✓                                                                                                                         |
+| Decision #5 (countries stays build-time)                 | Implicit — no changes to country data flow; B3/B4 only remove catalog, not countries ✓                                                                                             |
+| Decision #6 (EN parity)                                  | Slice B Task B4 ✓                                                                                                                                                                  |
+| Decision #7 (migration 0008)                             | Slice A Task A1 ✓                                                                                                                                                                  |
+| Decision #8 (RLS unchanged)                              | Implicit — migration doesn't touch policies; reducer re-checks `published === true` (defence in depth) ✓                                                                           |
+| Decision #9 (subscribe on mount, unsubscribe on unmount) | Slice B Task B2 — `supabase.removeChannel(channel)` cleanup ✓                                                                                                                      |
+| Decision #10 (reconnect resync)                          | Slice B Task B2 — `hasSubscribedOnce` ref tracks first vs. subsequent SUBSCRIBED transitions; reconnect (subsequent SUBSCRIBED) calls `getCatalog()` to resync any missed events ✓ |
+| Decision #11 (defensive failure mode)                    | Slice B Task B2 — `getCatalog()` already returns `[]` on error; setCatalog handles null gracefully ✓                                                                               |
+| Decision #12 (ADR 0005)                                  | Slice A Task A3 ✓                                                                                                                                                                  |
+| Risk #1 (skeleton flash)                                 | Slice B Task B2 — map outline renders immediately, countries paint when catalog arrives ✓                                                                                          |
+| Risk #2 (Realtime connection limit)                      | Documented in ADR; no plan action needed ✓                                                                                                                                         |
+| Risk #3 (event ordering)                                 | Slice B Task B1 — `addAuthor` creates bucket if absent, `addBook` no-ops if author not yet present, then auto-fills when author arrives ✓                                          |
+| Risk #4 (RLS leak)                                       | Slice B Task B1 — reducers re-check `published === true` ✓                                                                                                                         |
+| Risk #5 (WebSocket disconnect)                           | Slice B Task B2 — supabase-js auto-reconnects; resync placeholder ready for future enhancement ✓                                                                                   |
+| Risk #6 (initial fetch fails)                            | Slice B Task B2 — `getCatalog()` already returns `[]` on error (per `authors.ts:55-58`) ✓                                                                                          |
+| Risk #7 (author lacks books at INSERT time)              | Slice B Task B1 — `addAuthor` initializes with empty books; subsequent `addBook` events append ✓                                                                                   |
+| Risk #8 (build no longer needs Supabase)                 | Slice B Task B5 — explicit verify step confirms no `getCatalog() failed` lines ✓                                                                                                   |

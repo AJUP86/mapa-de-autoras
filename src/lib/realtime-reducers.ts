@@ -62,10 +62,7 @@ function rowToBook(row: BookRow): Book {
   };
 }
 
-export function addAuthor(
-  catalog: CountryEntry[],
-  row: AuthorRow,
-): CountryEntry[] {
+export function addAuthor(catalog: CountryEntry[], row: AuthorRow): CountryEntry[] {
   if (!row.published) return catalog;
   const author = rowToAuthor(row);
 
@@ -84,10 +81,7 @@ export function addAuthor(
   return next;
 }
 
-export function updateAuthor(
-  catalog: CountryEntry[],
-  row: AuthorRow,
-): CountryEntry[] {
+export function updateAuthor(catalog: CountryEntry[], row: AuthorRow): CountryEntry[] {
   if (!row.published) {
     // Going from published=true to published=false → remove from view.
     return removeAuthor(catalog, row.id);
@@ -95,10 +89,7 @@ export function updateAuthor(
 
   // Find existing books for this author (preserved from any previous state)
   // BEFORE we filter it out of its old bucket below.
-  const existingBooks =
-    catalog
-      .flatMap((c) => c.authors)
-      .find((a) => a.id === row.id)?.books ?? [];
+  const existingBooks = catalog.flatMap((c) => c.authors).find((a) => a.id === row.id)?.books ?? [];
 
   // Country may have changed; remove from old bucket first, then add to new.
   let next = catalog
@@ -122,10 +113,7 @@ export function updateAuthor(
   return next;
 }
 
-export function removeAuthor(
-  catalog: CountryEntry[],
-  id: string,
-): CountryEntry[] {
+export function removeAuthor(catalog: CountryEntry[], id: string): CountryEntry[] {
   return catalog
     .map((c) => ({ ...c, authors: c.authors.filter((a) => a.id !== id) }))
     .filter((c) => c.authors.length > 0);
@@ -140,9 +128,7 @@ export function addBook(catalog: CountryEntry[], row: BookRow): CountryEntry[] {
       if (a.books.some((b) => b.title === row.title && b.year === book.year)) {
         return a; // idempotent — already present
       }
-      const books = [...a.books, book].sort(
-        (x, y) => (x.year ?? 0) - (y.year ?? 0),
-      );
+      const books = [...a.books, book].sort((x, y) => (x.year ?? 0) - (y.year ?? 0));
       // display_order is preserved at fetch time; on incremental updates we
       // fall back to year sort, which matches the visible order in the panel.
       return { ...a, books };
@@ -150,10 +136,7 @@ export function addBook(catalog: CountryEntry[], row: BookRow): CountryEntry[] {
   }));
 }
 
-export function updateBook(
-  catalog: CountryEntry[],
-  row: BookRow,
-): CountryEntry[] {
+export function updateBook(catalog: CountryEntry[], row: BookRow): CountryEntry[] {
   const book = rowToBook(row);
   return catalog.map((c) => ({
     ...c,
@@ -171,10 +154,7 @@ export function updateBook(
   }));
 }
 
-export function removeBook(
-  catalog: CountryEntry[],
-  row: BookRow,
-): CountryEntry[] {
+export function removeBook(catalog: CountryEntry[], row: BookRow): CountryEntry[] {
   // Realtime DELETE payload has `old` populated; the reducer accepts the same
   // BookRow shape (callers pass payload.old).
   return catalog.map((c) => ({

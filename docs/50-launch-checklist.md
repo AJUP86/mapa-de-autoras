@@ -3,6 +3,7 @@
 Living document tracking everything that must land BEFORE the first production deploy of `mapadeautoras.com`. Ordered by dependency. Update as items complete.
 
 Complementary to:
+
 - [docs/STATUS.md](STATUS.md) — session log + roadmap snapshot
 - [docs/01-implementation-plan.md](01-implementation-plan.md) — stage-by-stage delivery plan
 - [docs/30-ops/staging-deploy.md](30-ops/staging-deploy.md) — staging runbook (production runbook will fork from this)
@@ -162,13 +163,13 @@ Full 9b spec lives in `docs/01-implementation-plan.md`. Checklist form here:
 
 **Supabase free-tier ceilings vs. projected launch traffic:**
 
-| Limit | Value | Projected launch load | Verdict |
-|---|---|---|---|
-| DB size | 500 MB | ~1 MB (dozens of authors) | ✅ Fine |
-| Egress | 2 GB / month | ~250 MB (5000 visitors × 50 KB catalog) | ✅ Fine |
-| Edge Function invocations | 500k / month | Suggestion + translate calls, dozens/day | ✅ Fine |
-| **Realtime concurrent connections** | **200** | **See below** | **⚠️ Worth watching** |
-| Auth MAU | 50k | Just Danny | ✅ Fine |
+| Limit                               | Value        | Projected launch load                    | Verdict               |
+| ----------------------------------- | ------------ | ---------------------------------------- | --------------------- |
+| DB size                             | 500 MB       | ~1 MB (dozens of authors)                | ✅ Fine               |
+| Egress                              | 2 GB / month | ~250 MB (5000 visitors × 50 KB catalog)  | ✅ Fine               |
+| Edge Function invocations           | 500k / month | Suggestion + translate calls, dozens/day | ✅ Fine               |
+| **Realtime concurrent connections** | **200**      | **See below**                            | **⚠️ Worth watching** |
+| Auth MAU                            | 50k          | Just Danny                               | ✅ Fine               |
 
 **Realtime concurrent limit deep dive:**
 

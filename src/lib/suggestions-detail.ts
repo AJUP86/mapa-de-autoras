@@ -33,10 +33,7 @@ export async function getSuggestion(id: string): Promise<SuggestionDetail | null
   return (data as SuggestionDetail) ?? null;
 }
 
-export async function rejectSuggestion(
-  id: string,
-  reviewerNotes: string,
-): Promise<void> {
+export async function rejectSuggestion(id: string, reviewerNotes: string): Promise<void> {
   const { error } = await supabase
     .from("suggestions")
     .update({

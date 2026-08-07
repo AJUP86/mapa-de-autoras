@@ -1,0 +1,17 @@
+# Astro files: prettier-plugin-astro@0.14.1 (the latest published version) is
+# incompatible with prettier@3.8.x — it throws "Unhandled node type frontmatter"
+# on every .astro file. Excluded from Prettier until the plugin supports
+# prettier 3.8+ (or we pin an older prettier). .astro files are still
+# type-checked by `astro check` (see the CI workflow), so they aren't unguarded.
+*.astro
+
+# Prettier reformats its own config with a trailing comma that breaks strict-JSON
+# config parsing (which silently drops the *.astro parser override). Keep it
+# hand-maintained.
+.prettierrc
+
+# Generated / build output — not hand-edited, so not our style to enforce.
+src/types/supabase.ts
+dist/
+.astro/
+package-lock.json

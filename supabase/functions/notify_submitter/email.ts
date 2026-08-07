@@ -6,22 +6,22 @@
 
 const STRINGS = {
   es: {
-    subject:      "Tu sugerencia está en el mapa",
+    subject: "Tu sugerencia está en el mapa",
     greetingWith: (name: string) => `Hola, ${name},`,
     greetingBare: "Hola,",
-    body:         (authorName: string) =>
+    body: (authorName: string) =>
       `Acabo de añadir a ${authorName} al mapa de autoras — gracias por la sugerencia.`,
-    ctaLabel:     "Ver el mapa",
-    signature:    "Danny",
+    ctaLabel: "Ver el mapa",
+    signature: "Danny",
   },
   en: {
-    subject:      "Your suggestion is on the map",
+    subject: "Your suggestion is on the map",
     greetingWith: (name: string) => `Hi ${name},`,
     greetingBare: "Hi,",
-    body:         (authorName: string) =>
+    body: (authorName: string) =>
       `I just added ${authorName} to the map — thanks for the suggestion.`,
-    ctaLabel:     "See the map",
-    signature:    "Danny",
+    ctaLabel: "See the map",
+    signature: "Danny",
   },
 } as const;
 
@@ -49,9 +49,7 @@ function escapeHtml(s: string): string {
 
 export function renderEmail(input: RenderInput): RenderOutput {
   const s = STRINGS[input.locale];
-  const greeting = input.submitterName
-    ? s.greetingWith(input.submitterName)
-    : s.greetingBare;
+  const greeting = input.submitterName ? s.greetingWith(input.submitterName) : s.greetingBare;
   const bodyLine = s.body(input.authorName);
 
   const textBody = [

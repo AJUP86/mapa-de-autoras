@@ -27,9 +27,7 @@ export default function MapFilter({ value, onChange, labels }: Props) {
             onClick={() => onChange(option)}
             className={
               "rounded-full px-4 py-1.5 transition-colors " +
-              (active
-                ? "bg-oxblood text-parchment shadow-sm"
-                : "text-ink/70 hover:text-ink")
+              (active ? "bg-oxblood text-parchment shadow-sm" : "text-ink/70 hover:text-ink")
             }
           >
             {labels[option]}

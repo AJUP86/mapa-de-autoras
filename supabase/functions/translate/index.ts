@@ -44,8 +44,7 @@ function decodeJwtPayload(jwt: string): Record<string, unknown> | null {
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS")
-    return new Response(null, { status: 204, headers: CORS_HEADERS });
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS_HEADERS });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
 
   // Extra defence: confirm the JWT belongs to an admin even though

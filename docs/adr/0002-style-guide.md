@@ -14,26 +14,26 @@ The palette must also work in dense reading contexts (author bios, book descript
 
 ### Color palette
 
-| Token | Hex | Use |
-| --- | --- | --- |
-| `ink` | `#1B2A41` | Primary text; headings on light bg |
-| `parchment` | `#F5EFE6` | Page background; empty-country fill on the map |
-| `bone` | `#FAF6EE` | Elevated surfaces (cards, panels) |
-| `oxblood` | `#7A1F2E` | Brand anchor — CTAs, link accents, **"discovery" country fill** (Stage 4b) |
-| `penguin` | `#E87722` | **"Read" country fill** (Stage 4b) · Featured / spine-band cards · vintage accents |
-| `water` | `#B5CFD2` | Map ocean — dusty desaturated teal, the warm/cool counter-tone to the parchment palette |
-| `ochre` | `#C68B3C` | Link underlines · subtle highlights · map hover state |
-| `sage` | `#7A9B82` | Confirmed/success states · subtle dividers |
-| `shadow` | `#1B2A41 @ 10%` | Soft elevation |
-| `oxblood-2` `oxblood-3` | — | **Deprecated** as of Stage 4b. Were the mid/light tints of the original 3-oxblood gradient. Kept in `tokens.css` for backwards-compatibility; do not reach for in new code. |
+| Token                   | Hex             | Use                                                                                                                                                                         |
+| ----------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ink`                   | `#1B2A41`       | Primary text; headings on light bg                                                                                                                                          |
+| `parchment`             | `#F5EFE6`       | Page background; empty-country fill on the map                                                                                                                              |
+| `bone`                  | `#FAF6EE`       | Elevated surfaces (cards, panels)                                                                                                                                           |
+| `oxblood`               | `#7A1F2E`       | Brand anchor — CTAs, link accents, **"discovery" country fill** (Stage 4b)                                                                                                  |
+| `penguin`               | `#E87722`       | **"Read" country fill** (Stage 4b) · Featured / spine-band cards · vintage accents                                                                                          |
+| `water`                 | `#B5CFD2`       | Map ocean — dusty desaturated teal, the warm/cool counter-tone to the parchment palette                                                                                     |
+| `ochre`                 | `#C68B3C`       | Link underlines · subtle highlights · map hover state                                                                                                                       |
+| `sage`                  | `#7A9B82`       | Confirmed/success states · subtle dividers                                                                                                                                  |
+| `shadow`                | `#1B2A41 @ 10%` | Soft elevation                                                                                                                                                              |
+| `oxblood-2` `oxblood-3` | —               | **Deprecated** as of Stage 4b. Were the mid/light tints of the original 3-oxblood gradient. Kept in `tokens.css` for backwards-compatibility; do not reach for in new code. |
 
 **Stroke tokens** — each map fill is paired with a darker-of-itself stroke so adjacent same-state countries (USA + Canada, ESP + FRA + DEU) keep a visible boundary. These are not for general UI use:
 
-| Token | Hex | Pairs with |
-| --- | --- | --- |
-| `penguin-line` | `#9C4E10` | `penguin` (read country) |
+| Token          | Hex       | Pairs with                    |
+| -------------- | --------- | ----------------------------- |
+| `penguin-line` | `#9C4E10` | `penguin` (read country)      |
 | `oxblood-line` | `#4A0D18` | `oxblood` (discovery country) |
-| `paper-line` | `#7A5A3A` | `parchment` (empty country) |
+| `paper-line`   | `#7A5A3A` | `parchment` (empty country)   |
 
 The `penguin` token references the classic 1935 Penguin paperback orange — the strongest "this is a books site" signal we have. **Use sparingly outside the map** — one accent per non-map surface at most. Reserved roles:
 
@@ -45,13 +45,14 @@ The `penguin` token references the classic 1935 Penguin paperback orange — the
 Contrast: `parchment` on `penguin` ≈ 4.0 : 1 — passes AA-large only. Use white/`parchment` text on penguin only at ≥ 14 pt bold or ≥ 18 pt regular; otherwise prefer `ink` on `penguin` (≈ 5.5 : 1, passes AA-normal).
 
 Reference contrast checks (WCAG AA):
+
 - `ink` on `parchment` ≈ 11 : 1 (body text — passes AAA)
 - `parchment` on `oxblood` ≈ 7 : 1 (button text — passes AA-large and AA-normal)
 - `ink` on `bone` ≈ 12 : 1 (passes AAA)
 
 ### Token wiring — palette must be easy to change
 
-Using **Tailwind 4** with CSS-first configuration. No `tailwind.config.mjs` — the `@theme` block in CSS *is* the theme, which dovetails with the CSS-variable approach. Editing one file repaints the site.
+Using **Tailwind 4** with CSS-first configuration. No `tailwind.config.mjs` — the `@theme` block in CSS _is_ the theme, which dovetails with the CSS-variable approach. Editing one file repaints the site.
 
 ```
 src/styles/tokens.css         ← single source of truth (CSS variables)
@@ -84,19 +85,19 @@ The map sits on a dusty-blue **water** backdrop (`#B5CFD2`) — a desaturated te
 
 Fills (only two):
 
-| Color | Hex | Stroke | Used when |
-| --- | --- | --- | --- |
-| `penguin` (Read) | `#E87722` | `penguin-line` `#9C4E10` | Country has at least one read author — *celebratory, the iconic Penguin paperback* |
+| Color                 | Hex       | Stroke                   | Used when                                                                                                      |
+| --------------------- | --------- | ------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| `penguin` (Read)      | `#E87722` | `penguin-line` `#9C4E10` | Country has at least one read author — _celebratory, the iconic Penguin paperback_                             |
 | `oxblood` (Discovery) | `#7A1F2E` | `oxblood-line` `#4A0D18` | Country has only discoveries (or, in Discoveries-filter mode, is a mixed country surfacing its discovery side) |
-| `parchment` (Empty) | `#F5EFE6` | `paper-line` `#7A5A3A` | No authors yet, or the country fades because the active filter excludes it |
+| `parchment` (Empty)   | `#F5EFE6` | `paper-line` `#7A5A3A`   | No authors yet, or the country fades because the active filter excludes it                                     |
 
 Resolution of "mixed" countries (those with both kinds of authors):
 
-| Filter | Mixed country shows as | Rationale |
-| --- | --- | --- |
-| `Todos` (all) | **`penguin`** (Read wins) | Default hierarchy — being "read" outranks being "discovery." |
-| `Leídas` (read) | **`penguin`** | The country has read authors, so it stays visible in this mode. |
-| `Descubrimientos` (discoveries) | **`oxblood`** *(the exception)* | The user is explicitly looking at the discovery layer, so mixed countries surface that side. |
+| Filter                          | Mixed country shows as          | Rationale                                                                                    |
+| ------------------------------- | ------------------------------- | -------------------------------------------------------------------------------------------- |
+| `Todos` (all)                   | **`penguin`** (Read wins)       | Default hierarchy — being "read" outranks being "discovery."                                 |
+| `Leídas` (read)                 | **`penguin`**                   | The country has read authors, so it stays visible in this mode.                              |
+| `Descubrimientos` (discoveries) | **`oxblood`** _(the exception)_ | The user is explicitly looking at the discovery layer, so mixed countries surface that side. |
 
 Pure read or pure discovery countries do not change color across filters — they fade to `parchment` when the active filter excludes them.
 
@@ -129,11 +130,13 @@ Type scale: `1.250` ratio (major third). Base body `16 px` on mobile, `17 px` on
 ## Consequences
 
 **Positive**
+
 - Strong, ownable visual identity that maps directly to the subject matter.
 - Excellent reading contrast in body copy and admin tables.
 - Tailwind tokens (`bg-parchment`, `text-ink`, `bg-oxblood`) keep the palette discoverable in code.
 
 **Negative / risks**
+
 - Two webfonts add ~30–60 KB. Mitigate with `font-display: swap`, `preconnect` to fonts.googleapis.com, and subset to Latin Extended.
 - Oxblood + parchment is a strong combo that will look dated if used carelessly — design system review at the wireframe stage before committing components.
 - Three map tints look very similar at small zoom; verify legibility on mobile before shipping. If indistinguishable, fall back to two tints (`oxblood` for "has any read author", `oxblood-3` for "discoveries only") and drop the mixed state.

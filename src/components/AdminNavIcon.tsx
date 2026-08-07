@@ -14,13 +14,7 @@ interface Props {
   children: ReactNode;
 }
 
-export default function AdminNavIcon({
-  label,
-  href,
-  onClick,
-  badge,
-  children,
-}: Props) {
+export default function AdminNavIcon({ label, href, onClick, badge, children }: Props) {
   const inner = (
     <>
       <span className="sr-only">{label}</span>

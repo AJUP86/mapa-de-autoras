@@ -25,19 +25,19 @@
   --c-water: #b5cfd2;
   --c-penguin-line: #9c4e10;
   --c-oxblood-line: #4a0d18;
-  --c-sage-line: #4d6651;       /* Stage 7b-i — darker sage for currently_reading strokes */
-  --c-paper-line: #7a5a3a;      /* sepia for empty-country borders */
+  --c-sage-line: #4d6651; /* Stage 7b-i — darker sage for currently_reading strokes */
+  --c-paper-line: #7a5a3a; /* sepia for empty-country borders */
 
   /* Map state aliases — Stage 7b-i.
    * Change the right-hand side here to repaint the map without touching
    * any TS/component code. The state-driven fills in src/lib/map-state.ts
    * reference these aliases, never the base palette directly. */
-  --c-state-read:                   var(--c-penguin);
-  --c-state-read-line:              var(--c-penguin-line);
-  --c-state-currently-reading:      var(--c-sage);
+  --c-state-read: var(--c-penguin);
+  --c-state-read-line: var(--c-penguin-line);
+  --c-state-currently-reading: var(--c-sage);
   --c-state-currently-reading-line: var(--c-sage-line);
-  --c-state-discovery:              var(--c-oxblood);
-  --c-state-discovery-line:         var(--c-oxblood-line);
+  --c-state-discovery: var(--c-oxblood);
+  --c-state-discovery-line: var(--c-oxblood-line);
 
   --font-display: "Fraunces Variable", Georgia, serif;
   --font-body: "Inter Variable", system-ui, sans-serif;

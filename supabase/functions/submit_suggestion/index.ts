@@ -22,8 +22,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
-const TURNSTILE_VERIFY_URL =
-  "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+const TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
 interface SubmitBody {
   authorName: string;
@@ -55,8 +54,7 @@ function isEmail(s: string): boolean {
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS")
-    return new Response(null, { status: 204, headers: CORS_HEADERS });
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS_HEADERS });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
 
   // ─── Parse + validate body ────────────────────────────────────────────
@@ -94,9 +92,7 @@ Deno.serve(async (req: Request) => {
     body: new URLSearchParams({
       secret: turnstileSecret,
       response: body.turnstileToken,
-      remoteip: req.headers.get("CF-Connecting-IP") ??
-        req.headers.get("X-Forwarded-For") ??
-        "",
+      remoteip: req.headers.get("CF-Connecting-IP") ?? req.headers.get("X-Forwarded-For") ?? "",
     }),
   });
   const verifyJson = (await verifyResp.json()) as { success: boolean };
@@ -146,10 +142,7 @@ Deno.serve(async (req: Request) => {
     );
     if (subErr) {
       // Non-fatal — the suggestion is in. Log and continue.
-      console.warn(
-        "[submit_suggestion] subscriber upsert failed (non-fatal):",
-        subErr.message,
-      );
+      console.warn("[submit_suggestion] subscriber upsert failed (non-fatal):", subErr.message);
     }
   }
 
