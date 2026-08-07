@@ -62,6 +62,8 @@ Expected: three deletions staged, `.gitignore` modified, nothing else.
 
 `prettier --check .` currently fails on **88 files**. CI (Task 4) will enforce it, so baseline the whole repo first. Purely mechanical — review the diff by spot-check + green tests, not line-by-line.
 
+> **Execution note:** `prettier-plugin-astro@0.14.1` (the latest published version) is incompatible with `prettier@3.8.3` — it throws "Unhandled node type frontmatter" on every `.astro` file. So this task also creates a **`.prettierignore`** (excludes `*.astro`, `.prettierrc`, and generated files: `src/types/supabase.ts`, build output) and sets **`embeddedLanguageFormatting: "off"`** in `.prettierrc` so illustrative code fences in Markdown docs don't fail the check. `.astro` stays covered by `astro check` (Task 3), not Prettier — revisit when the plugin supports prettier 3.8+. Net result: ~77 files formatted, not 88.
+
 **Files:**
 
 - Modify: `package.json` (scripts)

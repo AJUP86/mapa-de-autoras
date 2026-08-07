@@ -28,7 +28,33 @@ Running log of what's done, what's next, and any context a future-you (or contri
 | 9b — Production deployment (apex + www + Resend)                                     | ⏳ Pending | feature/09b-production-deploy      |
 | 10 — Launch content + checklist                                                      | ⏳ Pending | feature/10-launch-prep             |
 
-**About ~82% of MVP shipped by stage count.** Remaining launch-blocking work: production deploy (9b), launch prep (10). Post-launch backlog: author CRUD (7b-ii), real newsletter (broadcast list).
+**About ~82% of MVP shipped by stage count.** Revised pre-launch path: **pre-deploy security hardening (9-pre, audit-driven)** → **book-first refactor (8.5)** → production deploy (9b) → launch prep (10). Post-launch backlog: author CRUD (7b-ii), real newsletter (broadcast list).
+
+---
+
+## Last session — 2026-08-08 (Pre-deploy hardening — Branch 1: CI + hygiene)
+
+**Status:** Branch `feature/09-pre-1-ci-and-hygiene` — all 6 tasks committed, pre-PR to `development`. Audit-driven (see [docs/audit25072026.md](audit25072026.md)); precedes the Stage 8.5 refactor and Stage 9b. Full plan + coverage map: [docs/plans/2026-08-07-stage-9-pre-security-hardening-implementation.md](plans/2026-08-07-stage-9-pre-security-hardening-implementation.md).
+
+### What landed (Branch 1)
+
+- Removed committed `supabase/snippets/` Studio scratch (personal email + admin-grant SQL); gitignored the dir.
+- Prettier baseline across the repo + `format` / `format:check` scripts.
+- `astro check` 34 → 0 errors: excluded `supabase/functions` from `tsconfig` (Deno files were type-checked by the Node checker), fixed the `map-state.test.ts` helper + `promote.ts` `Json` casts.
+- CI workflow `.github/workflows/ci.yml` — `format:check` + `astro check` + `vitest` + `astro build` on Node 22 for every PR/push to `development`/`master`.
+- Build-time env guard in `astro.config.mjs` (fails `astro build` on missing `PUBLIC_*`, build-only); sitemap `/admin` filter.
+- `/admin` de-indexed: robots `Disallow /admin` + a `noindex` meta via a new optional `Base.astro` prop (public pages unaffected).
+
+### Gotchas surfaced (worth remembering)
+
+- **`prettier-plugin-astro@0.14.1` (latest) is incompatible with `prettier@3.8.3`** — throws "Unhandled node type frontmatter" on every `.astro` file. `.astro` is excluded from Prettier via `.prettierignore` (+ `embeddedLanguageFormatting: "off"` so illustrative Markdown code fences don't fail the check); `.astro` stays covered by `astro check`. Revisit when the plugin supports prettier 3.8+.
+- **Vite `504 (Outdated Optimize Dep)`** — after the Task-3 `npm install` (lockfile regen) + Task-5 `astro.config.mjs` change invalidated Vite's dep-optimize cache on a long-running dev server, the map island failed to load (`Failed to fetch dynamically imported module: MapSection.tsx`). Fix: stop dev, `rm -rf node_modules/.vite`, `npm run dev` (or `npm run dev -- --force`). Matches the older `.vite` note in this file.
+
+### Next
+
+- PR Branch 1 → `development` (CI runs on it once the workflow is on the default branch); then enable branch protection requiring the `verify` check on `development` + `master` (GitHub UI).
+- Branch 2 `feature/09-pre-2-edge-function-auth` — C1 `translate` JWT verify, C2 `notify_owner` relay, C3 `notify_submitter`, H2 `submit_suggestion` validation, H3 `subscribers` write; adds shared `_shared/auth.ts` + `_shared/cors.ts`.
+- Then Stage 8.5 book-first refactor ([spec](specs/2026-08-07-stage-8.5-book-first-design.md) + [plan](plans/2026-08-07-stage-8.5-book-first-implementation.md)), then 9b.
 
 ---
 
