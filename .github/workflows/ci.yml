@@ -1,0 +1,32 @@
+name: CI
+
+# Gate every PR and every push to the deploying branches. `development`
+# auto-deploys to staging via Cloudflare Pages — this is the only check
+# between a bad push and a broken staging site.
+
+on:
+  pull_request:
+  push:
+    branches: [development, master]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      # `astro build` is data-independent (9a-ii), but astro.config.mjs
+      # fails the build when these are absent — by design (audit P0-8).
+      # CI builds against placeholders; real values live in Cloudflare Pages.
+      PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+      PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+      PUBLIC_TURNSTILE_SITE_KEY: ci-placeholder-site-key
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run check
+      - run: npm test
+      - run: npm run build
