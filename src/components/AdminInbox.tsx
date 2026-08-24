@@ -2,7 +2,7 @@
 //
 // Read-only list of pending suggestions. Renders nothing while loading,
 // an empty-state message if there are none, or a table with one row per
-// suggestion. Clicking a row navigates to /admin/suggestions/:id.
+// suggestion. Clicking a row navigates to /admin/suggestion?id=<uuid>.
 
 import { useEffect, useState } from "react";
 import { listPendingSuggestions, type PendingSuggestion } from "~/lib/suggestions";
@@ -13,8 +13,7 @@ interface Labels {
   loading: string;
   error: string;
   col_date: string;
-  col_author: string;
-  col_country: string;
+  col_books: string;
   col_email: string;
   view: string;
 }
@@ -67,8 +66,7 @@ export default function AdminInbox({ labels }: Props) {
           <thead>
             <tr className="border-b border-ink/20 text-left text-ink/70">
               <th className="py-2 pr-4">{labels.col_date}</th>
-              <th className="py-2 pr-4">{labels.col_author}</th>
-              <th className="py-2 pr-4">{labels.col_country}</th>
+              <th className="py-2 pr-4">{labels.col_books}</th>
               <th className="py-2 pr-4">{labels.col_email}</th>
               <th className="py-2"></th>
             </tr>
@@ -77,8 +75,7 @@ export default function AdminInbox({ labels }: Props) {
             {state.rows.map((row) => (
               <tr key={row.id} className="border-b border-ink/10 hover:bg-bone/40">
                 <td className="py-2 pr-4 text-ink/80">{formatDate(row.created_at)}</td>
-                <td className="py-2 pr-4 text-ink">{row.proposed_author_name}</td>
-                <td className="py-2 pr-4 text-ink/80">{row.proposed_country_iso_a3}</td>
+                <td className="py-2 pr-4 text-ink">{row.bookCount}</td>
                 <td className="py-2 pr-4 text-ink/70">{row.submitter_email}</td>
                 <td className="py-2">
                   <a href={`/admin/suggestion?id=${row.id}`} className="text-oxblood underline">
