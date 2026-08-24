@@ -117,7 +117,7 @@ Both env vars are read from `.env` (passed via `--env-file`).
 
 Admin-only DeepL proxy. Lives at `supabase/functions/translate/index.ts`.
 
-- **Auth:** `verify_jwt = true` in `config.toml`. Supabase validates the bearer JWT before the handler runs; the handler then asserts `app_metadata.role === 'admin'` as defence in depth.
+- **Auth:** `verify_jwt = false`; the function verifies the JWT signature in-function via `getUser` and asserts `app_metadata.role === 'admin'`.
 - **Env:** `DEEPL_API_KEY` (free tier from https://www.deepl.com/pro-api). When unset, the function returns 502 — the UI surfaces a graceful error and manual entry still works.
 - **Free-tier limit:** 500,000 characters/month. Sufficient for ~12× MVP volume.
 
@@ -158,7 +158,7 @@ Production deployment to `mapadeautoras.com` is deferred to Stage 9b.
 - Migrations: `supabase db push` applies migrations but does NOT run `[db.seed].sql_paths`. Run `supabase/seed.sql` manually in Studio after first push.
 - Auth `site_url` + Redirect URLs must be set in the Auth → URL Configuration dashboard (no equivalent in `config.toml`).
 - Edge function env vars: set in Supabase dashboard → Functions → Secrets (not `.env`).
-- `verify_jwt = false` is REQUIRED on hosted to keep CORS preflight working — the function does its own admin check via JWT decoding.
+- `verify_jwt = false` is REQUIRED on hosted to keep CORS preflight working — the function verifies the JWT signature in-function via `supabase.auth.getUser` and asserts `app_metadata.role === 'admin'`.
 - `notify_owner` trigger writes harmless failures to `net._http_response` on staging (intentional; Database Webhooks pivot in 9b).
 
 ## Local URLs
