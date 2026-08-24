@@ -328,6 +328,10 @@ export type Database = {
         Args: { p_author: Json; p_books: Json[]; p_suggestion_id: string }
         Returns: string
       }
+      promote_suggestion_book: {
+        Args: { p_author: Json; p_book: Json; p_entry_id: string }
+        Returns: string
+      }
       slugify: { Args: { input: string }; Returns: string }
     }
     Enums: {

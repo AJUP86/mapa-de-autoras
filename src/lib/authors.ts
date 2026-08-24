@@ -5,12 +5,11 @@
 // only sees rows the world should see.
 
 import { supabase } from "./supabase";
-import type { CountryEntry, Author, Book } from "./map-state";
+import type { CountryEntry, Author, Book, BookStatus } from "./map-state";
 
 type AuthorWithBooksRow = {
   id: string;
   name: string;
-  status: "read" | "discovery";
   birth_year: number | null;
   death_year: number | null;
   country_iso_a3: string;
@@ -20,6 +19,7 @@ type AuthorWithBooksRow = {
         title: string;
         year: number | null;
         display_order: number;
+        status: BookStatus;
       }[]
     | null;
 };
@@ -30,7 +30,8 @@ type AuthorWithBooksRow = {
  * - Read at Astro build time (front-matter `await getCatalog()`).
  * - Returns `[]` (and logs) if Supabase is unreachable, so `npm run dev`
  *   still renders an empty map instead of throwing.
- * - Books inside each author preserve their `display_order`.
+ * - Books inside each author preserve their `display_order` and carry their
+ *   `status`, which drives the map color (Stage 8.5 book-first model).
  */
 export async function getCatalog(): Promise<CountryEntry[]> {
   const { data, error } = await supabase
@@ -39,7 +40,6 @@ export async function getCatalog(): Promise<CountryEntry[]> {
       `
         id,
         name,
-        status,
         birth_year,
         death_year,
         country_iso_a3,
@@ -47,7 +47,8 @@ export async function getCatalog(): Promise<CountryEntry[]> {
           id,
           title,
           year,
-          display_order
+          display_order,
+          status
         )
       `,
     )
@@ -67,14 +68,15 @@ export async function getCatalog(): Promise<CountryEntry[]> {
       .slice()
       .sort((a, b) => a.display_order - b.display_order)
       .map((b) => ({
+        id: b.id,
         title: b.title,
         year: b.year ?? undefined,
+        status: b.status,
       }));
 
     const author: Author = {
       id: row.id,
       name: row.name,
-      status: row.status,
       birth_year: row.birth_year ?? undefined,
       death_year: row.death_year ?? undefined,
       books,
