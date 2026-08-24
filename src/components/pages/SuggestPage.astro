@@ -16,15 +16,20 @@ const submitUrl = `${supabaseUrl}/functions/v1/submit_suggestion`;
 const thanksUrl = `/${lang}/thanks`;
 
 const formLabels = {
+  entry: {
+    heading: t(lang, "suggest.entry.heading"),
+    book_title_label: t(lang, "suggest.entry.book_title_label"),
+    book_title_placeholder: t(lang, "suggest.entry.book_title_placeholder"),
+    author_name_label: t(lang, "suggest.entry.author_name_label"),
+    author_name_placeholder: t(lang, "suggest.entry.author_name_placeholder"),
+    country_label: t(lang, "suggest.entry.country_label"),
+    country_placeholder: t(lang, "suggest.entry.country_placeholder"),
+    note_label: t(lang, "suggest.entry.note_label"),
+    note_placeholder: t(lang, "suggest.entry.note_placeholder"),
+    add: t(lang, "suggest.entry.add"),
+    remove: t(lang, "suggest.entry.remove"),
+  },
   fields: {
-    author_name_label: t(lang, "suggest.fields.author_name_label"),
-    author_name_placeholder: t(lang, "suggest.fields.author_name_placeholder"),
-    country_label: t(lang, "suggest.fields.country_label"),
-    country_placeholder: t(lang, "suggest.fields.country_placeholder"),
-    books_label: t(lang, "suggest.fields.books_label"),
-    books_placeholder: t(lang, "suggest.fields.books_placeholder"),
-    note_label: t(lang, "suggest.fields.note_label"),
-    note_placeholder: t(lang, "suggest.fields.note_placeholder"),
     email_label: t(lang, "suggest.fields.email_label"),
     email_placeholder: t(lang, "suggest.fields.email_placeholder"),
     email_hint: t(lang, "suggest.fields.email_hint"),
