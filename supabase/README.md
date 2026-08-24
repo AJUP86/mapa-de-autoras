@@ -104,7 +104,7 @@ Both env vars are read from `.env` (passed via `--env-file`).
 ### Production notes (Stage 9)
 
 - `app.functions_url` must be set on hosted Postgres via `alter database postgres set "app.functions_url" = '<hosted-functions-url>'` so the trigger reaches the deployed Edge Function.
-- `notify_owner` currently runs with `verify_jwt = false` (MVP). Before going live, consider adding JWT verification or restricting the function to service-role callers only.
+- `notify_owner` is now closed: it requires the service-role bearer (`isServiceRoleBearer`). The `X-Webhook-Source` header approach mentioned in migration `0003` was superseded (do not edit the applied migration).
 
 ## Promote + currently_reading + translate (Stage 7b-i)
 
