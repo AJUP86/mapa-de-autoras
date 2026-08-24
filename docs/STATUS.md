@@ -28,7 +28,43 @@ Running log of what's done, what's next, and any context a future-you (or contri
 | 9b — Production deployment (apex + www + Resend)                                     | ⏳ Pending | feature/09b-production-deploy      |
 | 10 — Launch content + checklist                                                      | ⏳ Pending | feature/10-launch-prep             |
 
-**About ~82% of MVP shipped by stage count.** Revised pre-launch path: **pre-deploy security hardening (9-pre, audit-driven)** → **book-first refactor (8.5)** → production deploy (9b) → launch prep (10). Post-launch backlog: author CRUD (7b-ii), real newsletter (broadcast list).
+**About ~82% of MVP shipped by stage count.** Revised pre-launch path: **pre-deploy security hardening (9-pre — Branch 1 ✅ merged, Branch 2 ✅ pre-PR)** → **book-first refactor (8.5)** → production deploy (9b) → launch prep (10). Post-launch backlog: author CRUD (7b-ii), real newsletter (broadcast list).
+
+---
+
+## Last session — 2026-08-09 (Pre-deploy hardening — Branch 2: Edge Function auth)
+
+**Status:** Branch `feature/09-pre-2-edge-function-auth` — all tasks committed, pre-PR to `development`. Closes every remaining P0 audit item (C1/C2/C3, H2, H3). Executed subagent-driven, with a per-task **workflow** (implement → independent spec review → parallel adversarial probes) for each fix. Also fixed the Windows line-ending churn early on this branch (`.gitattributes` = `* text=auto eol=lf` — Prettier writes LF, git `core.autocrlf=true` wanted CRLF → phantom-modified churn; now deterministic).
+
+### What landed
+
+- **Shared helpers** `supabase/functions/_shared/cors.ts` (origin-allowlist `corsHeaders(req)`) + `_shared/auth.ts` (`isServiceRoleBearer` constant-time compare; `requireAdmin` via `supabase.auth.getUser`).
+- **C1 `translate`** — replaced the base64 (signature-**unverified**) JWT decode with `requireAdmin` (getUser signature check + `app_metadata.role==='admin'`); `verify_jwt` stays false (CORS preflight); origin CORS. Forged/anon/garbage/alg-none tokens → 401.
+- **C2 `notify_owner`** — was an unauthenticated open email relay; now requires the service-role bearer, sends no CORS, PII log removed (H3 part b).
+- **C3 `notify_submitter`** — pinned `[functions.notify_submitter] verify_jwt=true`; replaced the any-bearer check with `isServiceRoleBearer`; removed the `notified_at` revert-on-Resend-failure (at-most-once); dropped CORS for consistency.
+- **H2 `submit_suggestion`** — server-side caps (booksText≤1000, note≤2000, submitterName≤120, email≤254); `verifyResp.ok` check; Turnstile hostname allowlist (`TURNSTILE_ALLOWED_HOSTNAMES`, enforce-if-set / skip-if-unset); origin CORS.
+- **H3** — removed the undisclosed `subscribers` upsert (opt-in still recorded via `accepted_newsletter`).
+
+### Gotchas surfaced (keep)
+
+- **Local `supabase functions serve` injects `Access-Control-Allow-Origin: *` on every response**, masking each function's own CORS — the origin-allowlist **cannot be verified locally** (proven: `notify_owner` sends no CORS in code, yet the response shows `*`). It applies only on hosted. **Verify CORS on staging.**
+- **Anon-key format:** local `.env` `PUBLIC_SUPABASE_ANON_KEY` is the new `sb_publishable_…` (rejected by the platform gate anyway); the token that exercises any-bearer holes is the **legacy JWT anon key** from `supabase status -o env`.
+- **`supabase functions serve` hot-reloads** edited functions including `_shared/` imports — curl red→green works with no restart.
+
+### Happy paths — verified vs. needs-staging
+
+- **Verified locally (workflow positive controls):** `notify_owner` + `notify_submitter` with the real service-role bearer → 200 (the webhook callers still pass the new gates); `submit_suggestion` valid-length input passes the caps.
+- **Needs staging verification (not testable locally):**
+  - `translate` admin path — needs a real admin session JWT (log into `/admin`, hit Traducir). `requireAdmin` uses getUser; low risk but unverified live.
+  - `submit_suggestion` — set/verify `TURNSTILE_ALLOWED_HOSTNAMES` on the staging function (include `staging.mapadeautoras.com`) or leave unset; confirm CORS allows the staging origin; submit a real form.
+  - `notify_submitter` webhook — C3 reinstated the **strict** service-key match (`.trim()` handles whitespace, not truncation). **Re-verify/re-paste** the staging Database Webhook's `Authorization: Bearer <service_role>` so it matches exactly, else a promote won't email the submitter.
+  - `notify_owner` — will 401 the current staging `pg_net` trigger (it sends no bearer); the owner email won't fire until **9b** wires the Database Webhook with the service-role bearer (expected per plan; was console-log-only on staging anyway).
+
+### Next
+
+- PR Branch 2 → `development` (CI runs on it now). Hardening (Branches 1+2) then complete.
+- Staging smoke test of the happy paths above after deploy.
+- Then the Stage 8.5 book-first refactor ([spec](specs/2026-08-07-stage-8.5-book-first-design.md) + [plan](plans/2026-08-07-stage-8.5-book-first-implementation.md)).
 
 ---
 
