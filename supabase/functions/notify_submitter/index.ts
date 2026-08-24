@@ -8,17 +8,17 @@
 // Idempotency: guarded by a conditional `notified_at IS NULL` claim before
 // send. Concurrent webhook retries collapse to one winner.
 //
-// Auth: requires an Authorization header with a Bearer token. The
-// actual JWT validation is done by Supabase's platform-level `verify_jwt`
-// (on by default) BEFORE this handler runs, so our in-function check is
-// intentionally lightweight — a strict string-match against
-// SUPABASE_SERVICE_ROLE_KEY proved fragile in production (webhook UI paste
-// vs env var whitespace/truncation mismatches).
+// Auth: webhook-only. Platform-level `verify_jwt=true` (pinned in
+// config.toml) proves the bearer is SOME valid project JWT, but the public
+// anon key passes that gate too — so in-function we additionally require the
+// bearer to BE the service-role key (constant-time compared in
+// isServiceRoleBearer).
 //
 // Local dev: if RESEND_API_KEY is absent, logs a warning and returns 200
 // without sending — lets the suggest+promote flow work end-to-end locally.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { isServiceRoleBearer } from "../_shared/auth.ts";
 import { renderEmail } from "./email.ts";
 
 interface WebhookPayload {
@@ -29,37 +29,29 @@ interface WebhookPayload {
   old_record?: { id?: string } | null;
 }
 
-const CORS_HEADERS: Record<string, string> = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-};
-
+// Webhook-only function (no browser callers), so no CORS is emitted — matching
+// notify_owner.
 function json(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json" },
   });
 }
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: CORS_HEADERS });
+    return new Response(null, { status: 204 });
   }
   if (req.method !== "POST") {
     return json({ error: "method_not_allowed" }, 405);
   }
 
   // ─── Auth ─────────────────────────────────────────────────────────────
-  // Supabase platform-level `verify_jwt=true` (default) validates that the
-  // incoming Authorization is a project-signed JWT BEFORE this handler runs.
-  // We only need a lightweight in-function guard: require any Bearer token
-  // exists. Strict string-equality against SUPABASE_SERVICE_ROLE_KEY proved
-  // too fragile in production (whitespace/truncation on webhook UI paste).
-  const bearer = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
-  if (!bearer) {
-    return json({ error: "unauthorized" }, 401);
-  }
+  // Platform-level `verify_jwt=true` only proves the bearer is SOME valid
+  // project JWT — the public anon key passes that gate. Since this is a
+  // webhook-only function, we additionally require the bearer to BE the
+  // service-role key (constant-time compared in isServiceRoleBearer).
+  if (!isServiceRoleBearer(req)) return json({ error: "unauthorized" }, 401);
 
   // ─── Parse payload ────────────────────────────────────────────────────
   let payload: WebhookPayload;
@@ -174,9 +166,14 @@ Deno.serve(async (req: Request) => {
 
   if (!resendRes.ok) {
     const bodyText = await resendRes.text();
-    console.error("[notify_submitter] Resend send failed:", resendRes.status, bodyText);
-    // Revert the claim so a retry can succeed.
-    await sb.from("suggestions").update({ notified_at: null }).eq("id", suggestionId);
+    // No revert — notified_at stays set (at-most-once). A duplicate email is
+    // worse than a missed one; the idempotency claim prevents webhook retries
+    // from resending. Clear notified_at manually to force a resend.
+    console.error(
+      "[notify_submitter] Resend send failed (notified_at kept):",
+      resendRes.status,
+      bodyText,
+    );
     return json({ error: "resend_failed", status: resendRes.status }, 500);
   }
 

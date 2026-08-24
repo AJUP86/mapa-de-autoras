@@ -12,6 +12,8 @@
 //   OWNER_NOTIFICATION_EMAIL    - recipient
 //   PUBLIC_SITE_URL             - used to build the inbox deep-link
 
+import { isServiceRoleBearer } from "../_shared/auth.ts";
+
 interface TriggerPayload {
   type: "INSERT";
   table: "suggestions";
@@ -28,16 +30,10 @@ interface TriggerPayload {
   };
 }
 
-const CORS_HEADERS: Record<string, string> = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Webhook-Source",
-};
-
 function json(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json" },
   });
 }
 
@@ -63,8 +59,10 @@ function buildEmailBody(
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS_HEADERS });
+  if (req.method === "OPTIONS") return new Response(null, { status: 204 });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
+
+  if (!isServiceRoleBearer(req)) return json({ error: "unauthorized" }, 401);
 
   let payload: TriggerPayload;
   try {
@@ -90,10 +88,7 @@ Deno.serve(async (req: Request) => {
   const { subject, text } = buildEmailBody(payload.record, siteUrl);
 
   if (!resendKey) {
-    console.log("[notify_owner] RESEND_API_KEY empty — log-only mode");
-    console.log(`  To:      ${ownerEmail}`);
-    console.log(`  Subject: ${subject}`);
-    console.log(`  Body:\n${text}`);
+    console.log("[notify_owner] log-only mode (no RESEND_API_KEY)");
     return json({ ok: true, sent: false, mode: "log" }, 200);
   }
 

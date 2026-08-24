@@ -6,10 +6,8 @@
 //      is never exposed to the browser).
 //   3. Inserts the row into `suggestions` using the service-role key
 //      (bypasses RLS — the table no longer accepts anon INSERTs after
-//      migration 0002).
-//   4. If `newsletterOptIn === true`, upserts a pending `subscribers` row.
-//      The confirmation email is sent in Stage 8; until then the row sits
-//      as `pending`.
+//      migration 0002). The newsletter opt-in is recorded on that row via
+//      `accepted_newsletter`; no separate table is written here.
 //
 // Local invocation (from `npm run dev` on http://localhost:4321):
 //   POST http://127.0.0.1:54321/functions/v1/submit_suggestion
@@ -19,8 +17,12 @@
 //   SUPABASE_SERVICE_ROLE_KEY    - automatic
 //   TURNSTILE_SECRET_KEY         - your Cloudflare Turnstile secret
 //                                  (use 1x0000000000000000000000000000000AA for dev)
+//   TURNSTILE_ALLOWED_HOSTNAMES  - optional, comma-separated allowlist of the
+//                                  hostnames the Turnstile token may be issued
+//                                  for. Unset/empty = hostname check skipped.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { corsHeaders } from "../_shared/cors.ts";
 
 const TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
@@ -36,16 +38,10 @@ interface SubmitBody {
   turnstileToken: string;
 }
 
-const CORS_HEADERS: Record<string, string> = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-};
-
-function json(body: unknown, status: number): Response {
+function json(body: unknown, status: number, cors: Record<string, string>): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+    headers: { ...cors, "Content-Type": "application/json" },
   });
 }
 
@@ -54,15 +50,16 @@ function isEmail(s: string): boolean {
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS_HEADERS });
-  if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
+  const cors = corsHeaders(req);
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+  if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405, cors);
 
   // ─── Parse + validate body ────────────────────────────────────────────
   let body: SubmitBody;
   try {
     body = (await req.json()) as SubmitBody;
   } catch {
-    return json({ error: "invalid_json" }, 400);
+    return json({ error: "invalid_json" }, 400, cors);
   }
 
   const authorName = body.authorName?.trim() ?? "";
@@ -72,19 +69,23 @@ Deno.serve(async (req: Request) => {
   if (
     authorName.length === 0 ||
     authorName.length > 120 ||
+    (body.booksText ?? "").length > 1000 ||
+    (body.note ?? "").length > 2000 ||
+    (body.submitterName ?? "").length > 120 ||
+    (body.email ?? "").length > 254 ||
     !/^[A-Z]{3}$/.test(countryIsoA3) ||
     !isEmail(email) ||
     !body.turnstileToken ||
     (body.locale !== "es" && body.locale !== "en")
   ) {
-    return json({ error: "validation" }, 400);
+    return json({ error: "validation" }, 400, cors);
   }
 
   // ─── Verify Turnstile ─────────────────────────────────────────────────
   const turnstileSecret = Deno.env.get("TURNSTILE_SECRET_KEY") ?? "";
   if (!turnstileSecret) {
     console.error("[submit_suggestion] TURNSTILE_SECRET_KEY not set");
-    return json({ error: "server_misconfigured" }, 500);
+    return json({ error: "server_misconfigured" }, 500, cors);
   }
 
   const verifyResp = await fetch(TURNSTILE_VERIFY_URL, {
@@ -95,9 +96,32 @@ Deno.serve(async (req: Request) => {
       remoteip: req.headers.get("CF-Connecting-IP") ?? req.headers.get("X-Forwarded-For") ?? "",
     }),
   });
-  const verifyJson = (await verifyResp.json()) as { success: boolean };
+  // A Cloudflare 5xx (or any non-2xx) means we cannot trust the verdict; treat
+  // it as a failed challenge rather than letting `.json()` throw a bare 500.
+  if (!verifyResp.ok) return json({ error: "turnstile" }, 400, cors);
+  const verifyJson = (await verifyResp.json()) as { success: boolean; hostname?: string };
   if (!verifyJson.success) {
-    return json({ error: "turnstile" }, 400);
+    return json({ error: "turnstile" }, 400, cors);
+  }
+
+  // Hostname allowlist: a token issued for one host (e.g. staging) must not
+  // replay against another (e.g. prod). If TURNSTILE_ALLOWED_HOSTNAMES is set
+  // (comma-separated), the token's hostname must be a member. If it is unset/
+  // empty we log a warning and SKIP the check, so environments that have not
+  // configured it yet still function.
+  const allowedHostnamesRaw = Deno.env.get("TURNSTILE_ALLOWED_HOSTNAMES") ?? "";
+  if (allowedHostnamesRaw.trim().length > 0) {
+    const allowedHostnames = allowedHostnamesRaw
+      .split(",")
+      .map((h) => h.trim())
+      .filter((h) => h.length > 0);
+    if (!verifyJson.hostname || !allowedHostnames.includes(verifyJson.hostname)) {
+      return json({ error: "turnstile" }, 400, cors);
+    }
+  } else {
+    console.warn(
+      "[submit_suggestion] TURNSTILE_ALLOWED_HOSTNAMES not set — skipping hostname check",
+    );
   }
 
   // ─── Insert with service role (bypasses RLS) ──────────────────────────
@@ -105,7 +129,7 @@ Deno.serve(async (req: Request) => {
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
   if (!supabaseUrl || !serviceKey) {
     console.error("[submit_suggestion] Supabase env vars missing");
-    return json({ error: "server_misconfigured" }, 500);
+    return json({ error: "server_misconfigured" }, 500, cors);
   }
   const sb = createClient(supabaseUrl, serviceKey, {
     auth: { persistSession: false },
@@ -125,26 +149,8 @@ Deno.serve(async (req: Request) => {
 
   if (insertErr) {
     console.error("[submit_suggestion] insert failed:", insertErr.message);
-    return json({ error: "insert_failed" }, 500);
+    return json({ error: "insert_failed" }, 500, cors);
   }
 
-  // ─── Newsletter opt-in (pending row, email deferred to Stage 8) ──────
-  if (body.newsletterOptIn === true) {
-    const confirmToken = crypto.randomUUID();
-    const { error: subErr } = await sb.from("subscribers").upsert(
-      {
-        email,
-        status: "pending",
-        locale: body.locale,
-        confirm_token: confirmToken,
-      },
-      { onConflict: "email", ignoreDuplicates: true },
-    );
-    if (subErr) {
-      // Non-fatal — the suggestion is in. Log and continue.
-      console.warn("[submit_suggestion] subscriber upsert failed (non-fatal):", subErr.message);
-    }
-  }
-
-  return json({ ok: true }, 200);
+  return json({ ok: true }, 200, cors);
 });

@@ -1,0 +1,7 @@
+# Force LF line endings for all text files — in the repo and the working tree.
+#
+# Without this, Windows checkouts (core.autocrlf=true) get CRLF working-tree
+# files, which conflict with Prettier's endOfLine:"lf": every `npm run format`
+# then shows dozens of phantom-modified files, and `prettier --check` fails on a
+# fresh checkout. Enforcing LF makes formatting deterministic across platforms.
+* text=auto eol=lf

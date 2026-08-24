@@ -106,11 +106,16 @@ verify_jwt = false
 enabled = true
 verify_jwt = false
 
+[functions.notify_submitter]
+enabled = true
+verify_jwt = true
+
 # Stage 7b-i — admin-only translate proxy to DeepL. `verify_jwt = false`
 # because Supabase's platform-level JWT check rejects CORS preflight (OPTIONS
 # strips Authorization) on hosted, blocking the actual POST. The function
-# itself decodes the bearer JWT and asserts app_metadata.role === 'admin' —
-# same security posture, gate just moved from platform to function code.
+# itself verifies the JWT signature in-function via supabase.auth.getUser and
+# asserts app_metadata.role === 'admin' — the gate moved from platform to
+# function code without weakening it (getUser validates the signature server-side).
 [functions.translate]
 enabled = true
 verify_jwt = false
