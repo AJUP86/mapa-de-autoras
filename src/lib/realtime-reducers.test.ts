@@ -15,7 +15,6 @@ function authorRow(over: Partial<AuthorRow> = {}): AuthorRow {
   return {
     id: "a1",
     name: "Ada",
-    status: "read",
     birth_year: null,
     death_year: null,
     country_iso_a3: "AUS",
@@ -31,6 +30,7 @@ function bookRow(over: Partial<BookRow> = {}): BookRow {
     title: "Book",
     year: 2000,
     display_order: 0,
+    status: "to_read",
     ...over,
   };
 }
@@ -46,9 +46,14 @@ describe("addAuthor", () => {
     expect(next).toEqual([
       {
         iso_a3: "AUS",
-        authors: [expect.objectContaining({ id: "a1", name: "Ada", status: "read", books: [] })],
+        authors: [expect.objectContaining({ id: "a1", name: "Ada", books: [] })],
       },
     ]);
+  });
+
+  it("does not carry a status field on the author", () => {
+    const next = addAuthor([], authorRow());
+    expect(next[0].authors[0]).not.toHaveProperty("status");
   });
 
   it("appends to an existing country bucket", () => {
@@ -85,11 +90,11 @@ describe("updateAuthor", () => {
 
   it("preserves the author's existing books across a top-level update", () => {
     let cat = addAuthor([], authorRow({ id: "a1" }));
-    cat = addBook(cat, bookRow({ author_id: "a1", title: "T", year: 1999 }));
+    cat = addBook(cat, bookRow({ author_id: "a1", id: "bx", title: "T", year: 1999 }));
     const next = updateAuthor(cat, authorRow({ id: "a1", name: "Ada 2" }));
     const a = next[0].authors[0];
     expect(a.name).toBe("Ada 2");
-    expect(a.books).toEqual([{ title: "T", year: 1999 }]);
+    expect(a.books).toEqual([{ id: "bx", title: "T", year: 1999, status: "to_read" }]);
   });
 });
 
@@ -107,42 +112,94 @@ describe("removeAuthor", () => {
 });
 
 describe("addBook", () => {
-  it("appends to the matching author, sorted by year ascending", () => {
+  it("appends to the matching author with its status, sorted by display_order", () => {
     let cat = addAuthor([], authorRow({ id: "a1" }));
-    cat = addBook(cat, bookRow({ title: "Later", year: 2010 }));
-    cat = addBook(cat, bookRow({ title: "Earlier", year: 1990 }));
+    cat = addBook(cat, bookRow({ id: "b2", title: "Later", year: 2010, display_order: 1 }));
+    cat = addBook(cat, bookRow({ id: "b1", title: "Earlier", year: 1990, display_order: 0 }));
     expect(cat[0].authors[0].books.map((b) => b.title)).toEqual(["Earlier", "Later"]);
   });
 
-  it("is idempotent for the same title + year", () => {
+  it("carries the book status onto the catalog", () => {
     let cat = addAuthor([], authorRow({ id: "a1" }));
-    cat = addBook(cat, bookRow({ title: "T", year: 2000 }));
+    cat = addBook(cat, bookRow({ id: "b1", title: "T", status: "reading" }));
+    expect(cat[0].authors[0].books[0]).toEqual({
+      id: "b1",
+      title: "T",
+      year: 2000,
+      status: "reading",
+    });
+  });
+
+  it("is idempotent for the same id", () => {
+    let cat = addAuthor([], authorRow({ id: "a1" }));
+    cat = addBook(cat, bookRow({ id: "b1", title: "T", year: 2000 }));
     const before = cat[0].authors[0].books.length;
-    cat = addBook(cat, bookRow({ title: "T", year: 2000 }));
+    cat = addBook(cat, bookRow({ id: "b1", title: "T", year: 2000 }));
     expect(cat[0].authors[0].books.length).toBe(before);
   });
 
   it("no-ops when the parent author is not in the catalog yet", () => {
     const cat = addAuthor([], authorRow({ id: "a1" }));
-    const next = addBook(cat, bookRow({ author_id: "zzz", title: "X", year: 1 }));
+    const next = addBook(cat, bookRow({ id: "zzz", author_id: "zzz", title: "X", year: 1 }));
     expect(next[0].authors[0].books).toEqual([]);
   });
 });
 
-describe("updateBook (7b-ii placeholder behavior)", () => {
-  it("replaces the book that shares the same year", () => {
+describe("updateBook", () => {
+  it("updateBook changes a book's status in place by id", () => {
+    const cat = addBook([{ iso_a3: "ESP", authors: [{ id: "a", name: "a", books: [] }] }], {
+      id: "b1",
+      author_id: "a",
+      title: "T",
+      year: 2000,
+      display_order: 0,
+      status: "to_read",
+    });
+    const next = updateBook(cat, {
+      id: "b1",
+      author_id: "a",
+      title: "T",
+      year: 2000,
+      display_order: 0,
+      status: "read",
+    });
+    expect(next[0].authors[0].books[0].status).toBe("read");
+  });
+
+  it("updates title/year in place by id without adding a row", () => {
     let cat = addAuthor([], authorRow({ id: "a1" }));
-    cat = addBook(cat, bookRow({ title: "Old", year: 2000 }));
-    const next = updateBook(cat, bookRow({ author_id: "a1", title: "New", year: 2000 }));
-    expect(next[0].authors[0].books).toEqual([{ title: "New", year: 2000 }]);
+    cat = addBook(cat, bookRow({ id: "b1", title: "Old", year: 2000 }));
+    const next = updateBook(
+      cat,
+      bookRow({ id: "b1", title: "New", year: 2001, status: "reading" }),
+    );
+    expect(next[0].authors[0].books).toEqual([
+      { id: "b1", title: "New", year: 2001, status: "reading" },
+    ]);
+  });
+
+  it("keeps display_order sorting after an update", () => {
+    let cat = addAuthor([], authorRow({ id: "a1" }));
+    cat = addBook(cat, bookRow({ id: "b1", title: "First", display_order: 0 }));
+    cat = addBook(cat, bookRow({ id: "b2", title: "Second", display_order: 1 }));
+    const next = updateBook(cat, bookRow({ id: "b1", title: "First!", display_order: 5 }));
+    expect(next[0].authors[0].books.map((b) => b.title)).toEqual(["Second", "First!"]);
   });
 });
 
 describe("removeBook", () => {
-  it("removes the matching book by title + year", () => {
+  it("removes the matching book by id", () => {
     let cat = addAuthor([], authorRow({ id: "a1" }));
-    cat = addBook(cat, bookRow({ title: "T", year: 2000 }));
-    const next = removeBook(cat, bookRow({ author_id: "a1", title: "T", year: 2000 }));
+    cat = addBook(cat, bookRow({ id: "b1", title: "T", year: 2000 }));
+    const next = removeBook(cat, bookRow({ id: "b1", author_id: "a1" }));
     expect(next[0].authors[0].books).toEqual([]);
+  });
+
+  it("leaves other books of the same author untouched", () => {
+    let cat = addAuthor([], authorRow({ id: "a1" }));
+    cat = addBook(cat, bookRow({ id: "b1", title: "Keep", display_order: 0 }));
+    cat = addBook(cat, bookRow({ id: "b2", title: "Drop", display_order: 1 }));
+    const next = removeBook(cat, bookRow({ id: "b2", author_id: "a1" }));
+    expect(next[0].authors[0].books.map((b) => b.id)).toEqual(["b1"]);
   });
 });
