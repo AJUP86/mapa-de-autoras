@@ -28,13 +28,13 @@ Running log of what's done, what's next, and any context a future-you (or contri
 | 9b — Production deployment (apex + www + Resend)                                     | ⏳ Pending | feature/09b-production-deploy      |
 | 10 — Launch content + checklist                                                      | ⏳ Pending | feature/10-launch-prep             |
 
-**About ~82% of MVP shipped by stage count.** Revised pre-launch path: **pre-deploy security hardening (9-pre — Branch 1 ✅ merged, Branch 2 ✅ pre-PR)** → **book-first refactor (8.5)** → production deploy (9b) → launch prep (10). Post-launch backlog: author CRUD (7b-ii), real newsletter (broadcast list).
+**About ~82% of MVP shipped by stage count.** Revised pre-launch path: **pre-deploy security hardening (9-pre — Branch 1 ✅ merged, Branch 2 ✅ merged + deployed to staging)** → **book-first refactor (8.5)** → production deploy (9b) → launch prep (10). Post-launch backlog: author CRUD (7b-ii), real newsletter (broadcast list).
 
 ---
 
 ## Last session — 2026-08-09 (Pre-deploy hardening — Branch 2: Edge Function auth)
 
-**Status:** Branch `feature/09-pre-2-edge-function-auth` — all tasks committed, pre-PR to `development`. Closes every remaining P0 audit item (C1/C2/C3, H2, H3). Executed subagent-driven, with a per-task **workflow** (implement → independent spec review → parallel adversarial probes) for each fix. Also fixed the Windows line-ending churn early on this branch (`.gitattributes` = `* text=auto eol=lf` — Prettier writes LF, git `core.autocrlf=true` wanted CRLF → phantom-modified churn; now deterministic).
+**Status:** Merged to `development`; Edge Functions deployed to staging via `supabase functions deploy --use-api`. Forged-admin-token spot-check on staging `translate` → **401** (C1 confirmed live; the old function returned 200). Closes every remaining P0 audit item (C1/C2/C3, H2, H3). Executed subagent-driven, with a per-task **workflow** (implement → independent spec review → parallel adversarial probes) for each fix. Also fixed the Windows line-ending churn early on this branch (`.gitattributes` = `* text=auto eol=lf` — Prettier writes LF, git `core.autocrlf=true` wanted CRLF → phantom-modified churn; now deterministic).
 
 ### What landed
 
