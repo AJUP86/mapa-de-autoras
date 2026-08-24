@@ -51,9 +51,9 @@
     "subhead": "Each color marks a different state: authors I've read, currently reading, suggestions to discover, or a mix.",
     "filter": {
       "all": "All",
-      "read": "Read",
-      "currently_reading": "Currently reading",
-      "discoveries": "Suggestions"
+      "to_read": "To read",
+      "reading": "Reading",
+      "read": "Read"
     },
     "panel": {
       "close": "Close",
@@ -62,9 +62,9 @@
       "booksLabel": "Books"
     },
     "status": {
-      "read": "Read",
-      "currently_reading": "Currently reading",
-      "discovery": "Suggestion"
+      "to_read": "To read",
+      "reading": "Reading",
+      "read": "Read"
     },
     "view": {
       "world": "World",

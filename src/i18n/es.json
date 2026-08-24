@@ -51,9 +51,9 @@
     "subhead": "Cada color marca un estado distinto: autoras que he leído, las que estoy leyendo, sugerencias por descubrir, o una mezcla.",
     "filter": {
       "all": "Todas",
-      "read": "Leídas",
-      "currently_reading": "Leyendo",
-      "discoveries": "Sugerencias"
+      "to_read": "Por leer",
+      "reading": "Leyendo",
+      "read": "Leídas"
     },
     "panel": {
       "close": "Cerrar",
@@ -62,9 +62,9 @@
       "booksLabel": "Libros"
     },
     "status": {
-      "read": "Leída",
-      "currently_reading": "Leyendo",
-      "discovery": "Sugerencia"
+      "to_read": "Por leer",
+      "reading": "Leyendo",
+      "read": "Leída"
     },
     "view": {
       "world": "Mundo",
