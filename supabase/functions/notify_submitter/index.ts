@@ -1,9 +1,11 @@
-// notify_submitter — Stage 8
+// notify_submitter — Stage 8.5
 //
 // Invoked by a Supabase Database Webhook on `suggestions UPDATE` where a
-// pending suggestion transitions to status='approved' by the promote_suggestion
-// RPC. Sends one transactional email to the opted-in submitter, in their
-// original locale, via Resend.
+// suggestion transitions to status='processed' (the admin "Finish & notify"
+// action, which only fires once no child entry is still 'pending'). Sends one
+// transactional email to the opted-in submitter, in their original locale, via
+// Resend, listing the per-book outcome (promoted / already present / rejected)
+// for each resolved suggestion_books entry in the envelope.
 //
 // Idempotency: guarded by a conditional `notified_at IS NULL` claim before
 // send. Concurrent webhook retries collapse to one winner.
@@ -15,12 +17,15 @@
 // isServiceRoleBearer).
 //
 // Local dev: if RESEND_API_KEY is absent, logs a warning and returns 200
-// without sending — lets the suggest+promote flow work end-to-end locally.
+// without sending — lets the suggest+process flow work end-to-end locally.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { isServiceRoleBearer } from "../_shared/auth.ts";
-import { renderEmail } from "./email.ts";
+import { renderOutcome, type OutcomeEntry } from "./email.ts";
 
+// Webhook payload for a `suggestions UPDATE` transitioning to
+// status='processed'; only the record id is used (the row is re-loaded
+// service-role-side below).
 interface WebhookPayload {
   type: "INSERT" | "UPDATE" | "DELETE";
   table: string;
@@ -86,7 +91,7 @@ Deno.serve(async (req: Request) => {
   const { data: sug, error: loadErr } = await sb
     .from("suggestions")
     .select(
-      "id, submitter_email, submitter_name, locale, accepted_newsletter, notified_at, promoted_author_id, status",
+      "id, submitter_email, submitter_name, locale, accepted_newsletter, notified_at, status",
     )
     .eq("id", suggestionId)
     .single();
@@ -96,8 +101,8 @@ Deno.serve(async (req: Request) => {
   }
 
   // ─── Guards ───────────────────────────────────────────────────────────
-  if (sug.status !== "approved") {
-    return json({ ok: true, reason: "not_approved" }, 200);
+  if (sug.status !== "processed") {
+    return json({ ok: true, reason: "not_processed" }, 200);
   }
   if (sug.accepted_newsletter !== true) {
     return json({ ok: true, reason: "not_opted_in" }, 200);
@@ -105,19 +110,33 @@ Deno.serve(async (req: Request) => {
   if (sug.notified_at !== null) {
     return json({ ok: true, reason: "already_notified" }, 200);
   }
-  if (!sug.promoted_author_id) {
-    return json({ ok: true, reason: "no_promoted_author" }, 200);
-  }
 
-  // ─── Load promoted author ─────────────────────────────────────────────
-  const { data: author, error: authorErr } = await sb
-    .from("authors")
-    .select("name")
-    .eq("id", sug.promoted_author_id)
-    .single();
-  if (authorErr || !author) {
-    console.error("[notify_submitter] author load failed:", authorErr?.message);
-    return json({ error: "author_load_failed" }, 500);
+  // ─── Load envelope children (per-book outcomes) ───────────────────────
+  const { data: rows, error: rowsErr } = await sb
+    .from("suggestion_books")
+    .select(
+      "proposed_book_title, proposed_author_name, disposition, display_order",
+    )
+    .eq("suggestion_id", suggestionId)
+    .order("display_order", { ascending: true });
+  if (rowsErr) {
+    console.error("[notify_submitter] entries load failed:", rowsErr.message);
+    return json({ error: "entries_load_failed" }, 500);
+  }
+  const entries: OutcomeEntry[] = (rows ?? [])
+    .filter(
+      (r) =>
+        r.disposition === "promoted" ||
+        r.disposition === "already_present" ||
+        r.disposition === "rejected",
+    )
+    .map((r) => ({
+      title: r.proposed_book_title,
+      author: r.proposed_author_name,
+      disposition: r.disposition as OutcomeEntry["disposition"],
+    }));
+  if (entries.length === 0) {
+    return json({ ok: true, reason: "no_resolved_entries" }, 200);
   }
 
   // ─── Idempotency claim ────────────────────────────────────────────────
@@ -142,11 +161,11 @@ Deno.serve(async (req: Request) => {
   const siteUrl = Deno.env.get("SITE_URL") ?? "https://mapadeautoras.com";
   const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") ?? "onboarding@resend.dev";
 
-  const { subject, textBody, htmlBody } = renderEmail({
+  const { subject, textBody, htmlBody } = renderOutcome({
     locale,
-    authorName: author.name,
     submitterName: sug.submitter_name ?? null,
     siteUrl,
+    entries,
   });
 
   const resendRes = await fetch("https://api.resend.com/emails", {
