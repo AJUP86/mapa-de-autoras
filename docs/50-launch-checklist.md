@@ -93,22 +93,23 @@ Cleanup of duplicated ES/EN page files. Purely structural — no user-visible ch
 
 Branch: `feature/08.4-page-pair-dry`. Rough size: ~3.5h.
 
-### 5.6. Stage 8.5 — Book-first refactor (schema + form UX)
+### 5.6. Stage 8.5 — Book-first refactor (schema + form UX) — SHIPPED (2026-08-25)
 
-Discovered during Stage 8: the current data model is author-centric (`authors.status` set at promote time, `/suggest` form asks for one author + N books). This is inverted — the natural unit is a **book**. Books have mutable state (to_read → reading → read); authors are pure grouping. The current model has three visible bugs: (a) suggestions for existing authors raise `duplicate_author` and can't be promoted; (b) `authors.status` freezes at promote time (a `discovery` author stays `discovery` forever, even after Danny reads their book — the map lies); (c) users can't be told per-book what happened to their suggestion.
+Data model inverted from author-centric to book-centric: books carry the mutable reading state (to_read → reading → read); authors are pure grouping. Fixes the three original bugs (duplicate-author dead-end, frozen author status, no per-book outcome). Shipped with additions beyond the original plan: a **public catalog** + an **admin auto-promote add**. Full brainstorm → spec → plan cycle done ([spec](specs/2026-08-07-stage-8.5-book-first-design.md), [plan](plans/2026-08-07-stage-8.5-book-first-implementation.md)).
 
-- [ ] Migration: drop `authors.status`; add `books.status` (`to_read` | `reading` | `read`), default `to_read`, backfill from `authors.status`.
-- [ ] Migration: add `suggestions.proposed_book_title`, `suggestions.disposition` (`pending` | `added` | `already_present` | `rejected`), `suggestions.linked_book_id`. One suggestion row = one book proposal.
-- [ ] Rewrite `promote_suggestion` RPC: upsert author (name + country), attach book, set suggestion's disposition + linked_book_id. No more `duplicate_author` exception.
-- [ ] `/suggest` form: switch from "author + free-text books" to a book-first UI with an "add another book" button. Server-side, one submission with N books → N `suggestions` rows (same author + country, each atomic).
-- [ ] `submit_suggestion` Edge Function updated to accept the new payload shape.
-- [ ] PromoteForm reworked: per-suggestion (per-book) disposition — [Accept] / [Already have it] / [Reject].
-- [ ] `notify_submitter` email content: one book → one outcome sentence (added / already_present / rejected). Per-locale (ES/EN).
-- [ ] `getCatalog()` + `computeCountryStates()` re-aggregate map colors from `books.status` (not `authors.status`).
-- [ ] Admin book-status edit UI: simple table with inline status dropdown for each book. Realtime propagates changes.
-- [ ] Filter labels tweaked ("Por leer" instead of "Sugerencias").
+- [x] Migration `0011`: drop `authors.status`; add `books.status` (`to_read` | `reading` | `read`, default `to_read`, REPLICA IDENTITY FULL).
+- [x] Migration `0011`: suggestions became an **envelope** (`pending` | `processed`) + `suggestion_books` children (`disposition pending` | `promoted` | `rejected` | `already_present`, `linked_book_id`). _(Model refined from the original one-row-per-book to envelope + children.)_
+- [x] RPC `promote_suggestion_book` (`0012`): upsert author (name + country), attach book, resolve the entry — no `duplicate_author`. Plus `admin_add_book` (`0013`) for the auto-promote add.
+- [x] `/suggest` book-first repeater ("add another book"); `submit_suggestion` accepts the envelope payload (N children) + sends a submit-ack email.
+- [x] Admin per-entry disposition — [Promover] / [Rechazar] / [Ya está en el mapa] / re-open — + **Finish & notify**.
+- [x] `notify_submitter` per-book outcome email (promoted / already_present / rejected), per-locale (ES/EN).
+- [x] `getCatalog()` + `computeCountryStates()` aggregate map colors from `books.status` (not `authors.status`).
+- [x] Admin book-status editor `/admin/books` (inline dropdown, optimistic + revert, Realtime repaint) + author / country / year filters.
+- [x] Filter labels → `Por leer` / `Leyendo` / `Leídas`.
+- [x] **Extra:** public catalog `/books` (read-only, filterable, published-only via anon RLS — canary-verified) + admin auto-promote `/admin/add` (the `+` nav).
+- [ ] Stage **8.6** book-detail + curation (quotes, buy links, public detail page, affiliate disclosure) — [spec](specs/2026-08-25-stage-8.6-book-detail-design.md) written, **deferred**.
 
-Branch: `feature/08.5-book-first-refactor`. Rough size: ~5.5 days. Requires a proper brainstorm + spec + plan cycle before implementation.
+Branch: `feature/8.5-book-first-refactor`. Verification state + follow-ups in [STATUS.md](STATUS.md) (2026-08-25 entry).
 
 ### 6. Production deploy (Stage 9b)
 

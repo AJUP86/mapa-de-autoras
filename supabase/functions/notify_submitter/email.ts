@@ -14,8 +14,7 @@ const STRINGS = {
     greetingBare: "Hola,",
     intro: "He revisado los libros que sugeriste:",
     line: {
-      promoted: (title: string, author: string) =>
-        `«${title}» de ${author} ya está en el mapa.`,
+      promoted: (title: string, author: string) => `«${title}» de ${author} ya está en el mapa.`,
       already_present: (title: string) => `«${title}» ya estaba en el mapa.`,
       rejected: (title: string) => `«${title}» — esta vez no lo he añadido.`,
     },
@@ -28,8 +27,7 @@ const STRINGS = {
     greetingBare: "Hi,",
     intro: "I went through the books you suggested:",
     line: {
-      promoted: (title: string, author: string) =>
-        `"${title}" by ${author} is now on the map.`,
+      promoted: (title: string, author: string) => `"${title}" by ${author} is now on the map.`,
       already_present: (title: string) => `"${title}" was already on the map.`,
       rejected: (title: string) => `"${title}" — I didn't add this one this time.`,
     },
@@ -68,9 +66,7 @@ function escapeHtml(s: string): string {
 
 export function renderOutcome(input: OutcomeInput): OutcomeOutput {
   const s = STRINGS[input.locale];
-  const greeting = input.submitterName
-    ? s.greetingWith(input.submitterName)
-    : s.greetingBare;
+  const greeting = input.submitterName ? s.greetingWith(input.submitterName) : s.greetingBare;
 
   const line = (e: OutcomeEntry): string => {
     switch (e.disposition) {

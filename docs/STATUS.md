@@ -8,27 +8,61 @@ Running log of what's done, what's next, and any context a future-you (or contri
 
 ## Where we are on the MVP roadmap
 
-| Stage                                                                                | Status     | Branch                             |
-| ------------------------------------------------------------------------------------ | ---------- | ---------------------------------- |
-| 0 — Branching                                                                        | ✅ Merged  | master / development               |
-| 1 — Scaffold + brand tokens + styleguide                                             | ✅ Merged  | feature/01-scaffold-and-styleguide |
-| 2 — i18n skeleton (ES default, EN at /en/)                                           | ✅ Merged  | feature/02-i18n-skeleton           |
-| 3 — Supabase schema + RLS + 249-country seed                                         | ✅ Merged  | feature/03-supabase-schema         |
-| 4 — Public landing + map (mocked data)                                               | ✅ Merged  | feature/04-landing-and-map         |
-| 4b — Two-color hierarchy map palette refinement                                      | ✅ Merged  | feature/04b-map-palette-penguin    |
-| 5 — Map runs on live Supabase data + dev seed                                        | ✅ Merged  | feature/05-real-author-data        |
-| **6 — Suggestion form + Turnstile + Edge Function**                                  | ✅ Merged  | feature/06-suggestion-flow         |
-| 7a — Owner notification + admin auth + read-only inbox                               | ✅ Merged  | feature/07a-notify-and-auth        |
-| 7b-i — Promote suggestion + currently_reading + translate + unified admin UX         | ✅ Done    | feature/07b-promote-and-crud       |
-| 7b-ii — CRUD on existing authors (edit, add more books, delete)                      | ⏳ Next    | feature/07b-ii-author-crud         |
-| 8 — Notify submitter on promote (scope pivoted from newsletter)                      | ✅ Done    | feature/08-newsletter-confirmation |
-| 8.4 — Page-pair DRY (shared components) + always-prefix locale URLs (dynamic routes) | ✅ Done    | feature/08.4-page-pair-dry         |
-| 9a — Staging deployment (Cloudflare Pages + Supabase staging)                        | ✅ Done    | feature/09a-staging-deploy         |
-| 9a-ii — Realtime map data (client-side fetch + Supabase Realtime)                    | ✅ Merged  | feature/09a-ii-realtime-map        |
-| 9b — Production deployment (apex + www + Resend)                                     | ⏳ Pending | feature/09b-production-deploy      |
-| 10 — Launch content + checklist                                                      | ⏳ Pending | feature/10-launch-prep             |
+| Stage                                                                                     | Status               | Branch                             |
+| ----------------------------------------------------------------------------------------- | -------------------- | ---------------------------------- |
+| 0 — Branching                                                                             | ✅ Merged            | master / development               |
+| 1 — Scaffold + brand tokens + styleguide                                                  | ✅ Merged            | feature/01-scaffold-and-styleguide |
+| 2 — i18n skeleton (ES default, EN at /en/)                                                | ✅ Merged            | feature/02-i18n-skeleton           |
+| 3 — Supabase schema + RLS + 249-country seed                                              | ✅ Merged            | feature/03-supabase-schema         |
+| 4 — Public landing + map (mocked data)                                                    | ✅ Merged            | feature/04-landing-and-map         |
+| 4b — Two-color hierarchy map palette refinement                                           | ✅ Merged            | feature/04b-map-palette-penguin    |
+| 5 — Map runs on live Supabase data + dev seed                                             | ✅ Merged            | feature/05-real-author-data        |
+| **6 — Suggestion form + Turnstile + Edge Function**                                       | ✅ Merged            | feature/06-suggestion-flow         |
+| 7a — Owner notification + admin auth + read-only inbox                                    | ✅ Merged            | feature/07a-notify-and-auth        |
+| 7b-i — Promote suggestion + currently_reading + translate + unified admin UX              | ✅ Merged            | feature/07b-promote-and-crud       |
+| 7b-ii — Author CRUD — add-more-books ✅ (8.5 /admin/add + promote); edit + delete pending | ⏳ Partial           | feature/07b-ii-author-crud         |
+| 8 — Notify submitter on promote (scope pivoted from newsletter)                           | ✅ Merged            | feature/08-newsletter-confirmation |
+| 8.4 — Page-pair DRY (shared components) + always-prefix locale URLs (dynamic routes)      | ✅ Merged            | feature/08.4-page-pair-dry         |
+| **8.5 — Book-first refactor** (books.status, envelope suggestions, catalog, admin add)    | ✅ Done (PR → dev)   | feature/8.5-book-first-refactor    |
+| 8.6 — Book detail + curation (book_quotes, buy links, public detail page, affiliate)      | 📝 Spec'd (deferred) | feature/8.6-book-detail (tbd)      |
+| 9a — Staging deployment (Cloudflare Pages + Supabase staging)                             | ✅ Merged            | feature/09a-staging-deploy         |
+| 9a-ii — Realtime map data (client-side fetch + Supabase Realtime)                         | ✅ Merged            | feature/09a-ii-realtime-map        |
+| 9b — Production deployment (apex + www + Resend)                                          | ⏳ Pending           | feature/09b-production-deploy      |
+| 10 — Launch content + checklist                                                           | ⏳ Pending           | feature/10-launch-prep             |
 
-**About ~82% of MVP shipped by stage count.** Revised pre-launch path: **pre-deploy security hardening (9-pre — Branch 1 ✅ merged, Branch 2 ✅ merged + deployed to staging)** → **book-first refactor (8.5)** → production deploy (9b) → launch prep (10). Post-launch backlog: author CRUD (7b-ii), real newsletter (broadcast list).
+**Everything through 9a-ii + the 9-pre hardening is merged into `development`; `master` still holds only the initial commit (nothing merges there until the production launch).** Revised pre-launch path: **pre-deploy security hardening (9-pre — Branch 1 ✅ merged, Branch 2 ✅ merged + deployed to staging)** → **book-first refactor (8.5 ✅ Done, PR → development pending — + public catalog + admin auto-promote add)** → production deploy (9b) → launch prep (10). Post-launch backlog: author CRUD (7b-ii — **edit/delete only now; add-more-books shipped in 8.5**), real newsletter (broadcast list). Stage 10 (launch prep) has some early work merged (privacy policy, robots, site config) but remains **pending** overall — see [50-launch-checklist.md](50-launch-checklist.md).
+
+---
+
+## Last session — 2026-08-25 (Stage 8.5 — book-first refactor + public catalog + admin add)
+
+**Status:** All of Stage 8.5 shipped on `feature/8.5-book-first-refactor` (13 commits). Executed workflow-driven (implement → independent review → adversarial probe) per task, with runtime verification (curl / anon-RLS canary / RPC-gate). `astro check` 0 errors, Vitest **36**, build **18 pages**. Migration chain 0011→0013 applies clean (`supabase migration up`). PR to `development` next.
+
+### What landed
+
+- **Schema (0011):** dropped `authors.status` → added `books.status` (`to_read|reading|read`, REPLICA IDENTITY FULL); suggestions became an **envelope** (`pending|processed`) + `suggestion_books` children (`disposition pending|promoted|rejected|already_present`); unique `authors (lower(name), country_iso_a3)`.
+- **RPCs:** `promote_suggestion_book` (0012, entry-scoped, author-upsert — no duplicate dead-end) + `admin_add_book` (0013, `is_admin()`-gated auto-promote, publishes author).
+- **Domain core (TDD):** `map-state` (aggregate book statuses → country color, `mixed` when ≥2) + `realtime-reducers` (id-keyed) rewritten; `getCatalog()` reads `books.status`.
+- **Admin:** per-entry processing (promote / reject / already-present / re-open) + **Finish & notify**; book-status editor `/admin/books` (inline select, optimistic + revert, realtime repaint) with author / country / year filters; auto-promote **add** at `/admin/add` (the `+` nav).
+- **Public:** book-first suggest form (envelope + N children, ack email); **catalog** `/books` (read-only, filterable, published-only via anon RLS — **canary-verified, no unpublished leak**); map filter + per-book panel badges on `books.status`.
+- **Emails:** `submit_suggestion` → envelope payload + submit-ack; `notify_submitter` → per-book outcome (fires on `processed`, reuses C3 auth + no-revert idempotency).
+- **DRY:** shared `src/lib/book-list.ts` (filter/derive pure fns, Vitest) + `BookFilters.tsx` reused by admin editor + public catalog.
+- **Docs:** Stage **8.6** book-detail + curation **spec** written & deferred — `book_quotes` (bilingual passage + location), admin book-content editor (synopsis + quotes + buy-links), client-rendered public detail page, contextual affiliate disclosure.
+
+### Verified vs. needs admin session / staging
+
+- **Verified locally:** static gate (astro 0 / vitest 36 / build 18); anon catalog **canary** (unpublished author's book excluded, 38 vs 39); `admin_add_book` gate (anon → 401 permission denied, service-role → `unauthorized`, no insert); `notify_submitter` auth (anon bearer → 401) + new-schema selects (200).
+- **Needs admin session / staging (login-gated or real email):** admin flows end-to-end (process a suggestion; edit status with two-tab realtime repaint; add a book); ack + outcome emails (Resend — the local `dev:functions` predates `RESEND_API_KEY`, so it short-circuits `skipped`); re-verify staging Database Webhook bearer + `TURNSTILE_ALLOWED_HOSTNAMES`.
+
+### Follow-ups
+
+- `docs/adr/0003-data-model.md` still describes the pre-8.5 schema (`authors.status`, one-row suggestions) — supersede with a book-first ADR/note before launch.
+- Post-launch backlog item "**List view of authors + books by country**" is now partially delivered by `/books` — reconcile that entry.
+- Stage 8.6 (book detail) per the new spec, sequenced after production (9b) or as prioritized.
+
+### Next
+
+- PR `feature/8.5-book-first-refactor` → `development` (CI runs the `verify` gate). Then 9b production deploy.
 
 ---
 

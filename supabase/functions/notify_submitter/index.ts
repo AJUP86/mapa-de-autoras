@@ -90,9 +90,7 @@ Deno.serve(async (req: Request) => {
 
   const { data: sug, error: loadErr } = await sb
     .from("suggestions")
-    .select(
-      "id, submitter_email, submitter_name, locale, accepted_newsletter, notified_at, status",
-    )
+    .select("id, submitter_email, submitter_name, locale, accepted_newsletter, notified_at, status")
     .eq("id", suggestionId)
     .single();
   if (loadErr || !sug) {
@@ -114,9 +112,7 @@ Deno.serve(async (req: Request) => {
   // ─── Load envelope children (per-book outcomes) ───────────────────────
   const { data: rows, error: rowsErr } = await sb
     .from("suggestion_books")
-    .select(
-      "proposed_book_title, proposed_author_name, disposition, display_order",
-    )
+    .select("proposed_book_title, proposed_author_name, disposition, display_order")
     .eq("suggestion_id", suggestionId)
     .order("display_order", { ascending: true });
   if (rowsErr) {
