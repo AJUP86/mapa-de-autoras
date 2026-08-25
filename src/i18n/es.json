@@ -6,7 +6,25 @@
   "nav": {
     "home": "Inicio",
     "suggest": "Sugerir",
+    "books": "Libros",
     "about": "Conóceme"
+  },
+  "books": {
+    "eyebrow": "Catálogo",
+    "title": "Todos los libros",
+    "intro": "Cada libro del mapa, con su estado de lectura.",
+    "loading": "Cargando…",
+    "error": "No se pudieron cargar los libros.",
+    "empty": "Todavía no hay libros publicados.",
+    "col_author": "Autora",
+    "col_country": "País",
+    "col_book": "Libro",
+    "col_year": "Año",
+    "col_status": "Estado",
+    "filter_author_placeholder": "Filtrar por autora…",
+    "filter_country_all": "Todos los países",
+    "filter_year_all": "Todos los años",
+    "no_matches": "Ningún libro coincide con el filtro."
   },
   "about": {
     "eyebrow": "Conóceme",

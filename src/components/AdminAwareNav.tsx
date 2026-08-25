@@ -18,6 +18,8 @@ interface Labels {
   mapaHref: string;
   sugerir: string;
   sugerirHref: string;
+  books: string;
+  booksHref: string;
   about: string;
   aboutHref: string;
   languageSwitchHref: string;
@@ -115,6 +117,9 @@ export default function AdminAwareNav({ labels }: Props) {
         <div className="flex items-center gap-4">
           <a href={labels.aboutHref} className="text-sm text-ink/80 hover:text-oxblood">
             {labels.about}
+          </a>
+          <a href={labels.booksHref} className="text-sm text-ink/80 hover:text-oxblood">
+            {labels.books}
           </a>
           <a href={labels.sugerirHref} className="text-sm text-ink/80 underline hover:text-oxblood">
             {labels.sugerir}

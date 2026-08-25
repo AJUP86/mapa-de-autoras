@@ -1,0 +1,55 @@
+---
+import Base from "~/layouts/Base.astro";
+import BookList from "~/components/BookList";
+import { t } from "~/i18n/t";
+
+interface Props {
+  lang: "es" | "en";
+}
+
+const { lang } = Astro.props;
+
+const labels = {
+  title: t(lang, "books.title"),
+  intro: t(lang, "books.intro"),
+  loading: t(lang, "books.loading"),
+  error: t(lang, "books.error"),
+  empty: t(lang, "books.empty"),
+  col_author: t(lang, "books.col_author"),
+  col_country: t(lang, "books.col_country"),
+  col_book: t(lang, "books.col_book"),
+  col_year: t(lang, "books.col_year"),
+  col_status: t(lang, "books.col_status"),
+  filter_author_placeholder: t(lang, "books.filter_author_placeholder"),
+  filter_country_all: t(lang, "books.filter_country_all"),
+  filter_year_all: t(lang, "books.filter_year_all"),
+  no_matches: t(lang, "books.no_matches"),
+  status: {
+    to_read: t(lang, "map.status.to_read"),
+    reading: t(lang, "map.status.reading"),
+    read: t(lang, "map.status.read"),
+  },
+};
+---
+
+<Base
+  lang={lang}
+  title={`${t(lang, "books.title")} · ${t(lang, "meta.title")}`}
+  description={t(lang, "books.intro")}
+>
+  <main class="mx-auto max-w-4xl px-6 py-12 sm:py-16">
+    <p class="text-sm uppercase tracking-[0.18em] text-ink/60 font-body mb-3">
+      {t(lang, "books.eyebrow")}
+    </p>
+    <h1 class="font-display text-4xl sm:text-5xl font-semibold leading-[1.05] tracking-tight">
+      {t(lang, "books.title")}
+    </h1>
+    <p class="mt-5 text-lg text-ink/75 max-w-prose font-body">
+      {t(lang, "books.intro")}
+    </p>
+
+    <section class="mt-10">
+      <BookList client:load lang={lang} labels={labels} />
+    </section>
+  </main>
+</Base>

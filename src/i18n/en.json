@@ -6,7 +6,25 @@
   "nav": {
     "home": "Home",
     "suggest": "Suggest",
+    "books": "Books",
     "about": "About"
+  },
+  "books": {
+    "eyebrow": "Catalogue",
+    "title": "All the books",
+    "intro": "Every book on the map, with its reading status.",
+    "loading": "Loading…",
+    "error": "Couldn't load the books.",
+    "empty": "No published books yet.",
+    "col_author": "Writer",
+    "col_country": "Country",
+    "col_book": "Book",
+    "col_year": "Year",
+    "col_status": "Status",
+    "filter_author_placeholder": "Filter by writer…",
+    "filter_country_all": "All countries",
+    "filter_year_all": "All years",
+    "no_matches": "No book matches the filter."
   },
   "about": {
     "eyebrow": "About me",

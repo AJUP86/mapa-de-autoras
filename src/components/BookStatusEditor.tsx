@@ -10,16 +10,13 @@
 import { useEffect, useState } from "react";
 import { supabase } from "~/lib/supabase";
 import type { BookStatus } from "~/lib/map-state";
-
-interface BookRow {
-  id: string;
-  title: string;
-  year: number | null;
-  status: BookStatus;
-  authorName: string;
-  country: string;
-  countryName: string;
-}
+import {
+  deriveCountryOptions,
+  deriveYearOptions,
+  filterBooks,
+  type BookListRow,
+} from "~/lib/book-list";
+import BookFilters from "./BookFilters";
 
 interface Labels {
   title: string;
@@ -45,7 +42,7 @@ interface Props {
   labels: Labels;
 }
 
-type State = { kind: "loading" } | { kind: "error" } | { kind: "loaded"; rows: BookRow[] };
+type State = { kind: "loading" } | { kind: "error" } | { kind: "loaded"; rows: BookListRow[] };
 
 // PostgREST embeds authors!inner as an object on each book row.
 interface RawBookRow {
@@ -82,7 +79,7 @@ export default function BookStatusEditor({ labels }: Props) {
           setState({ kind: "error" });
           return;
         }
-        const rows: BookRow[] = ((data ?? []) as unknown as RawBookRow[]).map((row) => ({
+        const rows: BookListRow[] = ((data ?? []) as unknown as RawBookRow[]).map((row) => ({
           id: row.id,
           title: row.title,
           year: row.year,
@@ -154,19 +151,9 @@ export default function BookStatusEditor({ labels }: Props) {
   };
 
   const rows = state.kind === "loaded" ? state.rows : [];
-  const countryOptions = [...new Map(rows.map((r) => [r.country, r.countryName])).entries()]
-    .map(([code, name]) => ({ code, name }))
-    .sort((a, b) => a.name.localeCompare(b.name, "es"));
-  const yearOptions = [
-    ...new Set(rows.map((r) => r.year).filter((y): y is number => y !== null)),
-  ].sort((a, b) => b - a);
-  const filtered = rows.filter(
-    (r) =>
-      (fAuthor.trim() === "" ||
-        r.authorName.toLowerCase().includes(fAuthor.trim().toLowerCase())) &&
-      (fCountry === "" || r.country === fCountry) &&
-      (fYear === "" || String(r.year) === fYear),
-  );
+  const countryOptions = deriveCountryOptions(rows, "es");
+  const yearOptions = deriveYearOptions(rows);
+  const filtered = filterBooks(rows, { author: fAuthor, country: fCountry, year: fYear });
 
   return (
     <section className="mx-auto max-w-4xl">
@@ -182,39 +169,17 @@ export default function BookStatusEditor({ labels }: Props) {
       )}
       {state.kind === "loaded" && state.rows.length > 0 && (
         <>
-          <div className="mb-4 flex flex-wrap items-center gap-3 text-sm">
-            <input
-              type="text"
-              value={fAuthor}
-              onChange={(e) => setFAuthor(e.target.value)}
-              placeholder={labels.filter_author_placeholder}
-              className="rounded border border-ink/20 bg-parchment px-3 py-1.5"
-            />
-            <select
-              value={fCountry}
-              onChange={(e) => setFCountry(e.target.value)}
-              className="rounded border border-ink/20 bg-parchment px-2 py-1.5 text-ink"
-            >
-              <option value="">{labels.filter_country_all}</option>
-              {countryOptions.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-            <select
-              value={fYear}
-              onChange={(e) => setFYear(e.target.value)}
-              className="rounded border border-ink/20 bg-parchment px-2 py-1.5 text-ink"
-            >
-              <option value="">{labels.filter_year_all}</option>
-              {yearOptions.map((y) => (
-                <option key={y} value={String(y)}>
-                  {y}
-                </option>
-              ))}
-            </select>
-          </div>
+          <BookFilters
+            author={fAuthor}
+            country={fCountry}
+            year={fYear}
+            onAuthor={setFAuthor}
+            onCountry={setFCountry}
+            onYear={setFYear}
+            countryOptions={countryOptions}
+            yearOptions={yearOptions}
+            labels={labels}
+          />
           {filtered.length === 0 ? (
             <p className="text-ink/60">{labels.no_matches}</p>
           ) : (
