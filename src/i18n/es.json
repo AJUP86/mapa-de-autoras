@@ -151,7 +151,7 @@
     "nav": {
       "sugerencias": "Sugerencias pendientes",
       "libros": "Libros",
-      "anadir": "Añadir autora",
+      "anadir": "Añadir libros",
       "salir": "Cerrar sesión"
     },
     "books": {
@@ -269,6 +269,36 @@
         "description_en_label": "Description (EN)",
         "remove": "Eliminar"
       }
+    },
+    "add": {
+      "title": "Añadir libros",
+      "intro": "Añade uno o más libros. Cada uno se publica directamente en el mapa.",
+      "entry": {
+        "heading": "Libro",
+        "book_title_label": "Título del libro",
+        "book_title_placeholder": "Ej. La casa de los espíritus",
+        "author_name_label": "Nombre de la autora",
+        "author_name_placeholder": "Ej. Isabel Allende",
+        "country_label": "País",
+        "country_placeholder": "Elige un país",
+        "status_label": "Estado",
+        "status_to_read": "Por leer",
+        "status_reading": "Leyendo",
+        "status_read": "Leída",
+        "add": "+ Añadir otro libro",
+        "remove": "Quitar"
+      },
+      "submit": "Añadir al mapa",
+      "submitting": "Añadiendo…",
+      "errors": {
+        "validation": "Revisa los campos marcados.",
+        "unauthorized": "Tu sesión ha expirado. Vuelve a entrar.",
+        "unknown": "No se pudo añadir. Inténtalo de nuevo."
+      },
+      "success_suffix": "libro(s) añadido(s).",
+      "view_books": "Ver libros",
+      "add_more": "Añadir más",
+      "required_mark": " *"
     }
   }
 }

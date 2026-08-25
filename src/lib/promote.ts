@@ -56,3 +56,21 @@ export async function promoteSuggestionBook(
   }
   return { ok: true, bookId: data as string };
 }
+
+export async function adminAddBook(
+  author: PromoteAuthorInput,
+  book: PromoteBookInput,
+): Promise<PromoteResult> {
+  const { data, error } = await supabase.rpc("admin_add_book", {
+    p_author: author as unknown as Json,
+    p_book: book as unknown as Json,
+  });
+  if (error) {
+    const msg = error.message ?? "";
+    if (msg.startsWith("validation:"))
+      return { ok: false, error: { kind: "validation", message: msg } };
+    if (msg.startsWith("unauthorized:")) return { ok: false, error: { kind: "unauthorized" } };
+    return { ok: false, error: { kind: "unknown", message: msg } };
+  }
+  return { ok: true, bookId: data as string };
+}

@@ -269,6 +269,36 @@
         "description_en_label": "",
         "remove": ""
       }
+    },
+    "add": {
+      "title": "",
+      "intro": "",
+      "entry": {
+        "heading": "",
+        "book_title_label": "",
+        "book_title_placeholder": "",
+        "author_name_label": "",
+        "author_name_placeholder": "",
+        "country_label": "",
+        "country_placeholder": "",
+        "status_label": "",
+        "status_to_read": "",
+        "status_reading": "",
+        "status_read": "",
+        "add": "",
+        "remove": ""
+      },
+      "submit": "",
+      "submitting": "",
+      "errors": {
+        "validation": "",
+        "unauthorized": "",
+        "unknown": ""
+      },
+      "success_suffix": "",
+      "view_books": "",
+      "add_more": "",
+      "required_mark": ""
     }
   }
 }

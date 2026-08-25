@@ -322,6 +322,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_add_book: {
+        Args: { p_author: Json; p_book: Json }
+        Returns: string
+      }
       heartbeat: { Args: never; Returns: string }
       is_admin: { Args: never; Returns: boolean }
       promote_suggestion: {

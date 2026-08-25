@@ -100,7 +100,7 @@ export default function AdminAwareNav({ labels }: Props) {
           <AdminNavIcon label={labels.libros} href="/admin/books">
             <BookIcon />
           </AdminNavIcon>
-          <AdminNavIcon label={labels.anadir} href="/admin/promote">
+          <AdminNavIcon label={labels.anadir} href="/admin/add">
             <PlusIcon />
           </AdminNavIcon>
           <AdminNavIcon
