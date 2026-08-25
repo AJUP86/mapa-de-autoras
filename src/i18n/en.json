@@ -132,8 +132,28 @@
     },
     "nav": {
       "sugerencias": "",
+      "libros": "",
       "anadir": "",
       "salir": ""
+    },
+    "books": {
+      "title": "",
+      "loading": "",
+      "error": "",
+      "empty": "",
+      "col_author": "",
+      "col_country": "",
+      "col_book": "",
+      "col_year": "",
+      "col_status": "",
+      "status_to_read": "",
+      "status_reading": "",
+      "status_read": "",
+      "save_error": "",
+      "filter_author_placeholder": "",
+      "filter_country_all": "",
+      "filter_year_all": "",
+      "no_matches": ""
     },
     "common": {
       "sign_out": "",

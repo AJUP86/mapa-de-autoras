@@ -132,8 +132,28 @@
     },
     "nav": {
       "sugerencias": "Sugerencias pendientes",
+      "libros": "Libros",
       "anadir": "Añadir autora",
       "salir": "Cerrar sesión"
+    },
+    "books": {
+      "title": "Estado de los libros",
+      "loading": "Cargando…",
+      "error": "No se pudieron cargar los libros.",
+      "empty": "No hay libros todavía.",
+      "col_author": "Autora",
+      "col_country": "País",
+      "col_book": "Libro",
+      "col_year": "Año",
+      "col_status": "Estado",
+      "status_to_read": "Por leer",
+      "status_reading": "Leyendo",
+      "status_read": "Leída",
+      "save_error": "No se pudo guardar el cambio.",
+      "filter_author_placeholder": "Filtrar por autora…",
+      "filter_country_all": "Todos los países",
+      "filter_year_all": "Todos los años",
+      "no_matches": "Ningún libro coincide con el filtro."
     },
     "common": {
       "sign_out": "Cerrar sesión",
