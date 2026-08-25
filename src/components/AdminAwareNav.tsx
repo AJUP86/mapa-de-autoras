@@ -18,6 +18,8 @@ interface Labels {
   mapaHref: string;
   sugerir: string;
   sugerirHref: string;
+  books: string;
+  booksHref: string;
   about: string;
   aboutHref: string;
   languageSwitchHref: string;
@@ -25,6 +27,7 @@ interface Labels {
   languageSwitchAriaLabel: string;
   languageSwitchHreflang: string;
   sugerencias: string;
+  libros: string;
   anadir: string;
   salir: string;
 }
@@ -94,7 +97,10 @@ export default function AdminAwareNav({ labels }: Props) {
           <AdminNavIcon label={labels.sugerencias} href="/admin/inbox" badge={pendingCount}>
             <InboxIcon />
           </AdminNavIcon>
-          <AdminNavIcon label={labels.anadir} href="/admin/promote">
+          <AdminNavIcon label={labels.libros} href="/admin/books">
+            <BookIcon />
+          </AdminNavIcon>
+          <AdminNavIcon label={labels.anadir} href="/admin/add">
             <PlusIcon />
           </AdminNavIcon>
           <AdminNavIcon
@@ -111,6 +117,9 @@ export default function AdminAwareNav({ labels }: Props) {
         <div className="flex items-center gap-4">
           <a href={labels.aboutHref} className="text-sm text-ink/80 hover:text-oxblood">
             {labels.about}
+          </a>
+          <a href={labels.booksHref} className="text-sm text-ink/80 hover:text-oxblood">
+            {labels.books}
           </a>
           <a href={labels.sugerirHref} className="text-sm text-ink/80 underline hover:text-oxblood">
             {labels.sugerir}
@@ -151,6 +160,23 @@ function InboxIcon() {
     >
       <path d="M22 12h-6l-2 3h-4l-2-3H2" />
       <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z" />
+    </svg>
+  );
+}
+
+function BookIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-5 w-5"
+    >
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
     </svg>
   );
 }

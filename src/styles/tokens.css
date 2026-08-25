@@ -34,10 +34,10 @@
    * reference these aliases, never the base palette directly. */
   --c-state-read: var(--c-penguin);
   --c-state-read-line: var(--c-penguin-line);
-  --c-state-currently-reading: var(--c-sage);
-  --c-state-currently-reading-line: var(--c-sage-line);
-  --c-state-discovery: var(--c-oxblood);
-  --c-state-discovery-line: var(--c-oxblood-line);
+  --c-state-reading: var(--c-sage);
+  --c-state-reading-line: var(--c-sage-line);
+  --c-state-to-read: var(--c-oxblood);
+  --c-state-to-read-line: var(--c-oxblood-line);
 
   --font-display: "Fraunces Variable", Georgia, serif;
   --font-body: "Inter Variable", system-ui, sans-serif;

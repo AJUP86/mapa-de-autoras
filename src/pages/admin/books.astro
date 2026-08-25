@@ -1,0 +1,37 @@
+---
+// src/pages/admin/books.astro — Stage 8.5 task 13
+import Base from "~/layouts/Base.astro";
+import AdminGate from "~/components/AdminGate";
+import BookStatusEditor from "~/components/BookStatusEditor";
+import { t } from "~/i18n/t";
+
+const lang = "es" as const;
+const notAdminLabel = t(lang, "admin.login.error_not_admin");
+const labels = {
+  title: t(lang, "admin.books.title"),
+  loading: t(lang, "admin.books.loading"),
+  error: t(lang, "admin.books.error"),
+  empty: t(lang, "admin.books.empty"),
+  col_author: t(lang, "admin.books.col_author"),
+  col_country: t(lang, "admin.books.col_country"),
+  col_book: t(lang, "admin.books.col_book"),
+  col_year: t(lang, "admin.books.col_year"),
+  col_status: t(lang, "admin.books.col_status"),
+  status_to_read: t(lang, "admin.books.status_to_read"),
+  status_reading: t(lang, "admin.books.status_reading"),
+  status_read: t(lang, "admin.books.status_read"),
+  save_error: t(lang, "admin.books.save_error"),
+  filter_author_placeholder: t(lang, "admin.books.filter_author_placeholder"),
+  filter_country_all: t(lang, "admin.books.filter_country_all"),
+  filter_year_all: t(lang, "admin.books.filter_year_all"),
+  no_matches: t(lang, "admin.books.no_matches"),
+};
+---
+
+<Base lang={lang} title={labels.title} noindex>
+  <main class="min-h-screen bg-parchment p-6">
+    <AdminGate client:load loginUrl="/admin" notAdminLabel={notAdminLabel}>
+      <BookStatusEditor client:load labels={labels} />
+    </AdminGate>
+  </main>
+</Base>

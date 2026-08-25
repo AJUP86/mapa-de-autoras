@@ -7,7 +7,7 @@ interface Props {
 }
 
 // Visitor → present → past of Danny's reading journey.
-const OPTIONS: Filter[] = ["all", "discoveries", "currently_reading", "read"];
+const OPTIONS: Filter[] = ["all", "to_read", "reading", "read"];
 
 export default function MapFilter({ value, onChange, labels }: Props) {
   return (

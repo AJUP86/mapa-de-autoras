@@ -1,19 +1,19 @@
-// PromoteForm.tsx — Stage 7b-i
+// PromoteForm.tsx — Stage 8.5 (book-first, entry-only)
 //
-// The form that promotes a suggestion (or creates an author from scratch).
-// E1: promote-from-scratch (no suggestion context). E2: when the URL
-// contains `?suggestion=<uuid>`, the form fetches the suggestion, prefills
-// name + country, renders a read-only context aside + reviewer-notes
-// textarea on the left, and passes both `suggestionId` and
-// `reviewer_notes` to the RPC. On save → redirect to /admin/inbox.
+// Promotes a single suggestion_books entry into a real author + book via the
+// promote_suggestion_book() RPC. The page is reached as
+// /admin/promote?entry=<uuid>; it fetches that entry, prefills the author name
+// + country + the one book's title, and lets the admin fill in the rest.
+// On success it returns to the suggestion review page. Without ?entry= it
+// renders a placeholder — from-scratch author creation is deferred.
 
 import { useEffect, useState } from "react";
 import TranslateButton from "./TranslateButton";
 import BookFields, { EMPTY_BOOK, type BookValue } from "./BookFields";
 import { getCountriesBilingual, type CountryRow } from "~/lib/countries";
-import { promoteSuggestion, type PromoteError } from "~/lib/promote";
-import { getSuggestion, type SuggestionDetail } from "~/lib/suggestions-detail";
-import type { AuthorStatus } from "~/lib/map-state";
+import { promoteSuggestionBook, type PromoteError } from "~/lib/promote";
+import { getSuggestionBookEntry, type SuggestionBookEntry } from "~/lib/suggestions-detail";
+import type { BookStatus } from "~/lib/map-state";
 
 interface TranslateLabels {
   button: string;
@@ -27,28 +27,29 @@ interface TranslateLabels {
 
 export interface PromoteFormLabels {
   title_new: string;
+  no_entry_body: string;
   title_review: string;
   name_label: string;
   country_label: string;
-  status_label: string;
-  status_read: string;
-  status_currently_reading: string;
-  status_discovery: string;
+  book_status_label: string;
+  book_status_to_read: string;
+  book_status_reading: string;
+  book_status_read: string;
   birth_year_label: string;
   death_year_label: string;
   photo_label: string;
   bio_es_label: string;
   bio_en_label: string;
   books_section: string;
-  add_book: string;
   publish_now_label: string;
   save: string;
   saving: string;
+  loading: string;
   cancel: string;
-  error_duplicate: string;
-  error_validation: string;
-  error_unknown: string;
   back: string;
+  error_validation: string;
+  error_unauthorized: string;
+  error_unknown: string;
   translate_to_en: TranslateLabels;
   translate_to_es: TranslateLabels;
   book: {
@@ -60,14 +61,14 @@ export interface PromoteFormLabels {
     description_en_label: string;
     remove: string;
   };
-  // Suggestion context column (only used when suggestionId is set)
-  context_submitted_on: string;
-  context_proposed_author: string;
-  context_country: string;
-  context_books_text: string;
-  context_note: string;
-  context_submitter: string;
-  reviewer_notes_label: string;
+  context: {
+    submitted_on: string;
+    proposed_author: string;
+    country: string;
+    book_title: string;
+    note: string;
+    submitter: string;
+  };
 }
 
 interface Props {
@@ -77,7 +78,6 @@ interface Props {
 interface AuthorValue {
   name: string;
   country_iso_a3: string;
-  status: AuthorStatus;
   birth_year: string;
   death_year: string;
   photo_url: string;
@@ -89,7 +89,6 @@ interface AuthorValue {
 const EMPTY_AUTHOR: AuthorValue = {
   name: "",
   country_iso_a3: "",
-  status: "discovery",
   birth_year: "",
   death_year: "",
   photo_url: "",
@@ -98,26 +97,32 @@ const EMPTY_AUTHOR: AuthorValue = {
   published: true,
 };
 
+function formatDate(iso: string): string {
+  return iso ? new Date(iso).toISOString().slice(0, 10) : "—";
+}
+
 export default function PromoteForm({ labels }: Props) {
   const [author, setAuthor] = useState<AuthorValue>(EMPTY_AUTHOR);
-  const [books, setBooks] = useState<BookValue[]>([{ ...EMPTY_BOOK }]);
+  const [book, setBook] = useState<BookValue>({ ...EMPTY_BOOK });
+  const [bookStatus, setBookStatus] = useState<BookStatus>("to_read");
   const [countries, setCountries] = useState<CountryRow[]>([]);
   const [status, setStatus] = useState<"idle" | "saving" | "error">("idle");
   const [error, setError] = useState<PromoteError | null>(null);
 
-  // E2: the suggestion id is read from window.location.search on mount.
-  // We keep it as state (not a prop) so this same component works for both
-  // /admin/promote and /admin/promote?suggestion=<uuid> without the Astro
-  // page needing to parse the query string (which is awkward with static
-  // output).
-  const [suggestionId, setSuggestionId] = useState<string | undefined>(undefined);
-  const [suggestion, setSuggestion] = useState<SuggestionDetail | null>(null);
-  const [suggestionLoading, setSuggestionLoading] = useState<boolean>(
+  // The entry id is read from window.location.search on mount.
+  const [entryId, setEntryId] = useState<string | undefined>(undefined);
+  const [entry, setEntry] = useState<SuggestionBookEntry | null>(null);
+  const [hasEntryParam, setHasEntryParam] = useState<boolean>(
     typeof window !== "undefined"
-      ? new URLSearchParams(window.location.search).has("suggestion")
+      ? new URLSearchParams(window.location.search).has("entry")
       : false,
   );
-  const [reviewerNotes, setReviewerNotes] = useState<string>("");
+  const [entryLoading, setEntryLoading] = useState<boolean>(
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).has("entry")
+      : false,
+  );
+  const [entryMissing, setEntryMissing] = useState(false);
 
   useEffect(() => {
     getCountriesBilingual()
@@ -125,108 +130,159 @@ export default function PromoteForm({ labels }: Props) {
       .catch((e) => console.error(e));
   }, []);
 
-  // Hydrate suggestionId from the URL on mount.
+  // Hydrate the entry id from the URL on mount.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const id = params.get("suggestion");
+    const id = params.get("entry");
+    setHasEntryParam(!!id);
     if (id) {
-      setSuggestionId(id);
+      setEntryId(id);
     } else {
-      setSuggestionLoading(false);
+      setEntryLoading(false);
     }
   }, []);
 
-  // Fetch the suggestion when we have an id.
+  // Fetch the entry once we have an id.
   useEffect(() => {
-    if (!suggestionId) return;
+    if (!entryId) return;
     let cancelled = false;
-    getSuggestion(suggestionId)
-      .then((s) => {
+    getSuggestionBookEntry(entryId)
+      .then((e) => {
         if (cancelled) return;
-        if (s) {
-          setSuggestion(s);
+        if (!e) {
+          setEntryMissing(true);
+        } else {
+          setEntry(e);
           setAuthor((a) => ({
             ...a,
-            name: s.proposed_author_name,
-            country_iso_a3: s.proposed_country_iso_a3,
+            name: e.proposed_author_name,
+            country_iso_a3: e.proposed_country_iso_a3,
           }));
+          setBook({ ...EMPTY_BOOK, title: e.proposed_book_title });
         }
-        setSuggestionLoading(false);
+        setEntryLoading(false);
       })
-      .catch((e) => {
-        console.error("[PromoteForm] load suggestion failed:", e);
-        if (!cancelled) setSuggestionLoading(false);
+      .catch((err) => {
+        console.error("[PromoteForm] load entry failed:", err);
+        if (!cancelled) {
+          setEntryMissing(true);
+          setEntryLoading(false);
+        }
       });
     return () => {
       cancelled = true;
     };
-  }, [suggestionId]);
+  }, [entryId]);
 
   function update<K extends keyof AuthorValue>(key: K, val: AuthorValue[K]) {
     setAuthor((a) => ({ ...a, [key]: val }));
   }
-  function updateBook(i: number, next: BookValue) {
-    setBooks((bs) => bs.map((b, idx) => (idx === i ? next : b)));
-  }
-  function addBook() {
-    setBooks((bs) => [...bs, { ...EMPTY_BOOK }]);
-  }
-  function removeBook(i: number) {
-    setBooks((bs) => bs.filter((_, idx) => idx !== i));
-  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (status === "saving") return;
+    if (status === "saving" || !entry) return;
     setStatus("saving");
     setError(null);
-    const result = await promoteSuggestion(
-      suggestionId ?? null,
+    const result = await promoteSuggestionBook(
+      entry.entryId,
       {
         name: author.name.trim(),
         country_iso_a3: author.country_iso_a3,
-        status: author.status,
         bio_es: author.bio_es.trim() || undefined,
         bio_en: author.bio_en.trim() || undefined,
         photo_url: author.photo_url.trim() || undefined,
         birth_year: author.birth_year ? Number(author.birth_year) : undefined,
         death_year: author.death_year ? Number(author.death_year) : undefined,
         published: author.published,
-        reviewer_notes: suggestionId ? reviewerNotes.trim() || undefined : undefined,
       },
-      books.map((b) => ({
-        title: b.title.trim(),
-        year: b.year ? Number(b.year) : undefined,
-        original_language: b.original_language.trim() || undefined,
-        cover_url: b.cover_url.trim() || undefined,
-        description_es: b.description_es.trim() || undefined,
-        description_en: b.description_en.trim() || undefined,
-      })),
+      {
+        title: book.title.trim(),
+        year: book.year ? Number(book.year) : undefined,
+        original_language: book.original_language.trim() || undefined,
+        cover_url: book.cover_url.trim() || undefined,
+        description_es: book.description_es.trim() || undefined,
+        description_en: book.description_en.trim() || undefined,
+        status: bookStatus,
+      },
     );
     if (result.ok) {
-      window.location.href = suggestionId ? "/admin/inbox" : "/es/";
+      window.location.href = `/admin/suggestion?id=${entry.suggestionId}`;
       return;
     }
     setStatus("error");
     setError(result.error);
   }
 
-  // E2: while the suggestion is fetching, render a small loading message
-  // instead of the empty form (which would flash the unprefilled defaults).
-  if (suggestionLoading) {
-    return <p className="mx-auto max-w-2xl p-6 text-ink/60">{labels.saving}</p>;
-  }
-
-  const formMarkup = (
-    <form onSubmit={onSubmit} className="mx-auto max-w-3xl space-y-6 p-6">
-      <div>
-        <a href="/es/" className="text-sm text-ink/70 underline">
+  // No ?entry= → placeholder (from-scratch author creation is deferred).
+  if (!hasEntryParam) {
+    return (
+      <div className="mx-auto max-w-2xl space-y-4 p-6">
+        <h1 className="font-serif text-2xl text-ink">{labels.title_new}</h1>
+        <p className="text-sm text-ink/70">{labels.no_entry_body}</p>
+        <a href="/admin/inbox" className="text-sm text-oxblood underline">
           ← {labels.back}
         </a>
-        <h1 className="mt-2 font-serif text-2xl text-ink">
-          {suggestionId ? labels.title_review : labels.title_new}
-        </h1>
       </div>
+    );
+  }
+
+  if (entryLoading) {
+    return <p className="mx-auto max-w-2xl p-6 text-ink/60">{labels.loading}</p>;
+  }
+
+  if (entryMissing || !entry) {
+    return (
+      <div className="mx-auto max-w-2xl space-y-4 p-6">
+        <h1 className="font-serif text-2xl text-ink">{labels.title_review}</h1>
+        <p className="text-sm text-ink/70">{labels.no_entry_body}</p>
+        <a href="/admin/inbox" className="text-sm text-oxblood underline">
+          ← {labels.back}
+        </a>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={onSubmit} className="mx-auto max-w-3xl space-y-6 p-6">
+      <div>
+        <a href="/admin/inbox" className="text-sm text-ink/70 underline">
+          ← {labels.back}
+        </a>
+        <h1 className="mt-2 font-serif text-2xl text-ink">{labels.title_review}</h1>
+      </div>
+
+      <aside className="rounded bg-bone/60 p-4 text-sm">
+        <dl className="space-y-1">
+          <div>
+            <dt className="inline text-ink/60">{labels.context.proposed_author}: </dt>
+            <dd className="inline text-ink">{entry.proposed_author_name}</dd>
+          </div>
+          <div>
+            <dt className="inline text-ink/60">{labels.context.country}: </dt>
+            <dd className="inline text-ink">{entry.proposed_country_iso_a3}</dd>
+          </div>
+          <div>
+            <dt className="inline text-ink/60">{labels.context.book_title}: </dt>
+            <dd className="inline text-ink">{entry.proposed_book_title}</dd>
+          </div>
+          <div>
+            <dt className="inline text-ink/60">{labels.context.submitter}: </dt>
+            <dd className="inline text-ink">
+              {entry.submitter_name ?? "—"} {entry.submitter_email}
+            </dd>
+          </div>
+          <div>
+            <dt className="inline text-ink/60">{labels.context.submitted_on}: </dt>
+            <dd className="inline text-ink">{formatDate(entry.submitted_on)}</dd>
+          </div>
+          {entry.note !== null && (
+            <div>
+              <dt className="inline text-ink/60">{labels.context.note}: </dt>
+              <dd className="inline whitespace-pre-wrap text-ink">{entry.note}</dd>
+            </div>
+          )}
+        </dl>
+      </aside>
 
       <fieldset className="space-y-4">
         <label className="block text-sm">
@@ -261,22 +317,22 @@ export default function PromoteForm({ labels }: Props) {
         </label>
 
         <fieldset>
-          <legend className="text-sm text-ink/80">{labels.status_label} *</legend>
+          <legend className="text-sm text-ink/80">{labels.book_status_label} *</legend>
           <div className="mt-1 flex gap-4 text-sm">
-            {(["read", "currently_reading", "discovery"] as const).map((s) => (
-              <label key={s} className="inline-flex items-center gap-2">
+            {(["to_read", "reading", "read"] as const).map((st) => (
+              <label key={st} className="inline-flex items-center gap-2">
                 <input
                   type="radio"
-                  name="status"
-                  value={s}
-                  checked={author.status === s}
-                  onChange={() => update("status", s)}
+                  name="book_status"
+                  value={st}
+                  checked={bookStatus === st}
+                  onChange={() => setBookStatus(st)}
                 />
-                {s === "read"
-                  ? labels.status_read
-                  : s === "currently_reading"
-                    ? labels.status_currently_reading
-                    : labels.status_discovery}
+                {st === "to_read"
+                  ? labels.book_status_to_read
+                  : st === "reading"
+                    ? labels.book_status_reading
+                    : labels.book_status_read}
               </label>
             ))}
           </div>
@@ -357,27 +413,18 @@ export default function PromoteForm({ labels }: Props) {
 
       <fieldset className="space-y-4">
         <legend className="text-sm font-medium text-ink">{labels.books_section}</legend>
-        {books.map((b, i) => (
-          <BookFields
-            key={i}
-            index={i}
-            value={b}
-            onChange={(next) => updateBook(i, next)}
-            onRemove={books.length > 1 ? () => removeBook(i) : undefined}
-            labels={{
-              ...labels.book,
-              translate_to_en: labels.translate_to_en,
-              translate_to_es: labels.translate_to_es,
-            }}
-          />
-        ))}
-        <button
-          type="button"
-          onClick={addBook}
-          className="rounded border border-ink/20 px-3 py-1 text-sm text-ink"
-        >
-          {labels.add_book}
-        </button>
+        <BookFields
+          key="book"
+          index={0}
+          value={book}
+          onChange={setBook}
+          onRemove={undefined}
+          labels={{
+            ...labels.book,
+            translate_to_en: labels.translate_to_en,
+            translate_to_es: labels.translate_to_es,
+          }}
+        />
       </fieldset>
 
       <label className="inline-flex items-center gap-2 text-sm">
@@ -394,10 +441,10 @@ export default function PromoteForm({ labels }: Props) {
           role="alert"
           className="rounded border border-oxblood/40 bg-oxblood/5 p-3 text-sm text-oxblood"
         >
-          {error.kind === "duplicate"
-            ? labels.error_duplicate
-            : error.kind === "validation"
-              ? labels.error_validation
+          {error.kind === "validation"
+            ? labels.error_validation
+            : error.kind === "unauthorized"
+              ? labels.error_unauthorized
               : labels.error_unknown}
         </div>
       )}
@@ -406,72 +453,17 @@ export default function PromoteForm({ labels }: Props) {
         <button
           type="submit"
           disabled={status === "saving"}
-          className="rounded bg-oxblood px-4 py-2 text-parchment text-sm disabled:opacity-50"
+          className="rounded bg-oxblood px-4 py-2 text-sm text-parchment disabled:opacity-50"
         >
           {status === "saving" ? labels.saving : labels.save}
         </button>
-        <a href="/es/" className="text-sm text-ink/70 underline">
+        <a
+          href={`/admin/suggestion?id=${entry.suggestionId}`}
+          className="text-sm text-ink/70 underline"
+        >
           {labels.cancel}
         </a>
       </div>
     </form>
-  );
-
-  // Standalone mode (promote-from-scratch): just the form.
-  if (!suggestionId || !suggestion) {
-    return formMarkup;
-  }
-
-  // Promote-from-suggestion mode: two-column layout with a read-only
-  // suggestion context aside + reviewer notes on the left.
-  return (
-    <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 p-6 md:grid-cols-[1fr_2fr]">
-      <aside className="rounded border border-ink/10 bg-bone/60 p-4 text-sm">
-        <h2 className="font-medium text-ink">Sugerencia (lectura)</h2>
-        <dl className="mt-3 space-y-2">
-          <div>
-            <dt className="text-ink/60">{labels.context_submitted_on}</dt>
-            <dd className="text-ink">
-              {new Date(suggestion.created_at).toISOString().slice(0, 10)}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-ink/60">{labels.context_proposed_author}</dt>
-            <dd className="text-ink">{suggestion.proposed_author_name}</dd>
-          </div>
-          <div>
-            <dt className="text-ink/60">{labels.context_country}</dt>
-            <dd className="text-ink">{suggestion.proposed_country_iso_a3}</dd>
-          </div>
-          <div>
-            <dt className="text-ink/60">{labels.context_books_text}</dt>
-            <dd className="whitespace-pre-wrap text-ink">
-              {suggestion.proposed_books_text ?? "—"}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-ink/60">{labels.context_note}</dt>
-            <dd className="whitespace-pre-wrap text-ink">{suggestion.note ?? "—"}</dd>
-          </div>
-          <div>
-            <dt className="text-ink/60">{labels.context_submitter}</dt>
-            <dd className="text-ink">
-              {suggestion.submitter_name ?? "—"} &lt;{suggestion.submitter_email}&gt;
-            </dd>
-          </div>
-        </dl>
-        <label className="mt-4 block text-sm">
-          <span className="text-ink/80">{labels.reviewer_notes_label}</span>
-          <textarea
-            rows={3}
-            maxLength={2000}
-            value={reviewerNotes}
-            onChange={(e) => setReviewerNotes(e.target.value)}
-            className="mt-1 block w-full rounded border border-ink/20 bg-parchment p-2"
-          />
-        </label>
-      </aside>
-      <div>{formMarkup}</div>
-    </div>
   );
 }

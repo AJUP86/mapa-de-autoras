@@ -1,0 +1,57 @@
+---
+// src/pages/admin/add.astro — Stage 8.5 (admin add-from-scratch, auto-promoting)
+import Base from "~/layouts/Base.astro";
+import AdminGate from "~/components/AdminGate";
+import AdminAddForm from "~/components/AdminAddForm";
+import { t } from "~/i18n/t";
+import { getCountries } from "~/lib/countries";
+
+const lang = "es" as const;
+const notAdminLabel = t(lang, "admin.login.error_not_admin");
+const countries = await getCountries(lang);
+
+const labels = {
+  title: t(lang, "admin.add.title"),
+  intro: t(lang, "admin.add.intro"),
+  entry: {
+    heading: t(lang, "admin.add.entry.heading"),
+    book_title_label: t(lang, "admin.add.entry.book_title_label"),
+    book_title_placeholder: t(lang, "admin.add.entry.book_title_placeholder"),
+    author_name_label: t(lang, "admin.add.entry.author_name_label"),
+    author_name_placeholder: t(lang, "admin.add.entry.author_name_placeholder"),
+    country_label: t(lang, "admin.add.entry.country_label"),
+    country_placeholder: t(lang, "admin.add.entry.country_placeholder"),
+    status_label: t(lang, "admin.add.entry.status_label"),
+    status_to_read: t(lang, "admin.add.entry.status_to_read"),
+    status_reading: t(lang, "admin.add.entry.status_reading"),
+    status_read: t(lang, "admin.add.entry.status_read"),
+    add: t(lang, "admin.add.entry.add"),
+    remove: t(lang, "admin.add.entry.remove"),
+  },
+  submit: t(lang, "admin.add.submit"),
+  submitting: t(lang, "admin.add.submitting"),
+  errors: {
+    validation: t(lang, "admin.add.errors.validation"),
+    unauthorized: t(lang, "admin.add.errors.unauthorized"),
+    unknown: t(lang, "admin.add.errors.unknown"),
+  },
+  success_suffix: t(lang, "admin.add.success_suffix"),
+  view_books: t(lang, "admin.add.view_books"),
+  add_more: t(lang, "admin.add.add_more"),
+  required_mark: t(lang, "admin.add.required_mark"),
+};
+---
+
+<Base lang={lang} title={labels.title} noindex>
+  <main class="min-h-screen bg-parchment p-6">
+    <AdminGate client:load loginUrl="/admin" notAdminLabel={notAdminLabel}>
+      <div class="mx-auto max-w-2xl space-y-6">
+        <header class="space-y-1">
+          <h1 class="font-display text-2xl font-semibold text-ink">{labels.title}</h1>
+          <p class="text-sm text-ink/70 font-body">{labels.intro}</p>
+        </header>
+        <AdminAddForm client:load labels={labels} countries={countries} />
+      </div>
+    </AdminGate>
+  </main>
+</Base>

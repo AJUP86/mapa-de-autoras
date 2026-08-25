@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import type { MapLabels, Author } from "~/lib/map-state";
+import type { MapLabels, Author, BookStatus } from "~/lib/map-state";
 
 interface Props {
   countryName: string;
@@ -82,7 +82,6 @@ export default function CountryPanel({ countryName, authors, labels, onClose }: 
                   <h3 className="font-display text-lg font-semibold text-ink leading-snug">
                     {author.name}
                   </h3>
-                  <StatusBadge status={author.status} labels={labels.status} />
                 </div>
 
                 {(author.birth_year || author.death_year) && (
@@ -95,13 +94,14 @@ export default function CountryPanel({ countryName, authors, labels, onClose }: 
 
                 {author.books.length > 0 && (
                   <ul className="mt-2 space-y-1 text-sm text-ink/80 font-body">
-                    {author.books.map((book, i) => (
-                      <li key={i} className="flex items-baseline gap-2">
+                    {author.books.map((book) => (
+                      <li key={book.id} className="flex items-baseline gap-2">
                         <span className="text-ochre">·</span>
-                        <span>
+                        <span className="flex-1">
                           <em className="not-italic font-medium">{book.title}</em>
                           {book.year && <span className="text-ink/50"> · {book.year}</span>}
                         </span>
+                        <StatusBadge status={book.status} labels={labels.status} />
                       </li>
                     ))}
                   </ul>
@@ -115,28 +115,16 @@ export default function CountryPanel({ countryName, authors, labels, onClose }: 
   );
 }
 
-function StatusBadge({
-  status,
-  labels,
-}: {
-  status: Author["status"];
-  labels: MapLabels["status"];
-}) {
-  // Mirrors the map encoding: read = penguin, currently_reading = sage,
-  // discovery = oxblood. Keeps the panel visually in sync with the country
-  // fill the user just clicked.
+function StatusBadge({ status, labels }: { status: BookStatus; labels: MapLabels["status"] }) {
+  // Mirrors the map encoding: read = penguin, reading = sage, to_read = oxblood.
+  // Keeps the panel visually in sync with the country fill the user just clicked.
   const palette =
     status === "read"
       ? "bg-penguin/15 text-penguin"
-      : status === "currently_reading"
+      : status === "reading"
         ? "bg-sage/15 text-sage"
         : "bg-oxblood/10 text-oxblood";
-  const label =
-    status === "read"
-      ? labels.read
-      : status === "currently_reading"
-        ? labels.currently_reading
-        : labels.discovery;
+  const label = labels[status];
   return (
     <span
       className={

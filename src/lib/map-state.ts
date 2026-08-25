@@ -2,22 +2,26 @@
 // Kept apart from the React components so they're easy to unit-test later.
 // The shapes match what `src/lib/authors.ts::getCatalog()` returns at build
 // time — same structure as the Stage-4 mock, just sourced from Postgres.
+//
+// Book-first (Stage 8.5): book status drives the map. An author no longer has
+// a status; each of its books carries a `to_read | reading | read` status, and
+// a country's color is derived from the distinct statuses across all its
+// authors' books.
 
-export type AuthorStatus = "read" | "currently_reading" | "discovery";
-
-export type Filter = "all" | "read" | "currently_reading" | "discoveries";
-
-export type CountryState = "read" | "currently_reading" | "discovery" | "mixed" | "empty";
+export type BookStatus = "to_read" | "reading" | "read";
+export type Filter = "all" | "to_read" | "reading" | "read";
+export type CountryState = "to_read" | "reading" | "read" | "mixed" | "empty";
 
 export interface Book {
+  id: string;
   title: string;
   year?: number;
+  status: BookStatus;
 }
 
 export interface Author {
   id: string;
   name: string;
-  status: AuthorStatus;
   birth_year?: number;
   death_year?: number;
   books: Book[];
@@ -31,41 +35,42 @@ export interface CountryEntry {
 export interface MapLabels {
   filter: {
     all: string;
+    to_read: string;
+    reading: string;
     read: string;
-    currently_reading: string;
-    discoveries: string;
   };
   panel: { close: string; empty: string; suggest: string; booksLabel: string };
-  status: { read: string; currently_reading: string; discovery: string };
+  status: { to_read: string; reading: string; read: string };
 }
 
 /**
  * Reduce a list of country entries into a state-per-country map.
- * O(n) over authors; safe to memoize at the caller.
+ * O(n) over each author's books; safe to memoize at the caller.
  *
- * Mixed = country has 2+ distinct statuses among its authors. The exact
- * fill color for mixed is decided in fillFor() based on the active filter.
+ * Mixed = country has 2+ distinct book statuses across all its authors' books.
+ * Countries whose authors have no books are omitted entirely. The exact fill
+ * color for mixed is decided in fillFor() based on the active filter.
  */
 export function computeCountryStates(
   entries: ReadonlyArray<CountryEntry>,
 ): Record<string, CountryState> {
   const result: Record<string, CountryState> = {};
   for (const entry of entries) {
-    let hasRead = false;
-    let hasCurrent = false;
-    let hasDiscovery = false;
-    for (const author of entry.authors) {
-      if (author.status === "read") hasRead = true;
-      else if (author.status === "currently_reading") hasCurrent = true;
-      else hasDiscovery = true;
-      if (hasRead && hasCurrent && hasDiscovery) break;
-    }
-    const distinct = (hasRead ? 1 : 0) + (hasCurrent ? 1 : 0) + (hasDiscovery ? 1 : 0);
+    let hasRead = false,
+      hasReading = false,
+      hasToRead = false;
+    for (const a of entry.authors)
+      for (const b of a.books) {
+        if (b.status === "read") hasRead = true;
+        else if (b.status === "reading") hasReading = true;
+        else hasToRead = true;
+      }
+    const distinct = (hasRead ? 1 : 0) + (hasReading ? 1 : 0) + (hasToRead ? 1 : 0);
     if (distinct === 0) continue;
     if (distinct >= 2) result[entry.iso_a3] = "mixed";
     else if (hasRead) result[entry.iso_a3] = "read";
-    else if (hasCurrent) result[entry.iso_a3] = "currently_reading";
-    else result[entry.iso_a3] = "discovery";
+    else if (hasReading) result[entry.iso_a3] = "reading";
+    else result[entry.iso_a3] = "to_read";
   }
   return result;
 }
@@ -75,20 +80,20 @@ export interface CountryStyle {
   stroke: string;
 }
 
-// Three-color hierarchy — Stage 7b-i (evolves the Stage 4b two-color baseline).
-// Fills reference the semantic state aliases in tokens.css, never the base
-// palette tokens directly.
+// Three-color hierarchy — book status drives the fill (Stage 8.5, evolving the
+// Stage 7b-i three-color baseline). Fills reference the semantic state aliases
+// in tokens.css, never the base palette tokens directly.
 const READ_STYLE: CountryStyle = {
   fill: "var(--c-state-read)",
   stroke: "var(--c-state-read-line)",
 };
-const CURRENT_STYLE: CountryStyle = {
-  fill: "var(--c-state-currently-reading)",
-  stroke: "var(--c-state-currently-reading-line)",
+const READING_STYLE: CountryStyle = {
+  fill: "var(--c-state-reading)",
+  stroke: "var(--c-state-reading-line)",
 };
-const DISCOVERY_STYLE: CountryStyle = {
-  fill: "var(--c-state-discovery)",
-  stroke: "var(--c-state-discovery-line)",
+const TO_READ_STYLE: CountryStyle = {
+  fill: "var(--c-state-to-read)",
+  stroke: "var(--c-state-to-read-line)",
 };
 const EMPTY_STYLE: CountryStyle = {
   fill: "var(--c-parchment)",
@@ -98,12 +103,12 @@ const EMPTY_STYLE: CountryStyle = {
 /**
  * Resolve a country's {fill, stroke} from its state and the active filter.
  *
- *   filter             | mixed country shows as
- *   ───────────────────┼───────────────────────────────────────────────
- *   all                | priority: read > currently_reading > discovery
- *   read               | penguin (it has a read author) — else empty
- *   currently_reading  | sage    (it has a current author) — else empty
- *   discoveries        | oxblood (it has a discovery author) — else empty
+ *   filter    | mixed country shows as
+ *   ──────────┼──────────────────────────────────────────────
+ *   all       | priority: read > reading > to_read
+ *   read      | penguin (it has a read book) — else empty
+ *   reading   | sage    (it has a reading book) — else empty
+ *   to_read   | oxblood (it has a to_read book) — else empty
  *
  * No blended fills — every country picks one color.
  */
@@ -113,21 +118,20 @@ export function fillFor(state: CountryState, filter: Filter): CountryStyle {
   if (filter === "read") {
     return state === "read" || state === "mixed" ? READ_STYLE : EMPTY_STYLE;
   }
-  if (filter === "currently_reading") {
-    return state === "currently_reading" || state === "mixed" ? CURRENT_STYLE : EMPTY_STYLE;
+  if (filter === "reading") {
+    return state === "reading" || state === "mixed" ? READING_STYLE : EMPTY_STYLE;
   }
-  if (filter === "discoveries") {
-    return state === "discovery" || state === "mixed" ? DISCOVERY_STYLE : EMPTY_STYLE;
+  if (filter === "to_read") {
+    return state === "to_read" || state === "mixed" ? TO_READ_STYLE : EMPTY_STYLE;
   }
 
-  // filter === "all" — priority for mixed and the per-state shortcuts
+  // filter === "all" — priority for mixed and the per-state shortcuts.
   if (state === "read" || state === "mixed") {
     // Mixed: pick by priority. computeCountryStates collapses 2+ statuses
-    // to "mixed" without telling us which; we re-derive from the entry at
-    // the call site, OR we accept the simple rule: any country labelled
-    // "mixed" surfaces as read (the highest-priority signal).
+    // to "mixed" without telling us which; any country labelled "mixed"
+    // surfaces as read (the highest-priority signal).
     return READ_STYLE;
   }
-  if (state === "currently_reading") return CURRENT_STYLE;
-  return DISCOVERY_STYLE; // state === "discovery"
+  if (state === "reading") return READING_STYLE;
+  return TO_READ_STYLE; // state === "to_read"
 }

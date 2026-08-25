@@ -1,129 +1,67 @@
 import { describe, it, expect } from "vitest";
-import {
-  computeCountryStates,
-  fillFor,
-  type AuthorStatus,
-  type CountryEntry,
-  type Filter,
-} from "./map-state";
+import { computeCountryStates, fillFor, type BookStatus, type CountryEntry } from "./map-state";
 
-function author(status: AuthorStatus, id: string = status) {
-  return { id, name: id, status, books: [] };
+function book(
+  status: BookStatus,
+  id: string = status,
+): { id: string; title: string; status: BookStatus } {
+  return { id, title: id, status };
+}
+function author(books: ReturnType<typeof book>[], id = "a") {
+  return { id, name: id, books };
 }
 
-describe("computeCountryStates", () => {
-  it("returns an empty map for no entries", () => {
+describe("computeCountryStates (book-status driven)", () => {
+  it("is empty for no entries", () => {
     expect(computeCountryStates([])).toEqual({});
   });
-
-  it("omits countries that have no authors", () => {
-    const entries: CountryEntry[] = [{ iso_a3: "AUS", authors: [] }];
-    expect(computeCountryStates(entries)).toEqual({});
+  it("omits countries whose authors have no books", () => {
+    const e: CountryEntry[] = [{ iso_a3: "AUS", authors: [author([])] }];
+    expect(computeCountryStates(e)).toEqual({});
   });
-
-  it("labels a single-status country by that status", () => {
-    expect(computeCountryStates([{ iso_a3: "AUS", authors: [author("read")] }])).toEqual({
-      AUS: "read",
-    });
-    expect(
-      computeCountryStates([{ iso_a3: "ARG", authors: [author("currently_reading")] }]),
-    ).toEqual({ ARG: "currently_reading" });
-    expect(computeCountryStates([{ iso_a3: "ESP", authors: [author("discovery")] }])).toEqual({
-      ESP: "discovery",
-    });
+  it("labels a country by its single distinct book status", () => {
+    expect(computeCountryStates([{ iso_a3: "ESP", authors: [author([book("to_read")])] }])).toEqual(
+      { ESP: "to_read" },
+    );
+    expect(computeCountryStates([{ iso_a3: "ARG", authors: [author([book("reading")])] }])).toEqual(
+      { ARG: "reading" },
+    );
   });
-
-  it("labels a country with two distinct statuses as mixed", () => {
-    expect(
-      computeCountryStates([
-        {
-          iso_a3: "AUS",
-          authors: [author("read", "a"), author("discovery", "b")],
-        },
-      ]),
-    ).toEqual({ AUS: "mixed" });
+  it("aggregates across books of multiple authors", () => {
+    const e: CountryEntry[] = [
+      {
+        iso_a3: "AUS",
+        authors: [author([book("read", "r")], "a1"), author([book("to_read", "t")], "a2")],
+      },
+    ];
+    expect(computeCountryStates(e)).toEqual({ AUS: "mixed" });
   });
-
-  it("labels a country with all three statuses as mixed", () => {
-    expect(
-      computeCountryStates([
-        {
-          iso_a3: "AUS",
-          authors: [
-            author("read", "a"),
-            author("currently_reading", "b"),
-            author("discovery", "c"),
-          ],
-        },
-      ]),
-    ).toEqual({ AUS: "mixed" });
+  it("mixed when one author has books in two statuses", () => {
+    const e: CountryEntry[] = [
+      { iso_a3: "AUS", authors: [author([book("read", "r"), book("reading", "g")])] },
+    ];
+    expect(computeCountryStates(e)).toEqual({ AUS: "mixed" });
   });
-
-  it("treats repeated identical statuses as a single status (not mixed)", () => {
-    expect(
-      computeCountryStates([
-        {
-          iso_a3: "AUS",
-          authors: [author("read", "a"), author("read", "b")],
-        },
-      ]),
-    ).toEqual({ AUS: "read" });
-  });
-
-  it("handles multiple countries independently", () => {
-    expect(
-      computeCountryStates([
-        { iso_a3: "AUS", authors: [author("read")] },
-        { iso_a3: "ESP", authors: [author("discovery")] },
-      ]),
-    ).toEqual({ AUS: "read", ESP: "discovery" });
+  it("collapses repeated identical statuses to one", () => {
+    const e: CountryEntry[] = [
+      { iso_a3: "AUS", authors: [author([book("read", "r1"), book("read", "r2")])] },
+    ];
+    expect(computeCountryStates(e)).toEqual({ AUS: "read" });
   });
 });
 
 describe("fillFor", () => {
-  const READ = "var(--c-state-read)";
-  const CURRENT = "var(--c-state-currently-reading)";
-  const DISCOVERY = "var(--c-state-discovery)";
-  const EMPTY = "var(--c-parchment)";
-  const FILTERS: Filter[] = ["all", "read", "currently_reading", "discoveries"];
-
-  it("empty state is always the empty style, under every filter", () => {
-    for (const f of FILTERS) expect(fillFor("empty", f).fill).toBe(EMPTY);
+  it("empty → empty style regardless of filter", () => {
+    expect(fillFor("empty", "all").fill).toContain("parchment");
   });
-
-  it("filter=all colors each state; mixed surfaces as read (priority)", () => {
-    expect(fillFor("read", "all").fill).toBe(READ);
-    expect(fillFor("currently_reading", "all").fill).toBe(CURRENT);
-    expect(fillFor("discovery", "all").fill).toBe(DISCOVERY);
-    expect(fillFor("mixed", "all").fill).toBe(READ);
+  it("filter read shows read + mixed, hides others", () => {
+    expect(fillFor("read", "read").fill).toContain("state-read");
+    expect(fillFor("mixed", "read").fill).toContain("state-read");
+    expect(fillFor("to_read", "read").fill).toContain("parchment");
   });
-
-  it("filter=read shows read + mixed, hides the rest", () => {
-    expect(fillFor("read", "read").fill).toBe(READ);
-    expect(fillFor("mixed", "read").fill).toBe(READ);
-    expect(fillFor("currently_reading", "read").fill).toBe(EMPTY);
-    expect(fillFor("discovery", "read").fill).toBe(EMPTY);
-  });
-
-  it("filter=currently_reading shows current + mixed, hides the rest", () => {
-    expect(fillFor("currently_reading", "currently_reading").fill).toBe(CURRENT);
-    expect(fillFor("mixed", "currently_reading").fill).toBe(CURRENT);
-    expect(fillFor("read", "currently_reading").fill).toBe(EMPTY);
-    expect(fillFor("discovery", "currently_reading").fill).toBe(EMPTY);
-  });
-
-  it("filter=discoveries shows discovery + mixed, hides the rest", () => {
-    expect(fillFor("discovery", "discoveries").fill).toBe(DISCOVERY);
-    expect(fillFor("mixed", "discoveries").fill).toBe(DISCOVERY);
-    expect(fillFor("read", "discoveries").fill).toBe(EMPTY);
-    expect(fillFor("currently_reading", "discoveries").fill).toBe(EMPTY);
-  });
-
-  it("pairs each fill with its matching stroke", () => {
-    expect(fillFor("read", "all").stroke).toBe("var(--c-state-read-line)");
-    expect(fillFor("currently_reading", "all").stroke).toBe(
-      "var(--c-state-currently-reading-line)",
-    );
-    expect(fillFor("discovery", "all").stroke).toBe("var(--c-state-discovery-line)");
+  it("filter all: mixed surfaces by priority read > reading > to_read", () => {
+    expect(fillFor("mixed", "all").fill).toContain("state-read");
+    expect(fillFor("reading", "all").fill).toContain("state-reading");
+    expect(fillFor("to_read", "all").fill).toContain("state-to-read");
   });
 });

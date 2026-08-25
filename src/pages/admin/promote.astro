@@ -1,11 +1,11 @@
 ---
-// src/pages/admin/promote.astro — Stage 7b-i (E2: handles both modes)
+// src/pages/admin/promote.astro — Stage 8.5 (book-first, entry-only)
 //
-// This single page covers both `/admin/promote` (empty form, promote
-// from scratch) and `/admin/promote?suggestion=<uuid>` (prefilled from
-// a pending suggestion + reviewer-notes capture). We do NOT parse
-// `?suggestion=` here — Astro static output can't reliably surface
-// arbitrary query strings at build time. The form reads
+// Reached as `/admin/promote?entry=<uuid>` — the form fetches that single
+// suggestion_books entry, prefills it, and promotes it into a real author +
+// book. Without `?entry=` it shows a placeholder (from-scratch author
+// creation is deferred). We do NOT parse the query string here — Astro
+// static output can't reliably surface it at build time; the form reads
 // `window.location.search` itself on mount.
 import Base from "~/layouts/Base.astro";
 import AdminGate from "~/components/AdminGate";
@@ -28,28 +28,29 @@ const txEs = { ...tx, button: t(lang, "admin.promote.translate.button_to_es") };
 
 const labels = {
   title_new: t(lang, "admin.promote.title_new"),
+  no_entry_body: t(lang, "admin.promote.no_entry_body"),
   title_review: t(lang, "admin.promote.title_review"),
   name_label: t(lang, "admin.promote.name_label"),
   country_label: t(lang, "admin.promote.country_label"),
-  status_label: t(lang, "admin.promote.status_label"),
-  status_read: t(lang, "admin.promote.status_read"),
-  status_currently_reading: t(lang, "admin.promote.status_currently_reading"),
-  status_discovery: t(lang, "admin.promote.status_discovery"),
+  book_status_label: t(lang, "admin.promote.book_status_label"),
+  book_status_to_read: t(lang, "admin.promote.book_status_to_read"),
+  book_status_reading: t(lang, "admin.promote.book_status_reading"),
+  book_status_read: t(lang, "admin.promote.book_status_read"),
   birth_year_label: t(lang, "admin.promote.birth_year_label"),
   death_year_label: t(lang, "admin.promote.death_year_label"),
   photo_label: t(lang, "admin.promote.photo_label"),
   bio_es_label: t(lang, "admin.promote.bio_es_label"),
   bio_en_label: t(lang, "admin.promote.bio_en_label"),
   books_section: t(lang, "admin.promote.books_section"),
-  add_book: t(lang, "admin.promote.add_book"),
   publish_now_label: t(lang, "admin.promote.publish_now_label"),
   save: t(lang, "admin.promote.save"),
   saving: t(lang, "admin.promote.saving"),
+  loading: t(lang, "admin.promote.loading"),
   cancel: t(lang, "admin.promote.cancel"),
-  error_duplicate: t(lang, "admin.promote.error_duplicate"),
-  error_validation: t(lang, "admin.promote.error_validation"),
-  error_unknown: t(lang, "admin.promote.error_unknown"),
   back: t(lang, "admin.promote.back"),
+  error_validation: t(lang, "admin.promote.error_validation"),
+  error_unauthorized: t(lang, "admin.promote.error_unauthorized"),
+  error_unknown: t(lang, "admin.promote.error_unknown"),
   translate_to_en: tx,
   translate_to_es: txEs,
   book: {
@@ -61,14 +62,14 @@ const labels = {
     description_en_label: t(lang, "admin.promote.book.description_en_label"),
     remove: t(lang, "admin.promote.book.remove"),
   },
-  // Context column (E2)
-  context_submitted_on: t(lang, "admin.promote.context.submitted_on"),
-  context_proposed_author: t(lang, "admin.promote.context.proposed_author"),
-  context_country: t(lang, "admin.promote.context.country"),
-  context_books_text: t(lang, "admin.promote.context.books_text"),
-  context_note: t(lang, "admin.promote.context.note"),
-  context_submitter: t(lang, "admin.promote.context.submitter"),
-  reviewer_notes_label: t(lang, "admin.promote.reviewer_notes_label"),
+  context: {
+    submitted_on: t(lang, "admin.promote.context.submitted_on"),
+    proposed_author: t(lang, "admin.promote.context.proposed_author"),
+    country: t(lang, "admin.promote.context.country"),
+    book_title: t(lang, "admin.promote.context.book_title"),
+    note: t(lang, "admin.promote.context.note"),
+    submitter: t(lang, "admin.promote.context.submitter"),
+  },
 };
 ---
 

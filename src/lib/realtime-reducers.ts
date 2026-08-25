@@ -15,21 +15,17 @@
 //   - Author UPDATE preserves existing books array; only top-level fields are
 //     merged.
 //
-// NOTE (7b-ii): updateBook / removeBook match books by (title, year) because
-// the client-side Book type carries no id. Realtime DELETE payloads also only
-// carry the primary key under the default REPLICA IDENTITY, so book removal by
-// author_id won't fire until `books` is set to REPLICA IDENTITY FULL. Book
-// edit/delete is not exercised until Stage 7b-ii — these two reducers are
-// placeholders until then. The in-scope 9a-ii paths (author + book INSERT from
-// promote, author UPDATE for edit/publish) use `payload.new`, which is always
-// fully populated.
+// Book-first (Stage 8.5): books now carry a `status` and a stable `id`.
+// `books` is set to REPLICA IDENTITY FULL, so INSERT/UPDATE/DELETE payloads
+// carry the full row (including `id`). updateBook / removeBook therefore match
+// by `row.id` — the old (title, year) placeholder matching the audit flagged
+// is gone. A book status change repaints its country live.
 
-import type { Author, AuthorStatus, Book, CountryEntry } from "./map-state";
+import type { Author, Book, BookStatus, CountryEntry } from "./map-state";
 
 export interface AuthorRow {
   id: string;
   name: string;
-  status: AuthorStatus;
   birth_year: number | null;
   death_year: number | null;
   country_iso_a3: string;
@@ -42,13 +38,13 @@ export interface BookRow {
   title: string;
   year: number | null;
   display_order: number;
+  status: BookStatus;
 }
 
 function rowToAuthor(row: AuthorRow, books: Book[] = []): Author {
   return {
     id: row.id,
     name: row.name,
-    status: row.status,
     birth_year: row.birth_year ?? undefined,
     death_year: row.death_year ?? undefined,
     books,
@@ -57,8 +53,10 @@ function rowToAuthor(row: AuthorRow, books: Book[] = []): Author {
 
 function rowToBook(row: BookRow): Book {
   return {
+    id: row.id,
     title: row.title,
     year: row.year ?? undefined,
+    status: row.status,
   };
 }
 
@@ -119,19 +117,32 @@ export function removeAuthor(catalog: CountryEntry[], id: string): CountryEntry[
     .filter((c) => c.authors.length > 0);
 }
 
+// Sort books by the incoming row's display_order. We track display_order in a
+// side map keyed by book id so re-sorts after an update stay stable; on the
+// client Book we only keep the domain fields.
+type OrderedBook = Book & { __order: number };
+
+function sortByOrder(books: OrderedBook[]): Book[] {
+  return books
+    .slice()
+    .sort((x, y) => x.__order - y.__order || (x.year ?? 0) - (y.year ?? 0))
+    .map(({ __order: _order, ...b }) => b);
+}
+
 export function addBook(catalog: CountryEntry[], row: BookRow): CountryEntry[] {
   const book = rowToBook(row);
   return catalog.map((c) => ({
     ...c,
     authors: c.authors.map((a) => {
       if (a.id !== row.author_id) return a;
-      if (a.books.some((b) => b.title === row.title && b.year === book.year)) {
+      if (a.books.some((b) => b.id === row.id)) {
         return a; // idempotent — already present
       }
-      const books = [...a.books, book].sort((x, y) => (x.year ?? 0) - (y.year ?? 0));
-      // display_order is preserved at fetch time; on incremental updates we
-      // fall back to year sort, which matches the visible order in the panel.
-      return { ...a, books };
+      const merged: OrderedBook[] = [
+        ...a.books.map((b, i) => ({ ...b, __order: i })),
+        { ...book, __order: row.display_order },
+      ];
+      return { ...a, books: sortByOrder(merged) };
     }),
   }));
 }
@@ -142,30 +153,27 @@ export function updateBook(catalog: CountryEntry[], row: BookRow): CountryEntry[
     ...c,
     authors: c.authors.map((a) => {
       if (a.id !== row.author_id) return a;
-      // Placeholder (7b-ii): the client Book type has no id, so we can't match
-      // the previous row precisely. Drop any book sharing the new year and
-      // replace with the incoming title+year. Reliable book edits land in 7b-ii.
-      const books = a.books.filter((b) => b.year !== book.year);
-      return {
-        ...a,
-        books: [...books, book].sort((x, y) => (x.year ?? 0) - (y.year ?? 0)),
-      };
+      if (!a.books.some((b) => b.id === row.id)) return a;
+      // Match by id (REPLICA IDENTITY FULL guarantees the id in the payload)
+      // and replace that book in place, then re-sort by display_order.
+      const merged: OrderedBook[] = a.books.map((b, i) =>
+        b.id === row.id ? { ...book, __order: row.display_order } : { ...b, __order: i },
+      );
+      return { ...a, books: sortByOrder(merged) };
     }),
   }));
 }
 
 export function removeBook(catalog: CountryEntry[], row: BookRow): CountryEntry[] {
-  // Realtime DELETE payload has `old` populated; the reducer accepts the same
-  // BookRow shape (callers pass payload.old).
+  // Realtime DELETE payload has `old` populated with the full row (REPLICA
+  // IDENTITY FULL); the reducer matches by id.
   return catalog.map((c) => ({
     ...c,
     authors: c.authors.map((a) => {
       if (a.id !== row.author_id) return a;
       return {
         ...a,
-        books: a.books.filter(
-          (b) => !(b.title === row.title && b.year === (row.year ?? undefined)),
-        ),
+        books: a.books.filter((b) => b.id !== row.id),
       };
     }),
   }));

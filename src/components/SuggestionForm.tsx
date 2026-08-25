@@ -23,15 +23,20 @@ declare global {
 }
 
 export interface SuggestionFormLabels {
-  fields: {
+  entry: {
+    heading: string;
+    book_title_label: string;
+    book_title_placeholder: string;
     author_name_label: string;
     author_name_placeholder: string;
     country_label: string;
     country_placeholder: string;
-    books_label: string;
-    books_placeholder: string;
     note_label: string;
     note_placeholder: string;
+    add: string;
+    remove: string;
+  };
+  fields: {
     email_label: string;
     email_placeholder: string;
     email_hint: string;
@@ -58,25 +63,21 @@ interface Props {
   thanksUrl: string;
 }
 
-interface FormState {
+interface BookEntry {
+  key: string;
+  bookTitle: string;
   authorName: string;
   countryIsoA3: string;
-  booksText: string;
   note: string;
-  email: string;
-  submitterName: string;
-  newsletterOptIn: boolean;
 }
 
-const EMPTY: FormState = {
+const newEntry = (seq: number): BookEntry => ({
+  key: `e${seq}`,
+  bookTitle: "",
   authorName: "",
   countryIsoA3: "",
-  booksText: "",
   note: "",
-  email: "",
-  submitterName: "",
-  newsletterOptIn: false,
-};
+});
 
 export default function SuggestionForm({
   labels,
@@ -86,7 +87,13 @@ export default function SuggestionForm({
   submitUrl,
   thanksUrl,
 }: Props) {
-  const [form, setForm] = useState<FormState>(EMPTY);
+  const [entries, setEntries] = useState<BookEntry[]>(() => [newEntry(0)]);
+  const seqRef = useRef(1); // stable monotonic keys — NOT array index.
+
+  const [email, setEmail] = useState("");
+  const [submitterName, setSubmitterName] = useState("");
+  const [newsletterOptIn, setNewsletterOptIn] = useState(false);
+
   const [turnstileToken, setTurnstileToken] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<keyof SuggestionFormLabels["errors"] | "">("");
@@ -136,8 +143,16 @@ export default function SuggestionForm({
     };
   }, [turnstileSiteKey]);
 
-  function update<K extends keyof FormState>(key: K, value: FormState[K]) {
-    setForm((prev) => ({ ...prev, [key]: value }));
+  function updateEntry(key: string, patch: Partial<Omit<BookEntry, "key">>) {
+    setEntries((prev) => prev.map((e) => (e.key === key ? { ...e, ...patch } : e)));
+  }
+
+  function addEntry() {
+    setEntries((prev) => [...prev, newEntry(seqRef.current++)]);
+  }
+
+  function removeEntry(key: string) {
+    setEntries((prev) => prev.filter((e) => e.key !== key));
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -145,11 +160,15 @@ export default function SuggestionForm({
     setError("");
 
     // Light client-side validation — the Edge Function validates again server-side.
-    if (
-      !form.authorName.trim() ||
-      !/^[A-Z]{3}$/.test(form.countryIsoA3) ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())
-    ) {
+    const entriesValid =
+      entries.length >= 1 &&
+      entries.every(
+        (entry) =>
+          entry.authorName.trim() &&
+          /^[A-Z]{3}$/.test(entry.countryIsoA3) &&
+          entry.bookTitle.trim(),
+      );
+    if (!entriesValid || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       setError("validation");
       return;
     }
@@ -164,15 +183,17 @@ export default function SuggestionForm({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          authorName: form.authorName.trim(),
-          countryIsoA3: form.countryIsoA3,
-          booksText: form.booksText.trim() || undefined,
-          note: form.note.trim() || undefined,
-          email: form.email.trim(),
-          submitterName: form.submitterName.trim() || undefined,
-          newsletterOptIn: form.newsletterOptIn,
+          submitterName: submitterName.trim() || undefined,
+          email: email.trim(),
           locale,
+          newsletterOptIn,
           turnstileToken,
+          books: entries.map((entry) => ({
+            authorName: entry.authorName.trim(),
+            countryIsoA3: entry.countryIsoA3,
+            bookTitle: entry.bookTitle.trim(),
+            note: entry.note.trim() || undefined,
+          })),
         }),
       });
 
@@ -198,59 +219,109 @@ export default function SuggestionForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-      <Field label={labels.fields.author_name_label + labels.required_mark} htmlFor="author-name">
+      {entries.map((entry, i) => (
+        <div key={entry.key} className="rounded-lg border border-ink/15 bg-bone/40 p-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold text-ink font-body">
+              {`${labels.entry.heading} ${i + 1}`}
+            </span>
+            {entries.length > 1 && (
+              <button
+                type="button"
+                onClick={() => removeEntry(entry.key)}
+                className="text-sm text-oxblood font-body hover:underline"
+              >
+                {labels.entry.remove}
+              </button>
+            )}
+          </div>
+
+          <Field
+            label={labels.entry.book_title_label + labels.required_mark}
+            htmlFor={`book-title-${entry.key}`}
+          >
+            <input
+              id={`book-title-${entry.key}`}
+              type="text"
+              required
+              maxLength={200}
+              value={entry.bookTitle}
+              onChange={(e) => updateEntry(entry.key, { bookTitle: e.target.value })}
+              placeholder={labels.entry.book_title_placeholder}
+              className={inputCls}
+            />
+          </Field>
+
+          <Field
+            label={labels.entry.author_name_label + labels.required_mark}
+            htmlFor={`author-name-${entry.key}`}
+          >
+            <input
+              id={`author-name-${entry.key}`}
+              type="text"
+              required
+              maxLength={120}
+              value={entry.authorName}
+              onChange={(e) => updateEntry(entry.key, { authorName: e.target.value })}
+              placeholder={labels.entry.author_name_placeholder}
+              className={inputCls}
+            />
+          </Field>
+
+          <Field
+            label={labels.entry.country_label + labels.required_mark}
+            htmlFor={`country-${entry.key}`}
+          >
+            <select
+              id={`country-${entry.key}`}
+              required
+              value={entry.countryIsoA3}
+              onChange={(e) => updateEntry(entry.key, { countryIsoA3: e.target.value })}
+              className={inputCls}
+            >
+              <option value="" disabled>
+                {labels.entry.country_placeholder}
+              </option>
+              {countries.map((c) => (
+                <option key={c.iso_a3} value={c.iso_a3}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+
+          <Field label={labels.entry.note_label} htmlFor={`note-${entry.key}`}>
+            <textarea
+              id={`note-${entry.key}`}
+              rows={3}
+              maxLength={500}
+              value={entry.note}
+              onChange={(e) => updateEntry(entry.key, { note: e.target.value })}
+              placeholder={labels.entry.note_placeholder}
+              className={inputCls + " resize-y"}
+            />
+          </Field>
+        </div>
+      ))}
+
+      <button
+        type="button"
+        onClick={addEntry}
+        className="text-sm font-medium text-oxblood font-body hover:underline"
+      >
+        {labels.entry.add}
+      </button>
+
+      <Field label={labels.fields.submitter_name_label} htmlFor="submitter-name">
         <input
-          id="author-name"
+          id="submitter-name"
           type="text"
-          required
+          autoComplete="name"
           maxLength={120}
-          value={form.authorName}
-          onChange={(e) => update("authorName", e.target.value)}
-          placeholder={labels.fields.author_name_placeholder}
+          value={submitterName}
+          onChange={(e) => setSubmitterName(e.target.value)}
+          placeholder={labels.fields.submitter_name_placeholder}
           className={inputCls}
-        />
-      </Field>
-
-      <Field label={labels.fields.country_label + labels.required_mark} htmlFor="country">
-        <select
-          id="country"
-          required
-          value={form.countryIsoA3}
-          onChange={(e) => update("countryIsoA3", e.target.value)}
-          className={inputCls}
-        >
-          <option value="" disabled>
-            {labels.fields.country_placeholder}
-          </option>
-          {countries.map((c) => (
-            <option key={c.iso_a3} value={c.iso_a3}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-      </Field>
-
-      <Field label={labels.fields.books_label} htmlFor="books">
-        <textarea
-          id="books"
-          rows={3}
-          maxLength={1000}
-          value={form.booksText}
-          onChange={(e) => update("booksText", e.target.value)}
-          placeholder={labels.fields.books_placeholder}
-          className={inputCls + " resize-y"}
-        />
-      </Field>
-
-      <Field label={labels.fields.note_label} htmlFor="note">
-        <textarea
-          id="note"
-          rows={3}
-          maxLength={2000}
-          value={form.note}
-          onChange={(e) => update("note", e.target.value)}
-          placeholder={labels.fields.note_placeholder}
-          className={inputCls + " resize-y"}
         />
       </Field>
 
@@ -265,22 +336,9 @@ export default function SuggestionForm({
           required
           autoComplete="email"
           maxLength={254}
-          value={form.email}
-          onChange={(e) => update("email", e.target.value)}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           placeholder={labels.fields.email_placeholder}
-          className={inputCls}
-        />
-      </Field>
-
-      <Field label={labels.fields.submitter_name_label} htmlFor="submitter-name">
-        <input
-          id="submitter-name"
-          type="text"
-          autoComplete="name"
-          maxLength={120}
-          value={form.submitterName}
-          onChange={(e) => update("submitterName", e.target.value)}
-          placeholder={labels.fields.submitter_name_placeholder}
           className={inputCls}
         />
       </Field>
@@ -288,8 +346,8 @@ export default function SuggestionForm({
       <label className="flex items-start gap-3 text-sm font-body text-ink/80 cursor-pointer select-none">
         <input
           type="checkbox"
-          checked={form.newsletterOptIn}
-          onChange={(e) => update("newsletterOptIn", e.target.checked)}
+          checked={newsletterOptIn}
+          onChange={(e) => setNewsletterOptIn(e.target.checked)}
           className="mt-0.5 size-4 rounded border-ink/30 text-oxblood focus:ring-oxblood/40"
         />
         <span>{labels.fields.newsletter_label}</span>
