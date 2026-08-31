@@ -15,3 +15,8 @@ src/types/supabase.ts
 dist/
 .astro/
 package-lock.json
+
+# Agent scratch (git-ignored): task briefs, reports and the SDD progress ledger.
+# Never shipped, never reviewed for style — but Prettier still walks the tree and
+# would fail `format:check` locally on files CI never even sees.
+.superpowers/
