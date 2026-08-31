@@ -1,0 +1,66 @@
+---
+// src/pages/admin/book.astro — Stage 8.6
+// Reached as /admin/book?id=<uuid>; the island reads the query string on mount.
+import Base from "~/layouts/Base.astro";
+import AdminGate from "~/components/AdminGate";
+import BookContentEditor from "~/components/BookContentEditor";
+import { t } from "~/i18n/t";
+
+const lang = "es" as const;
+const notAdminLabel = t(lang, "admin.login.error_not_admin");
+
+const tx = {
+  button: t(lang, "admin.promote.translate.button_to_en"),
+  confirm_title: t(lang, "admin.promote.translate.confirm_title"),
+  confirm_body: t(lang, "admin.promote.translate.confirm_body"),
+  confirm_ok: t(lang, "admin.promote.translate.confirm_ok"),
+  confirm_cancel: t(lang, "admin.promote.translate.confirm_cancel"),
+  translating: t(lang, "admin.promote.translate.translating"),
+  error: t(lang, "admin.promote.translate.error"),
+};
+const txEs = { ...tx, button: t(lang, "admin.promote.translate.button_to_es") };
+
+const labels = {
+  title: t(lang, "admin.book.title"),
+  loading: t(lang, "admin.book.loading"),
+  error: t(lang, "admin.book.error"),
+  not_found: t(lang, "admin.book.not_found"),
+  back: t(lang, "admin.book.back"),
+  synopsis_heading: t(lang, "admin.book.synopsis_heading"),
+  synopsis_es_label: t(lang, "admin.book.synopsis_es_label"),
+  synopsis_en_label: t(lang, "admin.book.synopsis_en_label"),
+  quotes_heading: t(lang, "admin.book.quotes_heading"),
+  quote_heading: t(lang, "admin.book.quote_heading"),
+  quote_es_label: t(lang, "admin.book.quote_es_label"),
+  quote_en_label: t(lang, "admin.book.quote_en_label"),
+  quote_location_label: t(lang, "admin.book.quote_location_label"),
+  quote_location_placeholder: t(lang, "admin.book.quote_location_placeholder"),
+  add_quote: t(lang, "admin.book.add_quote"),
+  remove_quote: t(lang, "admin.book.remove_quote"),
+  links_heading: t(lang, "admin.book.links_heading"),
+  link_heading: t(lang, "admin.book.link_heading"),
+  link_retailer_label: t(lang, "admin.book.link_retailer_label"),
+  link_url_label: t(lang, "admin.book.link_url_label"),
+  link_affiliate_label: t(lang, "admin.book.link_affiliate_label"),
+  link_locale_label: t(lang, "admin.book.link_locale_label"),
+  add_link: t(lang, "admin.book.add_link"),
+  remove_link: t(lang, "admin.book.remove_link"),
+  save: t(lang, "admin.book.save"),
+  saving: t(lang, "admin.book.saving"),
+  saved: t(lang, "admin.book.saved"),
+  error_validation: t(lang, "admin.book.error_validation"),
+  error_link_url: t(lang, "admin.book.error_link_url"),
+  error_unauthorized: t(lang, "admin.book.error_unauthorized"),
+  error_unknown: t(lang, "admin.book.error_unknown"),
+  translate_to_en: tx,
+  translate_to_es: txEs,
+};
+---
+
+<Base lang={lang} title={labels.title} noindex>
+  <main class="min-h-screen bg-parchment p-6">
+    <AdminGate client:load loginUrl="/admin" notAdminLabel={notAdminLabel}>
+      <BookContentEditor client:load labels={labels} />
+    </AdminGate>
+  </main>
+</Base>
