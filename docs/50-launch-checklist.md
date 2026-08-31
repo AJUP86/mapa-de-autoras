@@ -107,7 +107,7 @@ Data model inverted from author-centric to book-centric: books carry the mutable
 - [x] Admin book-status editor `/admin/books` (inline dropdown, optimistic + revert, Realtime repaint) + author / country / year filters.
 - [x] Filter labels → `Por leer` / `Leyendo` / `Leídas`.
 - [x] **Extra:** public catalog `/books` (read-only, filterable, published-only via anon RLS — canary-verified) + admin auto-promote `/admin/add` (the `+` nav).
-- [ ] Stage **8.6** book-detail + curation (quotes, buy links, public detail page, affiliate disclosure) — [spec](specs/2026-08-25-stage-8.6-book-detail-design.md) written, **deferred**.
+- [x] Stage **8.6** book-detail + curation (quotes, buy links, public detail page, affiliate disclosure) — [spec](specs/2026-08-25-stage-8.6-book-detail-design.md), [plan](plans/2026-08-26-stage-8.6-book-detail-implementation.md). **SHIPPED 2026-08-31** (migrations 0014-0016; `/[lang]/book?id=` public detail; `/admin/book?id=` content editor).
 
 Branch: `feature/8.5-book-first-refactor`. Verification state + follow-ups in [STATUS.md](STATUS.md) (2026-08-25 entry).
 
@@ -128,6 +128,7 @@ Full 9b spec lives in `docs/01-implementation-plan.md`. Checklist form here:
   - `RESEND_FROM_EMAIL` (e.g., `hola@mapadeautoras.com`)
   - `OWNER_NOTIFICATION_EMAIL` (Danny's email)
 - [ ] Configure Supabase auth `site_url` = `https://mapadeautoras.com` + redirect URLs for `/` + `/admin` + `/admin/inbox`.
+- [ ] Keep public signups **disabled** on `mapa-prod` (Auth → Providers → Email → "Allow new users to sign up" off). `book_links.affiliate_tag` is readable by any `authenticated` role — migration `0016` revokes it from `anon` only — so a self-serve `authenticated` account would still be able to read it; revoking it from `authenticated` too would break the admin editor's read unless that read moves behind a `SECURITY DEFINER` RPC.
 - [ ] **Pivot `notify_owner` from pg_net trigger to Supabase Database Webhook** (dashboard-configured per environment). Solves the `app.functions_url` GUC restriction we deferred in 9a. Webhook fires on INSERT to `public.suggestions` → POSTs to `notify_owner` function URL.
 - [ ] Create SEPARATE Cloudflare Pages project `mapa-de-autoras-prod` (NOT reuse staging project).
 - [ ] Pages production branch = `master`.
@@ -141,6 +142,9 @@ Full 9b spec lives in `docs/01-implementation-plan.md`. Checklist form here:
 
 ### 7. Launch polish (Stage 10 essentials)
 
+- [ ] **Danny reviews the affiliate copy** before launch: `book.affiliate_disclosure` (shown next to buy links) and the new privacy section `privacy.affiliate_title` / `privacy.affiliate_body`, in BOTH locales. Legally required wording once any affiliate link is live.
+- [ ] **Per-book SEO / social previews** (Stage 8.6 known limitation). `/[lang]/book?id=` is one static page per locale, so every book URL serves the same `<title>` + `og:description` — a shared book link previews as the catalogue, not the book. The browser tab is corrected client-side only. Fix before relying on shared links for traffic: add `books.slug` + prerender a page per book (needs a rebuild on publish), or move the route to SSR. Decide during 9b.
+- [ ] **Defense-in-depth revoke** (small migration): `anon` still holds table-wide INSERT/UPDATE/DELETE grants on `book_quotes` and `book_links` from Supabase's default privileges. Inert today (no anon write policy), but revoke them so RLS is not the only barrier. Note: on Supabase a column-level revoke alone is a no-op — see migration `0016` for the pattern.
 - [ ] `public/og-image.png` — 1200×630, includes map + title + "mapa de autoras".
 - [ ] Favicons: `public/favicon-{16,32,192,512}.png` + `public/favicon.ico` + `public/apple-touch-icon.png`.
 - [ ] `public/site.webmanifest` — name, short_name, theme_color, background_color, icons array.

@@ -1,8 +1,15 @@
 # ADR 0003 — Data model
 
-- **Status:** Accepted
+- **Status:** Accepted — **partially superseded (2026-08-31)**
 - **Date:** 2026-05-26
 - **Supersedes:** —
+
+> **Partially superseded.** Two later stages changed the shape described below; the migrations in `supabase/migrations/` are the source of truth.
+>
+> - **Stage 8.5 (book-first refactor, migration 0011):** reading state moved from `authors.status` to **`books.status`** (`to_read` | `reading` | `read`) — a book has mutable state, an author is pure grouping — and the map now aggregates country colour from its books. One-row suggestions became an **envelope** (`suggestions`) plus **`suggestion_books`** children, each processed independently (`promoted` | `rejected` | `already_present`). The `subscribers` double-opt-in newsletter described here was never built; the opt-in is recorded on the suggestion row instead. See [the 8.5 spec](../specs/2026-08-07-stage-8.5-book-first-design.md).
+> - **Stage 8.6 (book detail, migrations 0014-0016):** added **`book_quotes`** (bilingual passage + optional location) and put the long-dormant `book_links` table to use for buy links. `book_links`'s table-wide `SELECT` was revoked from `anon` and re-granted per column, excluding `affiliate_tag`. See [the 8.6 spec](../specs/2026-08-25-stage-8.6-book-detail-design.md).
+>
+> The RLS philosophy below (anon reads published content only; the owner gets full access; writes flow through `SECURITY DEFINER` RPCs gated on `is_admin()`) still holds and has been extended, not replaced.
 
 ## Context
 
