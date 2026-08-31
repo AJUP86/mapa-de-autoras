@@ -32,6 +32,7 @@ interface Labels {
   filter_country_all: string;
   filter_year_all: string;
   no_matches: string;
+  view_detail: string;
   status: { to_read: string; reading: string; read: string };
 }
 
@@ -156,6 +157,9 @@ export default function BookList({ lang, labels }: Props) {
                   <th className="py-2 pr-4">{labels.col_book}</th>
                   <th className="py-2 pr-4">{labels.col_year}</th>
                   <th className="py-2">{labels.col_status}</th>
+                  <th className="py-2">
+                    <span className="sr-only">{labels.view_detail}</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -167,6 +171,14 @@ export default function BookList({ lang, labels }: Props) {
                     <td className="py-2 pr-4 text-ink/70">{row.year ?? "—"}</td>
                     <td className="py-2">
                       <StatusBadge status={row.status} labels={labels.status} />
+                    </td>
+                    <td className="py-2">
+                      <a
+                        href={`/${lang}/book?id=${row.id}`}
+                        className="text-oxblood underline hover:opacity-80"
+                      >
+                        {labels.view_detail}
+                      </a>
                     </td>
                   </tr>
                 ))}

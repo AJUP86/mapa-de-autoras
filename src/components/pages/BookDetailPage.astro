@@ -1,0 +1,52 @@
+---
+import Base from "~/layouts/Base.astro";
+import BookDetail from "~/components/BookDetail";
+import { t } from "~/i18n/t";
+
+interface Props {
+  lang: "es" | "en";
+}
+
+const { lang } = Astro.props;
+
+const labels = {
+  loading: t(lang, "book.loading"),
+  error: t(lang, "book.error"),
+  not_found: t(lang, "book.not_found"),
+  back_to_books: t(lang, "book.back_to_books"),
+  country_label: t(lang, "book.country_label"),
+  year_label: t(lang, "book.year_label"),
+  language_label: t(lang, "book.language_label"),
+  synopsis_heading: t(lang, "book.synopsis_heading"),
+  quotes_heading: t(lang, "book.quotes_heading"),
+  buy_heading: t(lang, "book.buy_heading"),
+  affiliate_disclosure: t(lang, "book.affiliate_disclosure"),
+  retailer: {
+    amazon: t(lang, "book.retailer.amazon"),
+    bookshop: t(lang, "book.retailer.bookshop"),
+    kobo: t(lang, "book.retailer.kobo"),
+    other: t(lang, "book.retailer.other"),
+  },
+  status: {
+    to_read: t(lang, "map.status.to_read"),
+    reading: t(lang, "map.status.reading"),
+    read: t(lang, "map.status.read"),
+  },
+};
+---
+
+<Base
+  lang={lang}
+  title={`${t(lang, "books.title")} · ${t(lang, "meta.title")}`}
+  description={t(lang, "books.intro")}
+>
+  <main class="mx-auto max-w-3xl px-6 py-12 sm:py-16">
+    <BookDetail
+      client:load
+      lang={lang}
+      labels={labels}
+      booksHref={`/${lang}/books`}
+      siteTitle={t(lang, "meta.title")}
+    />
+  </main>
+</Base>
