@@ -119,6 +119,44 @@ export type Database = {
           },
         ]
       }
+      book_quotes: {
+        Row: {
+          book_id: string
+          created_at: string
+          display_order: number
+          id: string
+          location: string | null
+          quote_en: string
+          quote_es: string
+        }
+        Insert: {
+          book_id: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          location?: string | null
+          quote_en: string
+          quote_es: string
+        }
+        Update: {
+          book_id?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          location?: string | null
+          quote_en?: string
+          quote_es?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_quotes_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       books: {
         Row: {
           author_id: string
@@ -335,6 +373,15 @@ export type Database = {
       promote_suggestion_book: {
         Args: { p_author: Json; p_book: Json; p_entry_id: string }
         Returns: string
+      }
+      set_book_content: {
+        Args: {
+          p_book_id: string
+          p_description: Json
+          p_links: Json
+          p_quotes: Json
+        }
+        Returns: undefined
       }
       slugify: { Args: { input: string }; Returns: string }
     }
