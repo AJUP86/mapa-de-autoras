@@ -1,5 +1,11 @@
 .work*
 
+# Agent scratch (task briefs, reports, the SDD progress ledger). Currently
+# also excluded from most of that tree by a nested .superpowers/sdd/.gitignore,
+# but that file is tool-generated — ignore the whole directory here too so it
+# stays untracked if the nested file is ever removed.
+.superpowers/
+
 # Dependencies
 node_modules/
 

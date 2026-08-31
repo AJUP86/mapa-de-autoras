@@ -8,29 +8,66 @@ Running log of what's done, what's next, and any context a future-you (or contri
 
 ## Where we are on the MVP roadmap
 
-| Stage                                                                                     | Status               | Branch                             |
-| ----------------------------------------------------------------------------------------- | -------------------- | ---------------------------------- |
-| 0 — Branching                                                                             | ✅ Merged            | master / development               |
-| 1 — Scaffold + brand tokens + styleguide                                                  | ✅ Merged            | feature/01-scaffold-and-styleguide |
-| 2 — i18n skeleton (ES default, EN at /en/)                                                | ✅ Merged            | feature/02-i18n-skeleton           |
-| 3 — Supabase schema + RLS + 249-country seed                                              | ✅ Merged            | feature/03-supabase-schema         |
-| 4 — Public landing + map (mocked data)                                                    | ✅ Merged            | feature/04-landing-and-map         |
-| 4b — Two-color hierarchy map palette refinement                                           | ✅ Merged            | feature/04b-map-palette-penguin    |
-| 5 — Map runs on live Supabase data + dev seed                                             | ✅ Merged            | feature/05-real-author-data        |
-| **6 — Suggestion form + Turnstile + Edge Function**                                       | ✅ Merged            | feature/06-suggestion-flow         |
-| 7a — Owner notification + admin auth + read-only inbox                                    | ✅ Merged            | feature/07a-notify-and-auth        |
-| 7b-i — Promote suggestion + currently_reading + translate + unified admin UX              | ✅ Merged            | feature/07b-promote-and-crud       |
-| 7b-ii — Author CRUD — add-more-books ✅ (8.5 /admin/add + promote); edit + delete pending | ⏳ Partial           | feature/07b-ii-author-crud         |
-| 8 — Notify submitter on promote (scope pivoted from newsletter)                           | ✅ Merged            | feature/08-newsletter-confirmation |
-| 8.4 — Page-pair DRY (shared components) + always-prefix locale URLs (dynamic routes)      | ✅ Merged            | feature/08.4-page-pair-dry         |
-| **8.5 — Book-first refactor** (books.status, envelope suggestions, catalog, admin add)    | ✅ Done (PR → dev)   | feature/8.5-book-first-refactor    |
-| 8.6 — Book detail + curation (book_quotes, buy links, public detail page, affiliate)      | 📝 Spec'd (deferred) | feature/8.6-book-detail (tbd)      |
-| 9a — Staging deployment (Cloudflare Pages + Supabase staging)                             | ✅ Merged            | feature/09a-staging-deploy         |
-| 9a-ii — Realtime map data (client-side fetch + Supabase Realtime)                         | ✅ Merged            | feature/09a-ii-realtime-map        |
-| 9b — Production deployment (apex + www + Resend)                                          | ⏳ Pending           | feature/09b-production-deploy      |
-| 10 — Launch content + checklist                                                           | ⏳ Pending           | feature/10-launch-prep             |
+| Stage                                                                                     | Status             | Branch                             |
+| ----------------------------------------------------------------------------------------- | ------------------ | ---------------------------------- |
+| 0 — Branching                                                                             | ✅ Merged          | master / development               |
+| 1 — Scaffold + brand tokens + styleguide                                                  | ✅ Merged          | feature/01-scaffold-and-styleguide |
+| 2 — i18n skeleton (ES default, EN at /en/)                                                | ✅ Merged          | feature/02-i18n-skeleton           |
+| 3 — Supabase schema + RLS + 249-country seed                                              | ✅ Merged          | feature/03-supabase-schema         |
+| 4 — Public landing + map (mocked data)                                                    | ✅ Merged          | feature/04-landing-and-map         |
+| 4b — Two-color hierarchy map palette refinement                                           | ✅ Merged          | feature/04b-map-palette-penguin    |
+| 5 — Map runs on live Supabase data + dev seed                                             | ✅ Merged          | feature/05-real-author-data        |
+| **6 — Suggestion form + Turnstile + Edge Function**                                       | ✅ Merged          | feature/06-suggestion-flow         |
+| 7a — Owner notification + admin auth + read-only inbox                                    | ✅ Merged          | feature/07a-notify-and-auth        |
+| 7b-i — Promote suggestion + currently_reading + translate + unified admin UX              | ✅ Merged          | feature/07b-promote-and-crud       |
+| 7b-ii — Author CRUD — add-more-books ✅ (8.5 /admin/add + promote); edit + delete pending | ⏳ Partial         | feature/07b-ii-author-crud         |
+| 8 — Notify submitter on promote (scope pivoted from newsletter)                           | ✅ Merged          | feature/08-newsletter-confirmation |
+| 8.4 — Page-pair DRY (shared components) + always-prefix locale URLs (dynamic routes)      | ✅ Merged          | feature/08.4-page-pair-dry         |
+| **8.5 — Book-first refactor** (books.status, envelope suggestions, catalog, admin add)    | ✅ Merged (PR #18) | feature/8.5-book-first-refactor    |
+| **8.6 — Book detail + curation** (book_quotes, buy links, public detail page, affiliate)  | ✅ Done (PR → dev) | feature/8.6-book-detail            |
+| 9a — Staging deployment (Cloudflare Pages + Supabase staging)                             | ✅ Merged          | feature/09a-staging-deploy         |
+| 9a-ii — Realtime map data (client-side fetch + Supabase Realtime)                         | ✅ Merged          | feature/09a-ii-realtime-map        |
+| 9b — Production deployment (apex + www + Resend)                                          | ⏳ Pending         | feature/09b-production-deploy      |
+| 10 — Launch content + checklist                                                           | ⏳ Pending         | feature/10-launch-prep             |
 
-**Everything through 9a-ii + the 9-pre hardening is merged into `development`; `master` still holds only the initial commit (nothing merges there until the production launch).** Revised pre-launch path: **pre-deploy security hardening (9-pre — Branch 1 ✅ merged, Branch 2 ✅ merged + deployed to staging)** → **book-first refactor (8.5 ✅ Done, PR → development pending — + public catalog + admin auto-promote add)** → production deploy (9b) → launch prep (10). Post-launch backlog: author CRUD (7b-ii — **edit/delete only now; add-more-books shipped in 8.5**), real newsletter (broadcast list). Stage 10 (launch prep) has some early work merged (privacy policy, robots, site config) but remains **pending** overall — see [50-launch-checklist.md](50-launch-checklist.md).
+**Everything through 9a-ii + the 9-pre hardening is merged into `development`; `master` still holds only the initial commit (nothing merges there until the production launch).** Revised pre-launch path: **pre-deploy security hardening (9-pre — Branch 1 ✅ merged, Branch 2 ✅ merged + deployed to staging)** → **book-first refactor (8.5 ✅ merged as PR #18 — + public catalog + admin auto-promote add)** → **book detail + curation (8.6 ✅ Done, PR → development pending)** → production deploy (9b) → launch prep (10). Post-launch backlog: author CRUD (7b-ii — **edit/delete only now; add-more-books shipped in 8.5**), real newsletter (broadcast list). Stage 10 (launch prep) has some early work merged (privacy policy, robots, site config) but remains **pending** overall — see [50-launch-checklist.md](50-launch-checklist.md).
+
+---
+
+## Last session — 2026-08-31 (Stage 8.6 — book detail + curation)
+
+**Status:** Shipped on `feature/8.6-book-detail` (6 tasks, 5 feature commits + docs). Executed task-by-task with a workflow per task (implementer → independent reviewer → adversarial probe), then a scoped re-review for every fix round. `astro check` 0 errors, Vitest **43**, build **21 pages**. Migrations 0014→0016 apply clean via `supabase migration up`. PR to `development` next.
+
+> Design decisions were confirmed by the owner before implementation: the detail page is **client-rendered at `/[lang]/book?id=<uuid>`** (a new book gets a page with no redeploy), and content is saved through **one atomic `set_book_content` RPC**. See the [spec](specs/2026-08-25-stage-8.6-book-detail-design.md) §7/§8.2 and the [plan](plans/2026-08-26-stage-8.6-book-detail-implementation.md).
+
+### What landed
+
+- **Schema (0014):** `book_quotes` — bilingual passage (`quote_es`/`quote_en`, both NOT NULL) + optional `location` ("p. 42") + `display_order`. Public read gated on the book's author being published (mirrors `book_links`); admins manage via `is_admin()`.
+- **RPC (0015) `set_book_content`:** admin-only, atomically replaces a book's synopsis + quotes + links in one transaction.
+- **Hardening (0016):** `affiliate_tag` was readable by anon straight from PostgREST — the `book_links` RLS policy is row-level only. Revoked at the column level (see the gotcha below).
+- **Data layer** `src/lib/book-detail.ts` (+7 Vitest cases, TDD): `localizeQuotes` / `visibleLinks` pure helpers, the anon read (never selects `affiliate_tag`), the admin read, and the RPC wrapper.
+- **Public** `/[lang]/book?id=` — read-only detail (cover, title, author, status badge, country/year/language, synopsis, quotes, buy links). Catalog rows link to it in the reader's locale. Buy links carry `rel="sponsored nofollow noopener"`; the **affiliate disclosure renders only when a link exists**; a new privacy-policy section covers affiliate links in both locales.
+- **Admin** `/admin/book?id=` — content editor (synopsis + quotes repeater + buy-links repeater, DeepL-assisted), reached from a per-row **Editar** link on `/admin/books`.
+
+### Gotchas surfaced (keep)
+
+- **A column-level `REVOKE` is a no-op on a Supabase table.** Supabase's bootstrap runs `alter default privileges … grant all on tables to anon`, so `revoke select (col) … from anon` leaves the broader table grant covering the column. You must revoke the table-wide `SELECT` and re-grant the allowed columns individually (that is what 0016 does). Verified empirically — the first attempt looked applied and still leaked.
+- **Consequence of 0016:** `anon` now holds **column-specific** grants on `book_links`. Any column added to that table later will NOT be anon-readable until explicitly granted.
+- **React 19 sanitizes `javascript:` for `href` but NOT for `img src`** — `cover_url` is now gated to http(s) in the component.
+- **PostgREST embedding survives column-level grants** (the public `books → book_links(...)` query still works), and a to-many embed always materializes as `[]`, never null.
+- `supabase migration list` **without `--local`** queries the remote project and makes a local migration look missing.
+
+### Verified vs. needs an admin session / staging
+
+- **Verified locally:** the full public page in a real browser in BOTH locales (synopsis, quotes with location, buy link, disclosure, per-book `document.title`); the admin surface is sealed (`noindex, nofollow`, `Disallow: /admin`, absent from the sitemap, no DB content in the static HTML, and an unauthenticated visit renders the login form); anon cannot read `affiliate_tag`; the RPC rejects anon (42501) and non-admin (`unauthorized: admin only`).
+- **Needs an admin session (login-gated):** the editor round-trip — edit a book's synopsis/quotes/links → **Guardar** → confirm the public page shows them → re-open the editor and confirm it reloads exactly what was saved.
+- **Needs staging:** `supabase db push` to apply 0014-0016 (no Edge Function changed this stage, so no function redeploy).
+
+### Follow-ups
+
+- **SEO / social previews:** every book URL shares one server-rendered `<title>`/description, because the route is a single static page per locale. The browser tab/history is corrected client-side, but crawlers and link-preview scrapers see the catalogue title. Upgrade path (Stage 9): `books.slug` + prerendered per-book pages, or SSR. Tracked in the launch checklist.
+- **Defense-in-depth (9b):** `anon` still holds table-wide INSERT/UPDATE/DELETE grants on `book_quotes` and `book_links` from Supabase's bootstrap defaults. Inert today (no anon write policy exists), but worth one revoke migration.
+- Deferred from the spec and still open: pretty `/books/<slug>` URLs, and the "email the suggester a quote" action.
 
 ---
 

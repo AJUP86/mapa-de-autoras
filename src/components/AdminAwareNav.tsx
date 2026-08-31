@@ -40,6 +40,15 @@ export default function AdminAwareNav({ labels }: Props) {
   const [state, setState] = useState<AdminSessionState>({ kind: "loading" });
   const [pendingCount, setPendingCount] = useState<number>(0);
 
+  // The language switch href is built at BUILD time from the pathname only, so
+  // it loses the query string. /[lang]/book?id=<uuid> keeps the book identity
+  // there, so carry the current search across the locale switch. Set on mount
+  // (not during render) to keep SSR and first client render identical.
+  const [search, setSearch] = useState("");
+  useEffect(() => {
+    setSearch(window.location.search);
+  }, []);
+
   // Initial session read + cross-tab signout subscription
   useEffect(() => {
     let cancelled = false;
@@ -125,7 +134,7 @@ export default function AdminAwareNav({ labels }: Props) {
             {labels.sugerir}
           </a>
           <a
-            href={labels.languageSwitchHref}
+            href={`${labels.languageSwitchHref}${search}`}
             hrefLang={labels.languageSwitchHreflang}
             aria-label={labels.languageSwitchAriaLabel}
             className="inline-flex items-center justify-center rounded-full border border-ink/15 bg-bone px-3 py-1 text-xs font-medium tracking-wider text-ink/80 transition-colors hover:border-oxblood/40 hover:text-oxblood"

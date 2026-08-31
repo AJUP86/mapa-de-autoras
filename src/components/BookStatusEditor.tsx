@@ -36,6 +36,7 @@ interface Labels {
   filter_country_all: string;
   filter_year_all: string;
   no_matches: string;
+  col_edit: string;
 }
 
 interface Props {
@@ -191,6 +192,9 @@ export default function BookStatusEditor({ labels }: Props) {
                   <th className="py-2 pr-4">{labels.col_book}</th>
                   <th className="py-2 pr-4">{labels.col_year}</th>
                   <th className="py-2">{labels.col_status}</th>
+                  <th className="py-2">
+                    <span className="sr-only">{labels.col_edit}</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -216,6 +220,14 @@ export default function BookStatusEditor({ labels }: Props) {
                           {labels.save_error}
                         </span>
                       )}
+                    </td>
+                    <td className="py-2">
+                      <a
+                        href={`/admin/book?id=${row.id}`}
+                        className="text-oxblood underline hover:opacity-80"
+                      >
+                        {labels.col_edit}
+                      </a>
                     </td>
                   </tr>
                 ))}

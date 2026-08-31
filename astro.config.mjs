@@ -39,7 +39,14 @@ export default defineConfig({
       prefixDefaultLocale: true,
     },
   },
-  integrations: [react(), sitemap({ filter: (page) => !page.includes("/admin") })],
+  integrations: [
+    react(),
+    sitemap({
+      // /[lang]/book is a single client-rendered route; without ?id= it is a
+      // soft 404, so keep the bare path out of the sitemap.
+      filter: (page) => !page.includes("/admin") && !/\/(es|en)\/book\/?$/.test(page),
+    }),
+  ],
   vite: {
     plugins: [tailwindcss()],
   },
