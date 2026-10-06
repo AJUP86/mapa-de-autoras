@@ -1,5 +1,15 @@
 ---
 // src/pages/admin/index.astro — Stage 7b-i (login form; was admin/login.astro in 7a)
+//
+// The magic-link redirect target MUST be a real page, never "/". The site's
+// `redirects: { "/": "/es/" }` compiles to a <meta http-equiv="refresh"> stub
+// in the static build, and a meta-refresh starts a FRESH navigation — it drops
+// the URL fragment. GoTrue returns the session as `#access_token=...` (implicit
+// flow), so landing on "/" destroys the token one hop before any Supabase
+// client can read it, and the user silently stays logged out. The dev server
+// hides this: it serves "/" as a real 302, and fragments DO survive those.
+// Verified against the built output: "/" loses the hash, "/es/" keeps it and
+// signs in. See docs/30-ops/staging-deploy.md.
 import Base from "~/layouts/Base.astro";
 import AdminLoginForm from "~/components/AdminLoginForm";
 import { t } from "~/i18n/t";
@@ -18,6 +28,6 @@ const labels = {
 
 <Base lang={lang} title={labels.title} noindex>
   <main class="min-h-screen bg-parchment">
-    <AdminLoginForm client:load redirectTo="/" labels={labels} />
+    <AdminLoginForm client:load redirectTo="/es/" labels={labels} />
   </main>
 </Base>
