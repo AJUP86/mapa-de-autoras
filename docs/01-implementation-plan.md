@@ -334,6 +334,8 @@ git push -u origin development
 
 **Goal:** `mapadeautoras.com` + `www.mapadeautoras.com` live on Cloudflare Pages backed by `mapa-prod` Supabase project. Real notification emails via Resend.
 
+**Order (revised 2026-10-06):** runs **after Stages 11 and 12** and goes live in **coming-soon mode**: home + waitlist public, map hidden (`PUBLIC_MAP_OPEN=false`). Switch Resend and Supabase to paid plans before Danny announces the waitlist. Stage 14 opens the map.
+
 **Build:**
 
 - New hosted Supabase project `mapa-prod` (same region as staging). Migrations + admin bootstrap + functions deploy.
@@ -376,10 +378,99 @@ git push -u origin development
 
 **Pause for review. Merge `development` → `master`. Tag `v0.1.0`.** Launch.
 
+> **Revised 2026-10-06:** Stage 10's polish items now fold into 9b (coming-soon launch) and 14 (release day). The launch itself is Stage 14.
+
+---
+
+## Revised pre-launch order (2026-10-06)
+
+Danny reviewed staging on her phone and asked for a different launch shape: an intro + waitlist home, the map on its own full-screen page, and accounts for readers later. New order:
+
+**11** new home + full-screen map → **12** waitlist → **9b** production in coming-soon mode → _Danny announces the waitlist on Instagram_ → **13** reader accounts → **14** release day.
+
+---
+
+## Stage 11 — New home + full-screen map
+
+**Branch:** `feature/11-map-redesign`
+
+**Goal:** a phone-first map Danny approves. Home becomes intro + waitlist card; the map moves to `/[lang]/map`, full screen with floating controls and a Map | List switch. Spec: [specs/2026-10-06-stage-11-map-redesign-design.md](specs/2026-10-06-stage-11-map-redesign-design.md).
+
+**Build:**
+
+- `/[lang]/map` (+ `?view=list`): `MapApp` island, d3 `WorldMap` renderer (replaces `@vnedyalk0v/react19-simple-maps`), floating search + chips, country sheet with in-panel book view, list view, suggest sheet.
+- Phone behavior: first view by time-zone region, dots on small countries, exact filter semantics.
+- New home: hero, `WaitlistCard` (stub `joinWaitlist()`), live mini-map preview + stats, legend, suggest band. Phone nav fix.
+- `PUBLIC_MAP_OPEN` build-time switch (env guard + `.env.example`), closed-mode pages, `/[lang]/books` → `/[lang]/map?view=list` redirect.
+
+**Verify:** spec §9 — unit tests, both switch values build, phone sizes in the browser, real iOS Safari + Android Chrome.
+
+**Pause for review.**
+
+---
+
+## Stage 12 — Waitlist
+
+**Branch:** `feature/12-waitlist`
+
+**Goal:** collect waitlist emails with proof of consent so Danny can build expectation before release.
+
+**Build:**
+
+- `waitlist` table (email, locale, consent text version, confirmed_at, unsubscribed_at, source), no anon access; writes only through an Edge Function.
+- Edge Function `join_waitlist`: Turnstile, validation, duplicate-safe insert, confirmation email (double opt-in), unsubscribe token.
+- Replace the Stage 11 `joinWaitlist()` stub; confirm + unsubscribe landing pages in both locales.
+- Admin: waitlist count + CSV export.
+- Privacy policy section for the waitlist (ES + EN).
+
+**Verify:** sign up → confirmation email → confirmed row; unsubscribe link works; duplicates do not resend endlessly; anon cannot read the table.
+
+**Note:** emails reach real people only after 9b sets up Resend on our own domain; until then, test with the Resend account owner's address.
+
+**Pause for review.**
+
+---
+
+## Stage 13 — Reader accounts (magic link)
+
+**Branch:** `feature/13-reader-accounts`
+
+**Goal:** readers can create an account with an email link (no passwords), so suggesters are known and can choose notifications.
+
+**Build:**
+
+- Open sign-up for readers while keeping admin rights role-based (`is_admin()`); audit every grant and policy that applies to `authenticated`.
+- Fix the known gap: `book_links.affiliate_tag` is readable by any logged-in user (0016 revoked it from `anon` only). Move the admin read behind an admin-only RPC and revoke the column from `authenticated`.
+- `profiles` (display name, locale, notification choices, consent record); suggest form prefilled for signed-in readers; suggestions linked to the user.
+- "Delete my account" (GDPR); privacy policy update.
+- Supabase Auth: custom SMTP via Resend, raise the 30/hour email limit, redirect URLs for the reader flow (never `/` — see the PR #20 fragment gotcha).
+
+**Verify:** sign up, sign in on a second device, delete account; a reader cannot reach any admin data or RPC; affiliate tags invisible to readers.
+
+**Pause for review.**
+
+---
+
+## Stage 14 — Release day
+
+**Branch:** `feature/14-release`
+
+**Goal:** open the map and tell the waitlist.
+
+**Build / run:**
+
+- Flip `PUBLIC_MAP_OPEN=true` on the production Pages project and redeploy.
+- Send the launch email to confirmed waitlist entries (batch send, both locales, unsubscribe link).
+- Watch Resend volume, Supabase Realtime connections and Auth email rate during the first days.
+
+**Verify:** map reachable from home and nav on production; launch email delivered to inboxes (not spam); no limit warnings.
+
+**Tag the release.** (`master` already serves production since 9b; flipping the switch needs no merge.)
+
 ---
 
 ## What comes after MVP (out of this plan)
 
-Phase 2 candidates from [00-mvp-plan.md § MVP scope vs later](00-mvp-plan.md): Capacitor native wrapper, author detail pages, search, third locale, Plausible analytics, per-book `read` flag if the owner wants the panel to distinguish read vs to-read books per author.
+Phase 2 candidates from [00-mvp-plan.md § MVP scope vs later](00-mvp-plan.md): Capacitor native wrapper, author detail pages, search, third locale, Plausible analytics, per-book `read` flag if the owner wants the panel to distinguish read vs to-read books per author. Added 2026-10-06: installable web app (PWA) + push notifications, personal maps for readers — see [40-phase2-backlog.md](40-phase2-backlog.md). (Search ships in Stage 11.)
 
 Plan that work as `02-implementation-plan-phase2.md` when MVP ships.

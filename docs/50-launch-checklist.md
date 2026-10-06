@@ -128,17 +128,32 @@ Full 9b spec lives in `docs/01-implementation-plan.md`. Checklist form here:
   - `RESEND_FROM_EMAIL` (e.g., `hola@mapadeautoras.com`)
   - `OWNER_NOTIFICATION_EMAIL` (Danny's email)
 - [ ] Configure Supabase auth `site_url` = `https://mapadeautoras.com` + redirect URLs for `/` + `/admin` + `/admin/inbox`.
-- [ ] Keep public signups **disabled** on `mapa-prod` (Auth → Providers → Email → "Allow new users to sign up" off). `book_links.affiliate_tag` is readable by any `authenticated` role — migration `0016` revokes it from `anon` only — so a self-serve `authenticated` account would still be able to read it; revoking it from `authenticated` too would break the admin editor's read unless that read moves behind a `SECURITY DEFINER` RPC.
+- [ ] Keep public signups **disabled** on `mapa-prod` (Auth → Providers → Email → "Allow new users to sign up" off). `book_links.affiliate_tag` is readable by any `authenticated` role — migration `0016` revokes it from `anon` only — so a self-serve `authenticated` account would still be able to read it; revoking it from `authenticated` too would break the admin editor's read unless that read moves behind a `SECURITY DEFINER` RPC. **Stage 13 fixes this before opening reader sign-up.**
 - [ ] **Pivot `notify_owner` from pg_net trigger to Supabase Database Webhook** (dashboard-configured per environment). Solves the `app.functions_url` GUC restriction we deferred in 9a. Webhook fires on INSERT to `public.suggestions` → POSTs to `notify_owner` function URL.
 - [ ] Create SEPARATE Cloudflare Pages project `mapa-de-autoras-prod` (NOT reuse staging project).
 - [ ] Pages production branch = `master`.
-- [ ] Pages env vars in Production scope: `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`, `PUBLIC_TURNSTILE_SITE_KEY`, `NODE_VERSION=22`.
+- [ ] Pages env vars in Production scope: `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`, `PUBLIC_TURNSTILE_SITE_KEY`, `PUBLIC_MAP_OPEN=false` (coming-soon mode until Stage 14), `NODE_VERSION=22`.
 - [ ] Add `mapadeautoras.com` + `www.mapadeautoras.com` as custom domains on the Pages project.
 - [ ] Resend domain auth on `mapadeautoras.com` — SPF/DKIM/DMARC records via Cloudflare DNS (same account, one-click).
 - [ ] Turnstile: extend the widget to include the two prod hostnames (or create a separate prod widget for cleaner separation).
 - [ ] Add `PROD_SUPABASE_URL` + `PROD_SUPABASE_ANON_KEY` to GitHub Actions secrets.
 - [ ] Extend `.github/workflows/heartbeat.yml` matrix to include the production entry.
 - [ ] Smoke test end-to-end on production: submit real suggestion → Danny gets real email → login → promote → author appears on map via Realtime.
+
+### 6.5 Coming-soon launch + waitlist announcement (after 9b)
+
+- [ ] Production home shows the waitlist; `/map`, the list and book pages show "Abre pronto" (`PUBLIC_MAP_OPEN=false`).
+- [ ] Waitlist end to end on production: sign up → confirmation email arrives in the **inbox** (not spam) → confirmed row → unsubscribe works.
+- [ ] Privacy policy covers the waitlist (both locales), reviewed by Danny.
+- [ ] **The day before the announcement:** Resend paid plan ($20/month, removes the 100/day cap) and Supabase Pro ($25/month). Upgrades apply immediately; Supabase downgrades only at the end of the billing cycle.
+- [ ] Danny announces on Instagram.
+
+### 6.6 Release day (Stage 14)
+
+- [ ] Stage 13 (reader accounts) merged and verified, including the `affiliate_tag` fix and the higher Auth email limit (default 30/hour with custom SMTP).
+- [ ] Flip `PUBLIC_MAP_OPEN=true` on the production Pages project → redeploy → map reachable from home and nav.
+- [ ] Launch email to confirmed waitlist entries (both locales, unsubscribe link).
+- [ ] Watch Resend volume, Realtime connections and Auth email rate for the first days.
 
 ### 7. Launch polish (Stage 10 essentials)
 
