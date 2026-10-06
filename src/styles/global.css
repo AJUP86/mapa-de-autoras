@@ -21,6 +21,8 @@
 
   --font-display: var(--font-display);
   --font-body: var(--font-body);
+
+  --shadow-float: 0 1px 2px rgb(27 42 65 / 0.1), 0 8px 24px rgb(27 42 65 / 0.14);
 }
 
 html,
@@ -51,4 +53,68 @@ h6 {
 svg[role="img"] path:focus,
 svg[role="img"] path:focus-visible {
   outline: none !important;
+}
+
+/* World map — Stage 11 (/map + home preview). Fills come from the state
+   aliases in tokens.css, so a palette change repaints the map too. */
+.map-country {
+  fill: var(--c-bone);
+  stroke: var(--c-paper-line);
+  stroke-opacity: 0.4;
+  stroke-width: 0.6;
+  vector-effect: non-scaling-stroke;
+  transition: fill 200ms ease-out;
+}
+.map-country.is-read {
+  fill: var(--c-state-read);
+  stroke: var(--c-state-read-line);
+  stroke-opacity: 1;
+}
+.map-country.is-reading {
+  fill: var(--c-state-reading);
+  stroke: var(--c-state-reading-line);
+  stroke-opacity: 1;
+}
+.map-country.is-to_read {
+  fill: var(--c-state-to-read);
+  stroke: var(--c-state-to-read-line);
+  stroke-opacity: 1;
+}
+.map-country.is-selected {
+  stroke: var(--c-ink);
+  stroke-width: 2;
+  stroke-opacity: 1;
+}
+.world-map .map-country {
+  cursor: pointer;
+}
+@media (hover: hover) {
+  .world-map .map-country:hover {
+    fill: var(--c-ochre);
+  }
+}
+.map-dot {
+  cursor: pointer;
+}
+.map-dot-hit {
+  fill: transparent;
+}
+.map-dot-pin {
+  stroke: var(--c-bone);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+.map-dot.is-read .map-dot-pin {
+  fill: var(--c-state-read);
+}
+.map-dot.is-reading .map-dot-pin {
+  fill: var(--c-state-reading);
+}
+.map-dot.is-to_read .map-dot-pin {
+  fill: var(--c-state-to-read);
+}
+@media (prefers-reduced-motion: reduce) {
+  .map-country {
+    transition: none;
+  }
 }

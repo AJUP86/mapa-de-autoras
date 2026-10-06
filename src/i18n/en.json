@@ -89,6 +89,8 @@
     "eyebrow": "Explore the map",
     "title": "Tap a country",
     "subhead": "Each color marks a different state: authors I've read, currently reading, suggestions to discover, or a mix.",
+    "page_title": "Map",
+    "aria_map": "World map of women writers by country",
     "filter": {
       "all": "All",
       "to_read": "To read",

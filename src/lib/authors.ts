@@ -25,15 +25,12 @@ type AuthorWithBooksRow = {
 };
 
 /**
- * Fetch the full public catalog grouped by country.
- *
- * - Read at Astro build time (front-matter `await getCatalog()`).
- * - Returns `[]` (and logs) if Supabase is unreachable, so `npm run dev`
- *   still renders an empty map instead of throwing.
- * - Books inside each author preserve their `display_order` and carry their
- *   `status`, which drives the map color (Stage 8.5 book-first model).
+ * Fetch the full public catalog grouped by country. Throws on a Supabase
+ * error so callers that show an error state (the /map page) can tell
+ * "failed" from "empty". Books keep their `display_order` and carry their
+ * `status`, which drives the map color.
  */
-export async function getCatalog(): Promise<CountryEntry[]> {
+export async function fetchCatalog(): Promise<CountryEntry[]> {
   const { data, error } = await supabase
     .from("authors")
     .select(
@@ -55,10 +52,7 @@ export async function getCatalog(): Promise<CountryEntry[]> {
     .eq("published", true)
     .order("created_at", { ascending: true });
 
-  if (error) {
-    console.warn("[authors] getCatalog() failed:", error.message);
-    return [];
-  }
+  if (error) throw error;
   if (!data) return [];
 
   const byCountry = new Map<string, Author[]>();
@@ -88,4 +82,14 @@ export async function getCatalog(): Promise<CountryEntry[]> {
   }
 
   return Array.from(byCountry, ([iso_a3, authors]) => ({ iso_a3, authors }));
+}
+
+/** Same as fetchCatalog() but returns [] (and logs) on failure. */
+export async function getCatalog(): Promise<CountryEntry[]> {
+  try {
+    return await fetchCatalog();
+  } catch (e) {
+    console.warn("[authors] getCatalog() failed:", (e as Error).message);
+    return [];
+  }
 }

@@ -89,6 +89,8 @@
     "eyebrow": "Explora el mapa",
     "title": "Toca un país",
     "subhead": "Cada color marca un estado distinto: autoras que he leído, las que estoy leyendo, sugerencias por descubrir, o una mezcla.",
+    "page_title": "Mapa",
+    "aria_map": "Mapa del mundo con las autoras de cada país",
     "filter": {
       "all": "Todas",
       "to_read": "Por leer",

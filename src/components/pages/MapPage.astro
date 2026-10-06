@@ -1,0 +1,28 @@
+---
+import Base from "~/layouts/Base.astro";
+import MapApp from "~/components/map/MapApp";
+import { mapPageLabels } from "~/components/map/labels";
+import { t } from "~/i18n/t";
+
+interface Props {
+  lang: "es" | "en";
+}
+
+const { lang } = Astro.props;
+const labels = mapPageLabels(lang);
+---
+
+<Base lang={lang} title={`${t(lang, "map.page_title")} · ${t(lang, "meta.title")}`} description={t(lang, "meta.description")} bare>
+  <main class="fixed inset-0 overflow-hidden bg-water">
+    <MapApp client:only="react" labels={labels} />
+  </main>
+</Base>
+
+<style is:global>
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+</style>

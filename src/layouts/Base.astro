@@ -8,6 +8,7 @@ interface Props {
   description?: string;
   lang?: "es" | "en";
   noindex?: boolean;
+  bare?: boolean;
 }
 
 const {
@@ -15,6 +16,7 @@ const {
   description = "Un mapa mundial de escritoras: autoras leídas y descubrimientos por descubrir.",
   lang = "es",
   noindex = false,
+  bare = false,
 } = Astro.props;
 
 // URL helpers — with prefixDefaultLocale: true, every public page lives at
@@ -79,7 +81,7 @@ const navLabels = {
     <link rel="alternate" hreflang="x-default" href={esUrl} />
   </head>
   <body class="font-body bg-parchment text-ink">
-    <AdminAwareNav client:load labels={navLabels} />
+    {!bare && <AdminAwareNav client:load labels={navLabels} />}
     <slot />
   </body>
 </html>

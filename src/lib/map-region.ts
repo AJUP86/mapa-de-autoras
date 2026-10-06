@@ -30,6 +30,19 @@ export const REGION_BOXES: Record<RegionKey, [[number, number], [number, number]
   ],
 };
 
+/**
+ * Countries whose shape frames badly (it spans the antimeridian or most of the
+ * map, so the fly-to would zoom out to the whole world) get an explicit
+ * framing box, same format as REGION_BOXES. Keyed by ISO alpha-3.
+ */
+export const COUNTRY_FRAMES: Readonly<Record<string, [[number, number], [number, number]]>> = {
+  // European Russia: St Petersburg and Moscow to the Urals.
+  RUS: [
+    [27, 43],
+    [62, 69],
+  ],
+};
+
 export const REGION_ORDER: RegionKey[] = ["europe", "americas", "africa", "asia", "oceania"];
 
 const ATLANTIC_EUROPE = ["Canary", "Madeira", "Azores", "Faroe", "Reykjavik"];

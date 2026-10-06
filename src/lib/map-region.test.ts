@@ -1,5 +1,17 @@
 import { describe, it, expect } from "vitest";
-import { regionFromTimeZone } from "./map-region";
+import { COUNTRY_FRAMES, regionFromTimeZone } from "./map-region";
+
+describe("COUNTRY_FRAMES", () => {
+  it("frames Russia on its European part", () => {
+    const frame = COUNTRY_FRAMES.RUS;
+    expect(frame).toBeDefined();
+    const [[west, south], [east, north]] = frame;
+    expect(west).toBeGreaterThanOrEqual(20);
+    expect(east).toBeLessThanOrEqual(65);
+    expect(west).toBeLessThan(east);
+    expect(south).toBeLessThan(north);
+  });
+});
 
 describe("regionFromTimeZone", () => {
   it.each([
