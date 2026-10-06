@@ -135,3 +135,37 @@ export function fillFor(state: CountryState, filter: Filter): CountryStyle {
   if (state === "reading") return READING_STYLE;
   return TO_READ_STYLE; // state === "to_read"
 }
+
+// ─── Stage 11 — exact filter semantics ─────────────────────────────────────
+// computeCountryStates() collapses 2+ statuses to "mixed" and loses which
+// ones a country has, so fillFor() lit a "mixed" country under every filter.
+// The /map page keeps the full status set per country instead.
+
+const STATUS_PRIORITY: BookStatus[] = ["read", "reading", "to_read"];
+
+/** Distinct book statuses per country, in priority order. Book-less countries are omitted. */
+export function countryStatuses(
+  entries: ReadonlyArray<CountryEntry>,
+): Record<string, BookStatus[]> {
+  const result: Record<string, BookStatus[]> = {};
+  for (const entry of entries) {
+    const seen = new Set<BookStatus>();
+    for (const a of entry.authors) for (const b of a.books) seen.add(b.status);
+    if (seen.size > 0) result[entry.iso_a3] = STATUS_PRIORITY.filter((s) => seen.has(s));
+  }
+  return result;
+}
+
+/**
+ * The status whose color a country shows under `filter`, or null (uncolored).
+ * "all" keeps the read > reading > to_read priority; a specific filter colors
+ * the country only if it has a book with that status.
+ */
+export function countryColor(
+  statuses: ReadonlyArray<BookStatus> | undefined,
+  filter: Filter,
+): BookStatus | null {
+  if (!statuses || statuses.length === 0) return null;
+  if (filter === "all") return STATUS_PRIORITY.find((s) => statuses.includes(s)) ?? null;
+  return statuses.includes(filter) ? filter : null;
+}
