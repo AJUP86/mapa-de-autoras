@@ -3,12 +3,20 @@
 
 import type { ReactNode } from "react";
 
-function Icon({ children, strokeWidth = 2 }: { children: ReactNode; strokeWidth?: number }) {
+function Icon({
+  children,
+  strokeWidth = 2,
+  size = 18,
+}: {
+  children: ReactNode;
+  strokeWidth?: number;
+  size?: number;
+}) {
   return (
     <svg
       viewBox="0 0 24 24"
-      width="18"
-      height="18"
+      width={size}
+      height={size}
       fill="none"
       stroke="currentColor"
       strokeWidth={strokeWidth}
@@ -31,9 +39,9 @@ export function IconClose() {
   );
 }
 
-export function IconPlus() {
+export function IconPlus({ size }: { size?: number }) {
   return (
-    <Icon strokeWidth={2.2}>
+    <Icon strokeWidth={2.2} size={size}>
       <path d="M12 5v14M5 12h14" />
     </Icon>
   );
@@ -81,6 +89,24 @@ export function IconList() {
   return (
     <Icon>
       <path d="M9 6h12M9 12h12M9 18h12M4 6h.01M4 12h.01M4 18h.01" />
+    </Icon>
+  );
+}
+
+/** Chevron left (Back to the country). */
+export function IconBack() {
+  return (
+    <Icon strokeWidth={2.2}>
+      <path d="M15 18l-6-6 6-6" />
+    </Icon>
+  );
+}
+
+/** Opens in a new tab (buy links). */
+export function IconExternal() {
+  return (
+    <Icon>
+      <path d="M14 4h6v6M10 14L20 4M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5" />
     </Icon>
   );
 }

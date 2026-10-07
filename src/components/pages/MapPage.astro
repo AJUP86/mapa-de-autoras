@@ -2,6 +2,8 @@
 import Base from "~/layouts/Base.astro";
 import MapApp from "~/components/map/MapApp";
 import { mapPageLabels } from "~/components/map/labels";
+import { bookDetailLabels } from "~/components/book-labels";
+import { suggestFormLabels } from "~/components/suggest-labels";
 import { t } from "~/i18n/t";
 import { getCountries } from "~/lib/countries";
 
@@ -13,11 +15,26 @@ const { lang } = Astro.props;
 const labels = mapPageLabels(lang);
 // Localized country names for the panel (and Task 4's search), resolved at build time.
 const countries = await getCountries(lang);
+// The panel's book view and the suggest sheet (same strings and endpoint as /book and /suggest).
+const bookLabels = bookDetailLabels(lang);
+const suggestLabels = suggestFormLabels(lang);
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? "";
+const submitUrl = `${supabaseUrl}/functions/v1/submit_suggestion`;
 ---
 
 <Base lang={lang} title={labels.pageTitle.map} description={t(lang, "meta.description")} bare>
   <main class="fixed inset-0 overflow-hidden bg-water">
-    <MapApp client:only="react" lang={lang} labels={labels} countries={countries} />
+    <MapApp
+      client:only="react"
+      lang={lang}
+      labels={labels}
+      countries={countries}
+      bookLabels={bookLabels}
+      suggestLabels={suggestLabels}
+      turnstileSiteKey={turnstileSiteKey}
+      submitUrl={submitUrl}
+    />
   </main>
 </Base>
 

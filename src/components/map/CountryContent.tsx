@@ -16,6 +16,8 @@ interface Props {
   labels: MapPageLabels;
   /** Shown instead of the writers while the catalog is loading or failed. */
   notice?: string | null;
+  /** Back from this book's view: its row takes the panel's focus instead of ✕ (when it is still listed). */
+  focusBookId?: string | null;
   onClose: () => void;
   onOpenBook: (bookId: string) => void;
   onSuggest: (iso: string) => void;
@@ -27,10 +29,15 @@ export default function CountryContent({
   authors,
   labels,
   notice,
+  focusBookId,
   onClose,
   onOpenBook,
   onSuggest,
 }: Props) {
+  const focusRow =
+    !notice && focusBookId != null && authors.some((a) => a.books.some((b) => b.id === focusBookId))
+      ? focusBookId
+      : null;
   const bookCount = authors.reduce((n, a) => n + a.books.length, 0);
   const counts =
     !notice && authors.length > 0
@@ -55,7 +62,7 @@ export default function CountryContent({
         </div>
         <button
           type="button"
-          data-autofocus
+          data-autofocus={focusRow ? undefined : ""}
           aria-label={labels.panel.close}
           onClick={onClose}
           className="grid size-11 flex-none place-items-center rounded-full text-ink hover:bg-parchment"
@@ -102,6 +109,7 @@ export default function CountryContent({
                             meta={book.year != null ? String(book.year) : null}
                             statusLabel={labels.status[book.status]}
                             surface="parchment"
+                            autofocus={book.id === focusRow}
                             onOpen={onOpenBook}
                           />
                         </li>

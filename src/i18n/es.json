@@ -25,6 +25,7 @@
     "quotes_heading": "Fragmentos que subrayé",
     "buy_heading": "Dónde conseguirlo",
     "affiliate_disclosure": "Algunos de estos enlaces son de afiliado: si compras a través de ellos, recibo una pequeña comisión sin coste adicional para ti.",
+    "open_page": "Ver página del libro",
     "retailer": {
       "amazon": "Amazon",
       "bookshop": "Bookshop",
@@ -93,7 +94,8 @@
       "collapse": "Reducir el panel",
       "empty_country": "Todavía no hay autoras de {country} en el mapa. ¿Conoces a alguna?",
       "suggest_country": "Sugerir una autora de {country}",
-      "missing": "¿Falta alguien de {country}?"
+      "missing": "¿Falta alguien de {country}?",
+      "back_to_country": "Volver a {country}"
     },
     "status": {
       "to_read": "Por leer",
@@ -134,6 +136,8 @@
     "view_switch_aria": "Cambiar de vista",
     "view_map": "Mapa",
     "view_list": "Lista",
+    "suggest_button": "Sugerir",
+    "suggest_button_aria": "Sugerir un libro",
     "count": {
       "author_one": "{n} autora",
       "author_other": "{n} autoras",

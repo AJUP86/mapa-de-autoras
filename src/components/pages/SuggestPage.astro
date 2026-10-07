@@ -1,6 +1,7 @@
 ---
 import Base from "~/layouts/Base.astro";
 import SuggestionForm from "~/components/SuggestionForm";
+import { suggestFormLabels } from "~/components/suggest-labels";
 import { t } from "~/i18n/t";
 import { getCountries } from "~/lib/countries";
 
@@ -15,37 +16,7 @@ const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? "";
 const submitUrl = `${supabaseUrl}/functions/v1/submit_suggestion`;
 const thanksUrl = `/${lang}/thanks`;
 
-const formLabels = {
-  entry: {
-    heading: t(lang, "suggest.entry.heading"),
-    book_title_label: t(lang, "suggest.entry.book_title_label"),
-    book_title_placeholder: t(lang, "suggest.entry.book_title_placeholder"),
-    author_name_label: t(lang, "suggest.entry.author_name_label"),
-    author_name_placeholder: t(lang, "suggest.entry.author_name_placeholder"),
-    country_label: t(lang, "suggest.entry.country_label"),
-    country_placeholder: t(lang, "suggest.entry.country_placeholder"),
-    note_label: t(lang, "suggest.entry.note_label"),
-    note_placeholder: t(lang, "suggest.entry.note_placeholder"),
-    add: t(lang, "suggest.entry.add"),
-    remove: t(lang, "suggest.entry.remove"),
-  },
-  fields: {
-    email_label: t(lang, "suggest.fields.email_label"),
-    email_placeholder: t(lang, "suggest.fields.email_placeholder"),
-    email_hint: t(lang, "suggest.fields.email_hint"),
-    submitter_name_label: t(lang, "suggest.fields.submitter_name_label"),
-    submitter_name_placeholder: t(lang, "suggest.fields.submitter_name_placeholder"),
-    newsletter_label: t(lang, "suggest.fields.newsletter_label"),
-  },
-  submit: t(lang, "suggest.submit"),
-  submitting: t(lang, "suggest.submitting"),
-  errors: {
-    network: t(lang, "suggest.errors.network"),
-    validation: t(lang, "suggest.errors.validation"),
-    turnstile: t(lang, "suggest.errors.turnstile"),
-  },
-  required_mark: t(lang, "suggest.required_mark"),
-};
+const formLabels = suggestFormLabels(lang);
 ---
 
 <Base lang={lang} title={`${t(lang, "suggest.title")} · ${t(lang, "meta.title")}`} description={t(lang, "suggest.intro")}>

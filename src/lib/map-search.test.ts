@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { fold, listGroups, searchCatalog } from "./map-search";
+import { bookCountry, fold, listGroups, searchCatalog } from "./map-search";
 import type { CountryEntry } from "./map-state";
 
 const catalog: CountryEntry[] = [
@@ -87,5 +87,16 @@ describe("listGroups", () => {
       ["b1"],
     );
     expect(listGroups(catalog, names, "all", "japon", "es").map((g) => g.iso_a3)).toEqual(["JPN"]);
+  });
+});
+
+describe("bookCountry", () => {
+  it("returns the country of the writer who owns the book", () => {
+    expect(bookCountry(catalog, "b2")).toBe("MEX");
+    expect(bookCountry(catalog, "b3")).toBe("JPN");
+  });
+  it("returns null for a book that is not in the catalog", () => {
+    expect(bookCountry(catalog, "nope")).toBeNull();
+    expect(bookCountry([], "b1")).toBeNull();
   });
 });

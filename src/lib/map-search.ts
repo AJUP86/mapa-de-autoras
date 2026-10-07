@@ -42,6 +42,12 @@ export function allBooks(catalog: ReadonlyArray<CountryEntry>): BookHit[] {
   );
 }
 
+/** The country (iso_a3) of the writer who owns `bookId`, or null when the catalog has no such book. */
+export function bookCountry(catalog: ReadonlyArray<CountryEntry>, bookId: string): string | null {
+  const entry = catalog.find((e) => e.authors.some((a) => a.books.some((b) => b.id === bookId)));
+  return entry?.iso_a3 ?? null;
+}
+
 /**
  * Up to `limit` countries, authors and books whose name contains the query
  * (accent-insensitive). Countries with authors come first; otherwise the

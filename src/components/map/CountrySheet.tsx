@@ -1,6 +1,7 @@
-// CountrySheet.tsx — Stage 11. Shell of the /map country panel: a bottom
-// sheet on phones (about 56% high; the handle expands it to full height) and a
-// 400 px side panel on desktop. Non-modal dialog: the map stays usable.
+// CountrySheet.tsx — Stage 11. Shell of the /map country panel (a country or
+// one of its books): a bottom sheet on phones (about 56% high; the handle
+// expands it to full height) and a 400 px side panel on desktop. Non-modal
+// dialog: the map stays usable.
 // Sizes and the `md:` breakpoint mirror layout.ts (SHEET_HEIGHT_RATIO,
 // SHEET_MAX_HEIGHT, PANEL_WIDTH, PANEL_GAP, DESKTOP_MIN_WIDTH): MapApp's map
 // insets use those, so change both together.
@@ -12,8 +13,10 @@ interface Props {
   open: boolean;
   /** Accessible name of the dialog (the country name). */
   label: string;
-  /** Content identity (the selected country): a change collapses the sheet and scrolls to the top. */
+  /** The selected country: a change collapses the sheet (an expanded sheet stays expanded for a book). */
   resetKey: string | null;
+  /** What the panel shows for that country (the open book, or null): a change scrolls to the top and re-focuses. */
+  contentKey: string | null;
   expandLabel: string;
   collapseLabel: string;
   /** MapApp's useLastPointer(): a panel opened by a tap gets no focus ring on ✕. */
@@ -25,6 +28,7 @@ export default function CountrySheet({
   open,
   label,
   resetKey,
+  contentKey,
   expandLabel,
   collapseLabel,
   lastPointer,
@@ -42,15 +46,23 @@ export default function CountrySheet({
     setExpanded(false);
   }
 
-  // On open and on every new country: back to the top, focus the close button
-  // (ring hidden until it blurs when the panel was opened by pointer/touch, so
-  // a tap on the map does not leave a ring on ✕).
+  // On open, on every new country and on every book / back: back to the top,
+  // focus the content's [data-autofocus] — the close button, or a book row
+  // after Back (ring hidden until it blurs when the change came from a
+  // pointer/touch, so a tap on the map does not leave a ring on ✕).
   useEffect(() => {
     if (!open) return;
-    if (bodyRef.current) bodyRef.current.scrollTop = 0;
+    const body = bodyRef.current;
+    if (body) body.scrollTop = 0;
     const target = rootRef.current?.querySelector<HTMLElement>("[data-autofocus]");
-    if (target) focusElement(target, lastPointer.current !== null);
-  }, [open, resetKey, lastPointer]);
+    if (!target) return;
+    focusElement(target, lastPointer.current !== null);
+    // A book row can sit below the fold (focusElement does not scroll).
+    if (body) {
+      const below = target.getBoundingClientRect().bottom - body.getBoundingClientRect().bottom;
+      if (below > 0) body.scrollTop += below + 16;
+    }
+  }, [open, resetKey, contentKey, lastPointer]);
 
   if (!open) return null;
 

@@ -40,6 +40,18 @@ export interface MapPageLabels {
     /** {country} */
     missing: string;
     suggest: string;
+    /** {country} — the book view's back button. */
+    backToCountry: string;
+  };
+  /** The floating suggest button and the suggest sheet around SuggestionForm. */
+  suggest: {
+    /** Visible on desktop only ("Sugerir"). */
+    button: string;
+    /** Accessible name; contains the visible word ("Sugerir un libro"). */
+    buttonAria: string;
+    title: string;
+    intro: string;
+    thanks: { title: string; body: string; cta: string };
   };
   /** {n} */
   count: {
@@ -120,6 +132,18 @@ export function mapPageLabels(lang: Locale): MapPageLabels {
       suggestCountry: l("panel.suggest_country"),
       missing: l("panel.missing"),
       suggest: l("panel.suggest"),
+      backToCountry: l("panel.back_to_country"),
+    },
+    suggest: {
+      button: l("suggest_button"),
+      buttonAria: l("suggest_button_aria"),
+      title: t(lang, "suggest.title"),
+      intro: t(lang, "suggest.intro"),
+      thanks: {
+        title: t(lang, "suggest.thanks.title"),
+        body: t(lang, "suggest.thanks.body"),
+        cta: t(lang, "suggest.thanks.cta"),
+      },
     },
     count: {
       authorOne: l("count.author_one"),
