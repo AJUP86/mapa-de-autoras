@@ -17,12 +17,15 @@
   --color-ochre: var(--c-ochre);
   --color-penguin: var(--c-penguin);
   --color-sage: var(--c-sage);
+  --color-penguin-line: var(--c-penguin-line);
+  --color-sage-line: var(--c-sage-line);
   --color-water: var(--c-water);
 
   --font-display: var(--font-display);
   --font-body: var(--font-body);
 
   --shadow-float: 0 1px 2px rgb(27 42 65 / 0.1), 0 8px 24px rgb(27 42 65 / 0.14);
+  --shadow-sheet: 0 -6px 30px rgb(27 42 65 / 0.2);
 }
 
 html,
@@ -85,11 +88,13 @@ svg[role="img"] path:focus-visible {
   stroke-width: 2;
   stroke-opacity: 1;
 }
-.world-map .map-country {
+/* Shapes without an ISO code (Kosovo, N. Cyprus, Somaliland, ...) draw but
+   are not tappable (.is-inert): no pointer, no hover fill. */
+.world-map .map-country:not(.is-inert) {
   cursor: pointer;
 }
 @media (hover: hover) {
-  .world-map .map-country:hover {
+  .world-map .map-country:not(.is-inert):hover {
     fill: var(--c-ochre);
   }
 }
@@ -116,5 +121,18 @@ svg[role="img"] path:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .map-country {
     transition: none;
+  }
+}
+
+/* Floating /map controls: ochre focus ring. In the base layer so a utility
+   (e.g. focus-visible:outline-offset-*) can still adjust it. */
+@layer base {
+  .map-ui :focus-visible {
+    outline: 2px solid var(--c-ochre);
+    outline-offset: 2px;
+  }
+  /* Focus moved by script after a tap (CountrySheet): no ring until it blurs. */
+  .map-ui [data-quiet-focus]:focus-visible {
+    outline: none;
   }
 }

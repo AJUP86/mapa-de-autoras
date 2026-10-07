@@ -1,5 +1,19 @@
 import { describe, it, expect } from "vitest";
-import { COUNTRY_FRAMES, regionFromTimeZone } from "./map-region";
+import { COUNTRY_FRAMES, REGION_BOXES, regionFromTimeZone } from "./map-region";
+
+describe("REGION_BOXES", () => {
+  it.each([
+    ["Jerusalem", 35.2, 31.8],
+    ["Beirut", 35.5, 33.9],
+    ["Amman", 35.9, 31.9],
+  ])("asia frames the Levant (%s)", (_city, lon, lat) => {
+    const [[west, south], [east, north]] = REGION_BOXES.asia;
+    expect(lon).toBeGreaterThanOrEqual(west);
+    expect(lon).toBeLessThanOrEqual(east);
+    expect(lat).toBeGreaterThanOrEqual(south);
+    expect(lat).toBeLessThanOrEqual(north);
+  });
+});
 
 describe("COUNTRY_FRAMES", () => {
   it("frames Russia on its European part", () => {

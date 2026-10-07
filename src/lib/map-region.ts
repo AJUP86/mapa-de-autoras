@@ -20,8 +20,9 @@ export const REGION_BOXES: Record<RegionKey, [[number, number], [number, number]
     [-17, -35],
     [51, 37],
   ],
+  // West edge at 34°E so the Levant (Jerusalem, Beirut, Amman) is inside the frame.
   asia: [
-    [45, -8],
+    [34, -8],
     [146, 55],
   ],
   oceania: [

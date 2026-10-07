@@ -101,7 +101,13 @@
       "close": "Close",
       "empty": "No authors from this country yet. Know one?",
       "suggest": "Suggest an author",
-      "booksLabel": "Books"
+      "booksLabel": "Books",
+      "eyebrow": "Country",
+      "expand": "Expand panel",
+      "collapse": "Collapse panel",
+      "empty_country": "No writers from {country} on the map yet. Know one?",
+      "suggest_country": "Suggest a writer from {country}",
+      "missing": "Missing someone from {country}?"
     },
     "status": {
       "to_read": "To read",
@@ -119,8 +125,24 @@
     "zoom": {
       "in": "Zoom in",
       "out": "Zoom out",
-      "reset": "Reset view"
-    }
+      "reset": "Reset view",
+      "start": "Back to the starting view"
+    },
+    "home_aria": "Back to home",
+    "language_label": "ES",
+    "language_aria": "Cambiar a español",
+    "filter_group_aria": "Filter by status",
+    "count": {
+      "author_one": "{n} writer",
+      "author_other": "{n} writers",
+      "book_one": "{n} book",
+      "book_other": "{n} books"
+    },
+    "years_born": "b. {year}",
+    "region_hint": "Showing you {region}. Pinch the map to see more.",
+    "loading": "Loading writers…",
+    "error": "I couldn't load the writers.",
+    "retry": "Try again"
   },
   "suggest": {
     "eyebrow": "Suggest a writer",

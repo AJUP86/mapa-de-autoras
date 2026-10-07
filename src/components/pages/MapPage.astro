@@ -3,6 +3,7 @@ import Base from "~/layouts/Base.astro";
 import MapApp from "~/components/map/MapApp";
 import { mapPageLabels } from "~/components/map/labels";
 import { t } from "~/i18n/t";
+import { getCountries } from "~/lib/countries";
 
 interface Props {
   lang: "es" | "en";
@@ -10,11 +11,13 @@ interface Props {
 
 const { lang } = Astro.props;
 const labels = mapPageLabels(lang);
+// Localized country names for the panel (and Task 4's search), resolved at build time.
+const countries = await getCountries(lang);
 ---
 
 <Base lang={lang} title={`${t(lang, "map.page_title")} · ${t(lang, "meta.title")}`} description={t(lang, "meta.description")} bare>
   <main class="fixed inset-0 overflow-hidden bg-water">
-    <MapApp client:only="react" labels={labels} />
+    <MapApp client:only="react" lang={lang} labels={labels} countries={countries} />
   </main>
 </Base>
 

@@ -101,7 +101,13 @@
       "close": "Cerrar",
       "empty": "Aún no hay autoras de este país. ¿Conoces a alguna?",
       "suggest": "Sugerir una autora",
-      "booksLabel": "Libros"
+      "booksLabel": "Libros",
+      "eyebrow": "País",
+      "expand": "Ampliar el panel",
+      "collapse": "Reducir el panel",
+      "empty_country": "Todavía no hay autoras de {country} en el mapa. ¿Conoces a alguna?",
+      "suggest_country": "Sugerir una autora de {country}",
+      "missing": "¿Falta alguien de {country}?"
     },
     "status": {
       "to_read": "Por leer",
@@ -119,8 +125,24 @@
     "zoom": {
       "in": "Acercar",
       "out": "Alejar",
-      "reset": "Restablecer vista"
-    }
+      "reset": "Restablecer vista",
+      "start": "Volver a la vista inicial"
+    },
+    "home_aria": "Volver al inicio",
+    "language_label": "EN",
+    "language_aria": "Switch to English",
+    "filter_group_aria": "Filtrar por estado",
+    "count": {
+      "author_one": "{n} autora",
+      "author_other": "{n} autoras",
+      "book_one": "{n} libro",
+      "book_other": "{n} libros"
+    },
+    "years_born": "n. {year}",
+    "region_hint": "Te muestro {region}. Pellizca el mapa para ver más.",
+    "loading": "Cargando autoras…",
+    "error": "No he podido cargar las autoras.",
+    "retry": "Reintentar"
   },
   "suggest": {
     "eyebrow": "Sugiere una autora",

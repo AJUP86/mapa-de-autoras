@@ -79,9 +79,10 @@ export function useCatalog({ realtime = true }: { realtime?: boolean } = {}) {
         if (status !== "SUBSCRIBED") return;
         // A second SUBSCRIBED means we reconnected: resync missed events.
         if (hasSubscribedOnce.current) {
+          // On failure keep the catalog we already show.
           fetchCatalog()
             .then((catalog) => setState({ kind: "loaded", catalog }))
-            .catch(() => {});
+            .catch((e: Error) => console.warn("[useCatalog] resync failed:", e.message));
         } else {
           hasSubscribedOnce.current = true;
         }
