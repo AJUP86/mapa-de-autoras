@@ -1,9 +1,9 @@
 // BookFilters.tsx — Stage 8.5 task 14
 //
-// Shared filter bar for the book tables (admin editor + public catalog).
+// Filter bar for the admin book table (BookStatusEditor). The public catalog
+// moved to the map's list view in Stage 11.
 // Presentational only: it owns no state, just renders the three controls
-// and calls back on change. The single filter-bar implementation both the
-// admin BookStatusEditor and the public BookList render.
+// and calls back on change.
 
 interface BookFiltersLabels {
   filter_author_placeholder: string;

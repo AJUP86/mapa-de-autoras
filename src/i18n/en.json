@@ -10,28 +10,14 @@
     "about": "About"
   },
   "books": {
-    "eyebrow": "Catalogue",
     "title": "All the books",
-    "intro": "Every book on the map, with its reading status.",
-    "loading": "Loading…",
-    "error": "Couldn't load the books.",
-    "empty": "No published books yet.",
-    "col_author": "Writer",
-    "col_country": "Country",
-    "col_book": "Book",
-    "col_year": "Year",
-    "col_status": "Status",
-    "filter_author_placeholder": "Filter by writer…",
-    "filter_country_all": "All countries",
-    "filter_year_all": "All years",
-    "no_matches": "No book matches the filter.",
-    "view_detail": "View"
+    "intro": "Every book on the map, with its reading status."
   },
   "book": {
     "loading": "Loading…",
     "error": "Couldn't load the book.",
     "not_found": "I couldn't find this book.",
-    "back_to_books": "← Back to the catalogue",
+    "back_to_list": "← Back to the list",
     "country_label": "Country",
     "year_label": "Year",
     "language_label": "Original language",
@@ -132,17 +118,42 @@
     "language_label": "ES",
     "language_aria": "Cambiar a español",
     "filter_group_aria": "Filter by status",
+    "search_label": "Search",
+    "search_placeholder": "Search the map",
+    "list_search_placeholder": "Search the list",
+    "search_clear": "Clear search",
+    "results": {
+      "regions": "Go to a region",
+      "countries": "Countries",
+      "authors": "Writers",
+      "books": "Books",
+      "no_authors": "No writers yet",
+      "none": "I can't find “{q}” on the map.",
+      "suggest": "Suggest that writer"
+    },
+    "view_switch_aria": "Switch view",
+    "view_map": "Map",
+    "view_list": "List",
     "count": {
       "author_one": "{n} writer",
       "author_other": "{n} writers",
       "book_one": "{n} book",
-      "book_other": "{n} books"
+      "book_other": "{n} books",
+      "country_one": "{n} country",
+      "country_other": "{n} countries"
     },
     "years_born": "b. {year}",
     "region_hint": "Showing you {region}. Pinch the map to see more.",
     "loading": "Loading writers…",
     "error": "I couldn't load the writers.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "list": {
+      "summary": "{books} by {authors} in {countries}",
+      "show_on_map": "Show on the map",
+      "empty_query": "No books match “{q}”.",
+      "empty_filter": "No books with this filter.",
+      "suggest": "Suggest a book"
+    }
   },
   "suggest": {
     "eyebrow": "Suggest a writer",

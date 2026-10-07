@@ -5,7 +5,8 @@
 // SHEET_MAX_HEIGHT, PANEL_WIDTH, PANEL_GAP, DESKTOP_MIN_WIDTH): MapApp's map
 // insets use those, so change both together.
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+import { focusElement } from "./input-modality";
 
 interface Props {
   open: boolean;
@@ -15,6 +16,8 @@ interface Props {
   resetKey: string | null;
   expandLabel: string;
   collapseLabel: string;
+  /** MapApp's useLastPointer(): a panel opened by a tap gets no focus ring on ✕. */
+  lastPointer: RefObject<string | null>;
   children: ReactNode;
 }
 
@@ -24,11 +27,11 @@ export default function CountrySheet({
   resetKey,
   expandLabel,
   collapseLabel,
+  lastPointer,
   children,
 }: Props) {
   const rootRef = useRef<HTMLElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
-  const pointerInput = useRef(false);
   const [expanded, setExpanded] = useState(false);
   const [shownKey, setShownKey] = useState(resetKey);
 
@@ -39,31 +42,15 @@ export default function CountrySheet({
     setExpanded(false);
   }
 
-  // Last input modality: a tap on the map should not leave a focus ring on ✕.
-  useEffect(() => {
-    const onPointer = () => (pointerInput.current = true);
-    const onKey = () => (pointerInput.current = false);
-    document.addEventListener("pointerdown", onPointer, true);
-    document.addEventListener("keydown", onKey, true);
-    return () => {
-      document.removeEventListener("pointerdown", onPointer, true);
-      document.removeEventListener("keydown", onKey, true);
-    };
-  }, []);
-
   // On open and on every new country: back to the top, focus the close button
-  // (ring hidden until it blurs when the panel was opened by pointer/touch).
+  // (ring hidden until it blurs when the panel was opened by pointer/touch, so
+  // a tap on the map does not leave a ring on ✕).
   useEffect(() => {
     if (!open) return;
     if (bodyRef.current) bodyRef.current.scrollTop = 0;
     const target = rootRef.current?.querySelector<HTMLElement>("[data-autofocus]");
-    if (!target) return;
-    if (pointerInput.current) {
-      target.dataset.quietFocus = "";
-      target.addEventListener("blur", () => delete target.dataset.quietFocus, { once: true });
-    }
-    target.focus({ preventScroll: true });
-  }, [open, resetKey]);
+    if (target) focusElement(target, lastPointer.current !== null);
+  }, [open, resetKey, lastPointer]);
 
   if (!open) return null;
 

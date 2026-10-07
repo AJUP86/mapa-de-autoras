@@ -15,7 +15,7 @@ const labels = mapPageLabels(lang);
 const countries = await getCountries(lang);
 ---
 
-<Base lang={lang} title={`${t(lang, "map.page_title")} · ${t(lang, "meta.title")}`} description={t(lang, "meta.description")} bare>
+<Base lang={lang} title={labels.pageTitle.map} description={t(lang, "meta.description")} bare>
   <main class="fixed inset-0 overflow-hidden bg-water">
     <MapApp client:only="react" lang={lang} labels={labels} countries={countries} />
   </main>

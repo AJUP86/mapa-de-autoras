@@ -146,7 +146,7 @@ export default function WorldMap({
   // then a rebuild re-fits the initial view, so a transient first layout (the
   // page measured before it settles, a rotation before any touch) does not stick.
   const movedRef = useRef(false);
-  // Where the running programmatic transition is heading (null when none).
+  // Where the running or scheduled programmatic transition is heading (null when none).
   const targetRef = useRef<ZoomTransform | null>(null);
   const [size, setSize] = useState<{ w: number; h: number } | null>(null);
   // The pan limit reads the insets on every gesture event.
@@ -317,7 +317,8 @@ export default function WorldMap({
       .transition()
       .duration(reducedMotion() ? 0 : ms)
       .call(z.transform, target, point)
-      .on("end.target interrupt.target", () => {
+      // cancel: a newer transition replaced this one before it started.
+      .on("end.target interrupt.target cancel.target", () => {
         if (targetRef.current === target) targetRef.current = null;
       });
   };

@@ -1,11 +1,30 @@
 ---
-import BooksPage from "~/components/pages/BooksPage.astro";
+// /[lang]/books — Stage 11: the catalog moved to the list view of the map
+// (spec decision 2). A static redirect page so old links and bookmarks still
+// land there; kept out of the sitemap (astro.config.mjs).
 import { LOCALES, type Locale } from "~/i18n/locales";
+import { t } from "~/i18n/t";
 
 export function getStaticPaths() {
   return LOCALES.map((lang) => ({ params: { lang } }));
 }
 
 const { lang } = Astro.params as { lang: Locale };
+const target = `/${lang}/map?view=list`;
+const canonical = new URL(target, Astro.site ?? Astro.url).href;
+const title = `${t(lang, "books.title")} · ${t(lang, "meta.title")}`;
 ---
-<BooksPage lang={lang} />
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta http-equiv="refresh" content={`0;url=${target}`} />
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href={canonical} />
+  </head>
+  <body>
+    <a href={target}>{t(lang, "books.title")}</a>
+  </body>
+</html>

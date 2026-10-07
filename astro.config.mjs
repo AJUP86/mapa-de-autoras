@@ -43,8 +43,9 @@ export default defineConfig({
     react(),
     sitemap({
       // /[lang]/book is a single client-rendered route; without ?id= it is a
-      // soft 404, so keep the bare path out of the sitemap.
-      filter: (page) => !page.includes("/admin") && !/\/(es|en)\/book\/?$/.test(page),
+      // soft 404, so keep the bare path out of the sitemap. /[lang]/books is
+      // only a redirect to the map's list view (noindex).
+      filter: (page) => !page.includes("/admin") && !/\/(es|en)\/books?\/?$/.test(page),
     }),
   ],
   vite: {

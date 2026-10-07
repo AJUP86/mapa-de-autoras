@@ -11,9 +11,11 @@ interface Props {
   onChange: (filter: Filter) => void;
   labels: Record<Filter, string>;
   groupLabel: string;
+  /** On a solid background (the list view): a hairline ring instead of the floating shadow. */
+  flat?: boolean;
 }
 
-export default function FilterChips({ value, onChange, labels, groupLabel }: Props) {
+export default function FilterChips({ value, onChange, labels, groupLabel, flat = false }: Props) {
   return (
     // Bleeds to the screen edges so the row scrolls edge to edge; the vertical
     // padding leaves room for the chip shadows, focus ring and 44 px hit area.
@@ -31,9 +33,9 @@ export default function FilterChips({ value, onChange, labels, groupLabel }: Pro
             aria-pressed={pressed}
             onClick={() => onChange(f)}
             // 34 px chip; the ::before extends the tap area to 44 px.
-            className={`relative inline-flex h-[34px] flex-none items-center gap-[7px] whitespace-nowrap rounded-full px-3 text-[0.86rem] font-medium shadow-float transition-colors before:absolute before:inset-x-0 before:-inset-y-[5px] before:content-[''] ${
+            className={`relative inline-flex h-[34px] flex-none items-center gap-[7px] whitespace-nowrap rounded-full px-3 text-[0.86rem] font-medium transition-colors before:absolute before:inset-x-0 before:-inset-y-[5px] before:content-[''] ${
               pressed ? "bg-ink text-bone" : "bg-bone text-ink hover:bg-parchment"
-            }`}
+            } ${flat ? (pressed ? "" : "ring-1 ring-ink/10 ring-inset") : "shadow-float"}`}
           >
             {f !== "all" && (
               <span

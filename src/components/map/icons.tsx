@@ -56,3 +56,31 @@ export function IconLocate() {
     </Icon>
   );
 }
+
+export function IconSearch() {
+  return (
+    <Icon>
+      <circle cx="11" cy="11" r="7" />
+      <path d="M20 20l-3.5-3.5" />
+    </Icon>
+  );
+}
+
+/** Folded map (Map | List switch). */
+export function IconMap() {
+  return (
+    <Icon>
+      <path d="M3 6.5l6-3 6 3 6-3v14l-6 3-6-3-6 3z" />
+      <path d="M9 3.5v14M15 6.5v14" />
+    </Icon>
+  );
+}
+
+/** Bulleted list (Map | List switch). */
+export function IconList() {
+  return (
+    <Icon>
+      <path d="M9 6h12M9 12h12M9 18h12M4 6h.01M4 12h.01M4 18h.01" />
+    </Icon>
+  );
+}

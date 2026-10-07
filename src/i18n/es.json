@@ -10,28 +10,14 @@
     "about": "Conóceme"
   },
   "books": {
-    "eyebrow": "Catálogo",
     "title": "Todos los libros",
-    "intro": "Cada libro del mapa, con su estado de lectura.",
-    "loading": "Cargando…",
-    "error": "No se pudieron cargar los libros.",
-    "empty": "Todavía no hay libros publicados.",
-    "col_author": "Autora",
-    "col_country": "País",
-    "col_book": "Libro",
-    "col_year": "Año",
-    "col_status": "Estado",
-    "filter_author_placeholder": "Filtrar por autora…",
-    "filter_country_all": "Todos los países",
-    "filter_year_all": "Todos los años",
-    "no_matches": "Ningún libro coincide con el filtro.",
-    "view_detail": "Ver"
+    "intro": "Cada libro del mapa, con su estado de lectura."
   },
   "book": {
     "loading": "Cargando…",
     "error": "No se pudo cargar el libro.",
     "not_found": "No encontré este libro.",
-    "back_to_books": "← Volver al catálogo",
+    "back_to_list": "← Volver a la lista",
     "country_label": "País",
     "year_label": "Año",
     "language_label": "Idioma original",
@@ -132,17 +118,42 @@
     "language_label": "EN",
     "language_aria": "Switch to English",
     "filter_group_aria": "Filtrar por estado",
+    "search_label": "Buscar",
+    "search_placeholder": "Busca en el mapa",
+    "list_search_placeholder": "Buscar en la lista",
+    "search_clear": "Borrar la búsqueda",
+    "results": {
+      "regions": "Ir a una región",
+      "countries": "Países",
+      "authors": "Autoras",
+      "books": "Libros",
+      "no_authors": "Todavía sin autoras",
+      "none": "No encuentro «{q}» en el mapa.",
+      "suggest": "Sugerir esa autora"
+    },
+    "view_switch_aria": "Cambiar de vista",
+    "view_map": "Mapa",
+    "view_list": "Lista",
     "count": {
       "author_one": "{n} autora",
       "author_other": "{n} autoras",
       "book_one": "{n} libro",
-      "book_other": "{n} libros"
+      "book_other": "{n} libros",
+      "country_one": "{n} país",
+      "country_other": "{n} países"
     },
     "years_born": "n. {year}",
     "region_hint": "Te muestro {region}. Pellizca el mapa para ver más.",
     "loading": "Cargando autoras…",
     "error": "No he podido cargar las autoras.",
-    "retry": "Reintentar"
+    "retry": "Reintentar",
+    "list": {
+      "summary": "{books} de {authors} en {countries}",
+      "show_on_map": "Ver en el mapa",
+      "empty_query": "No hay libros que coincidan con «{q}».",
+      "empty_filter": "No hay libros con este filtro.",
+      "suggest": "Sugerir un libro"
+    }
   },
   "suggest": {
     "eyebrow": "Sugiere una autora",

@@ -4,9 +4,8 @@
 
 import type { Author } from "~/lib/map-state";
 import { fmt, plural } from "~/i18n/format";
-import { authorYears, coverLetter } from "~/lib/panel-format";
-import StatusPill from "../StatusPill";
-import { STATUS_FILL } from "../status-colors";
+import { authorYears } from "~/lib/panel-format";
+import BookRow from "./BookRow";
 import { IconClose } from "./icons";
 import type { MapPageLabels } from "./labels";
 
@@ -98,29 +97,13 @@ export default function CountryContent({
                     <ul className="mt-1.5 grid gap-1.5">
                       {author.books.map((book) => (
                         <li key={book.id}>
-                          <button
-                            type="button"
-                            onClick={() => onOpenBook(book.id)}
-                            className="flex min-h-11 w-full items-center gap-3 rounded-xl bg-parchment px-2 py-2.5 text-left hover:brightness-[0.97]"
-                          >
-                            <span
-                              aria-hidden="true"
-                              className={`grid h-[42px] w-[30px] flex-none place-items-center rounded-[2px_6px_6px_2px] font-display text-[0.95rem] font-semibold text-bone shadow-[inset_4px_0_0_var(--c-shadow)] ${STATUS_FILL[book.status]}`}
-                            >
-                              {coverLetter(book.title)}
-                            </span>
-                            <span className="grid min-w-0 flex-1">
-                              <span className="leading-[1.3] font-semibold text-ink">
-                                {book.title}
-                              </span>
-                              {book.year != null && (
-                                <span className="text-[0.8rem] text-ink/60 tabular-nums">
-                                  {book.year}
-                                </span>
-                              )}
-                            </span>
-                            <StatusPill status={book.status} label={labels.status[book.status]} />
-                          </button>
+                          <BookRow
+                            book={book}
+                            meta={book.year != null ? String(book.year) : null}
+                            statusLabel={labels.status[book.status]}
+                            surface="parchment"
+                            onOpen={onOpenBook}
+                          />
                         </li>
                       ))}
                     </ul>

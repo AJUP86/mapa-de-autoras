@@ -14,7 +14,7 @@ interface Labels {
   loading: string;
   error: string;
   not_found: string;
-  back_to_books: string;
+  back_to_list: string;
   country_label: string;
   year_label: string;
   language_label: string;
@@ -29,7 +29,8 @@ interface Labels {
 interface Props {
   lang: Locale;
   labels: Labels;
-  booksHref: string;
+  /** The list view of the map (`/{lang}/map?view=list`). */
+  listHref: string;
   siteTitle: string;
 }
 
@@ -70,7 +71,7 @@ function retailerLabel(retailer: string, labels: Labels["retailer"]): string {
   return labels.other;
 }
 
-export default function BookDetail({ lang, labels, booksHref, siteTitle }: Props) {
+export default function BookDetail({ lang, labels, listHref, siteTitle }: Props) {
   const [state, setState] = useState<State>({ kind: "loading" });
 
   useEffect(() => {
@@ -102,8 +103,8 @@ export default function BookDetail({ lang, labels, booksHref, siteTitle }: Props
   }, [state, siteTitle]);
 
   const backLink = (
-    <a href={booksHref} className="text-sm text-oxblood font-body underline hover:opacity-80">
-      {labels.back_to_books}
+    <a href={listHref} className="text-sm text-oxblood font-body underline hover:opacity-80">
+      {labels.back_to_list}
     </a>
   );
 

@@ -7,11 +7,25 @@ import type { BookStatus, Filter } from "~/lib/map-state";
 import type { RegionKey } from "~/lib/map-region";
 
 export interface MapPageLabels {
+  /** Document title per view ("Mapa · mapa de autoras", "Todos los libros · mapa de autoras"). */
+  pageTitle: { map: string; list: string };
   ariaMap: string;
   home: string;
   language: { label: string; aria: string };
   filterGroup: string;
   filter: Record<Filter, string>;
+  search: { label: string; placeholder: string; listPlaceholder: string; clear: string };
+  results: {
+    regions: string;
+    countries: string;
+    authors: string;
+    books: string;
+    noAuthors: string;
+    /** {q} */
+    none: string;
+    suggest: string;
+  };
+  viewSwitch: { aria: string; map: string; list: string };
   status: Record<BookStatus, string>;
   zoom: { in: string; out: string; start: string };
   panel: {
@@ -28,7 +42,14 @@ export interface MapPageLabels {
     suggest: string;
   };
   /** {n} */
-  count: { authorOne: string; authorOther: string; bookOne: string; bookOther: string };
+  count: {
+    authorOne: string;
+    authorOther: string;
+    bookOne: string;
+    bookOther: string;
+    countryOne: string;
+    countryOther: string;
+  };
   /** {year} */
   yearsBorn: string;
   regions: Record<RegionKey, string>;
@@ -37,11 +58,27 @@ export interface MapPageLabels {
   loading: string;
   error: string;
   retry: string;
+  list: {
+    /** Visually hidden h1 of the list view. */
+    heading: string;
+    /** {books} {authors} {countries}, each already a count phrase */
+    summary: string;
+    showOnMap: string;
+    /** {q} */
+    emptyQuery: string;
+    emptyFilter: string;
+    suggest: string;
+  };
 }
 
 export function mapPageLabels(lang: Locale): MapPageLabels {
   const l = (key: string) => t(lang, `map.${key}`);
+  const site = t(lang, "meta.title");
   return {
+    pageTitle: {
+      map: `${l("page_title")} · ${site}`,
+      list: `${t(lang, "books.title")} · ${site}`,
+    },
     ariaMap: l("aria_map"),
     home: l("home_aria"),
     language: { label: l("language_label"), aria: l("language_aria") },
@@ -52,6 +89,22 @@ export function mapPageLabels(lang: Locale): MapPageLabels {
       reading: l("filter.reading"),
       read: l("filter.read"),
     },
+    search: {
+      label: l("search_label"),
+      placeholder: l("search_placeholder"),
+      listPlaceholder: l("list_search_placeholder"),
+      clear: l("search_clear"),
+    },
+    results: {
+      regions: l("results.regions"),
+      countries: l("results.countries"),
+      authors: l("results.authors"),
+      books: l("results.books"),
+      noAuthors: l("results.no_authors"),
+      none: l("results.none"),
+      suggest: l("results.suggest"),
+    },
+    viewSwitch: { aria: l("view_switch_aria"), map: l("view_map"), list: l("view_list") },
     status: {
       to_read: l("status.to_read"),
       reading: l("status.reading"),
@@ -73,6 +126,8 @@ export function mapPageLabels(lang: Locale): MapPageLabels {
       authorOther: l("count.author_other"),
       bookOne: l("count.book_one"),
       bookOther: l("count.book_other"),
+      countryOne: l("count.country_one"),
+      countryOther: l("count.country_other"),
     },
     yearsBorn: l("years_born"),
     regions: {
@@ -86,5 +141,13 @@ export function mapPageLabels(lang: Locale): MapPageLabels {
     loading: l("loading"),
     error: l("error"),
     retry: l("retry"),
+    list: {
+      heading: t(lang, "books.title"),
+      summary: l("list.summary"),
+      showOnMap: l("list.show_on_map"),
+      emptyQuery: l("list.empty_query"),
+      emptyFilter: l("list.empty_filter"),
+      suggest: l("list.suggest"),
+    },
   };
 }

@@ -13,7 +13,7 @@ const labels = {
   loading: t(lang, "book.loading"),
   error: t(lang, "book.error"),
   not_found: t(lang, "book.not_found"),
-  back_to_books: t(lang, "book.back_to_books"),
+  back_to_list: t(lang, "book.back_to_list"),
   country_label: t(lang, "book.country_label"),
   year_label: t(lang, "book.year_label"),
   language_label: t(lang, "book.language_label"),
@@ -45,7 +45,7 @@ const labels = {
       client:load
       lang={lang}
       labels={labels}
-      booksHref={`/${lang}/books`}
+      listHref={`/${lang}/map?view=list`}
       siteTitle={t(lang, "meta.title")}
     />
   </main>
