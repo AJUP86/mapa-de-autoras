@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { computeCountryStates, fillFor, type BookStatus, type CountryEntry } from "./map-state";
+import { countryColor, countryStatuses, type BookStatus, type CountryEntry } from "./map-state";
 
 function book(
   status: BookStatus,
@@ -11,57 +11,38 @@ function author(books: ReturnType<typeof book>[], id = "a") {
   return { id, name: id, books };
 }
 
-describe("computeCountryStates (book-status driven)", () => {
-  it("is empty for no entries", () => {
-    expect(computeCountryStates([])).toEqual({});
-  });
-  it("omits countries whose authors have no books", () => {
-    const e: CountryEntry[] = [{ iso_a3: "AUS", authors: [author([])] }];
-    expect(computeCountryStates(e)).toEqual({});
-  });
-  it("labels a country by its single distinct book status", () => {
-    expect(computeCountryStates([{ iso_a3: "ESP", authors: [author([book("to_read")])] }])).toEqual(
-      { ESP: "to_read" },
-    );
-    expect(computeCountryStates([{ iso_a3: "ARG", authors: [author([book("reading")])] }])).toEqual(
-      { ARG: "reading" },
-    );
-  });
-  it("aggregates across books of multiple authors", () => {
+describe("countryStatuses", () => {
+  it("lists each country's distinct statuses in read > reading > to_read order", () => {
     const e: CountryEntry[] = [
       {
-        iso_a3: "AUS",
-        authors: [author([book("read", "r")], "a1"), author([book("to_read", "t")], "a2")],
+        iso_a3: "ARG",
+        authors: [
+          author([book("to_read", "t"), book("read", "r")], "a1"),
+          author([book("to_read", "t2")], "a2"),
+        ],
       },
     ];
-    expect(computeCountryStates(e)).toEqual({ AUS: "mixed" });
+    expect(countryStatuses(e)).toEqual({ ARG: ["read", "to_read"] });
   });
-  it("mixed when one author has books in two statuses", () => {
-    const e: CountryEntry[] = [
-      { iso_a3: "AUS", authors: [author([book("read", "r"), book("reading", "g")])] },
-    ];
-    expect(computeCountryStates(e)).toEqual({ AUS: "mixed" });
-  });
-  it("collapses repeated identical statuses to one", () => {
-    const e: CountryEntry[] = [
-      { iso_a3: "AUS", authors: [author([book("read", "r1"), book("read", "r2")])] },
-    ];
-    expect(computeCountryStates(e)).toEqual({ AUS: "read" });
+  it("omits countries whose authors have no books", () => {
+    expect(countryStatuses([{ iso_a3: "AUS", authors: [author([])] }])).toEqual({});
   });
 });
 
-describe("fillFor", () => {
-  it("empty → empty style regardless of filter", () => {
-    expect(fillFor("empty", "all").fill).toContain("parchment");
+describe("countryColor", () => {
+  it("is null for a country without books", () => {
+    expect(countryColor(undefined, "all")).toBeNull();
+    expect(countryColor([], "read")).toBeNull();
   });
-  it("filter read shows read + mixed, hides others", () => {
-    expect(fillFor("read", "read").fill).toContain("state-read");
-    expect(fillFor("mixed", "read").fill).toContain("state-read");
-    expect(fillFor("to_read", "read").fill).toContain("parchment");
+  it("all: priority read > reading > to_read", () => {
+    expect(countryColor(["read", "to_read"], "all")).toBe("read");
+    expect(countryColor(["reading", "to_read"], "all")).toBe("reading");
+    expect(countryColor(["to_read"], "all")).toBe("to_read");
   });
-  it("filter all: mixed surfaces by priority read > reading > to_read", () => {
-    expect(fillFor("mixed", "all").fill).toContain("state-read");
-    expect(fillFor("reading", "all").fill).toContain("state-reading");
-    expect(fillFor("to_read", "all").fill).toContain("state-to-read");
+  it("a specific filter colors a country only if it has that status", () => {
+    // Regression: a reading + to_read country used to light up under "read".
+    expect(countryColor(["reading", "to_read"], "read")).toBeNull();
+    expect(countryColor(["reading", "to_read"], "reading")).toBe("reading");
+    expect(countryColor(["read"], "to_read")).toBeNull();
   });
 });

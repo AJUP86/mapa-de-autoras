@@ -1,0 +1,21 @@
+---
+import Base from "~/layouts/Base.astro";
+import MapApp from "~/components/map/MapApp";
+import { mapAppProps } from "~/components/page-props";
+import { t } from "~/i18n/t";
+
+interface Props {
+  lang: "es" | "en";
+}
+
+const { lang } = Astro.props;
+// Labels, localized country names, the panel's book view and the suggest
+// sheet — the same props the closed page's admin layer gets (AdminMap).
+const props = await mapAppProps(lang);
+---
+
+<Base lang={lang} title={props.labels.pageTitle.map} description={t(lang, "meta.description")} bare>
+  <main class="fixed inset-0 overflow-hidden bg-water">
+    <MapApp client:only="react" {...props} />
+  </main>
+</Base>

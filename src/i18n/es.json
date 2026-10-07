@@ -5,33 +5,19 @@
   },
   "nav": {
     "home": "Inicio",
-    "suggest": "Sugerir",
-    "books": "Libros",
-    "about": "Conóceme"
+    "map": "Mapa",
+    "about": "Conóceme",
+    "language_short": "EN"
   },
   "books": {
-    "eyebrow": "Catálogo",
     "title": "Todos los libros",
-    "intro": "Cada libro del mapa, con su estado de lectura.",
-    "loading": "Cargando…",
-    "error": "No se pudieron cargar los libros.",
-    "empty": "Todavía no hay libros publicados.",
-    "col_author": "Autora",
-    "col_country": "País",
-    "col_book": "Libro",
-    "col_year": "Año",
-    "col_status": "Estado",
-    "filter_author_placeholder": "Filtrar por autora…",
-    "filter_country_all": "Todos los países",
-    "filter_year_all": "Todos los años",
-    "no_matches": "Ningún libro coincide con el filtro.",
-    "view_detail": "Ver"
+    "intro": "Cada libro del mapa, con su estado de lectura."
   },
   "book": {
     "loading": "Cargando…",
     "error": "No se pudo cargar el libro.",
     "not_found": "No encontré este libro.",
-    "back_to_books": "← Volver al catálogo",
+    "back_to_list": "← Volver a la lista",
     "country_label": "País",
     "year_label": "Año",
     "language_label": "Idioma original",
@@ -39,6 +25,7 @@
     "quotes_heading": "Fragmentos que subrayé",
     "buy_heading": "Dónde conseguirlo",
     "affiliate_disclosure": "Algunos de estos enlaces son de afiliado: si compras a través de ellos, recibo una pequeña comisión sin coste adicional para ti.",
+    "open_page": "Ver página del libro",
     "retailer": {
       "amazon": "Amazon",
       "bookshop": "Bookshop",
@@ -79,16 +66,73 @@
     "changes_title": "Cambios en esta política",
     "changes_body": "Si actualizo esta política, cambiaré la fecha al principio de la página."
   },
-  "hero": {
-    "eyebrow": "mapa de autoras",
-    "headlineA": "Mujeres que escriben",
-    "headlineB": "el mundo.",
-    "subhead": "Un mapa interactivo de escritoras. Toca un país para descubrir sus autoras, los libros que he leído y los que espero leer."
+  "home": {
+    "eyebrow": "Mapa de autoras",
+    "title_a": "Mujeres que escriben",
+    "title_b": "el mundo.",
+    "lead": "Leo a escritoras de todos los rincones y las voy marcando en un mapa: las que ya he leído, lo que tengo ahora entre manos y lo que me espera en la estantería.",
+    "lead_soon": "Muy pronto podrás recorrerlo y encontrar tu próxima lectura.",
+    "lead_open": "Recórrelo y encuentra tu próxima lectura.",
+    "open_map": "Abrir el mapa",
+    "waitlist": {
+      "soon": "Abre pronto",
+      "title": "Apúntate a la lista de espera",
+      "text": "Te aviso el día que abra el mapa.",
+      "email_label": "Tu email",
+      "email_placeholder": "nombre@correo.com",
+      "submit": "Avísame",
+      "submitting": "Enviando…",
+      "news_label": "Quiero recibir novedades de Danny",
+      "fine": "Te escribiré para avisarte de la apertura. Si marcas la casilla, de vez en cuando te contaré qué estoy leyendo. Puedes darte de baja cuando quieras.",
+      "privacy_link": "Cómo trato tus datos",
+      "invalid": "Escribe un email válido, por ejemplo nombre@correo.com.",
+      "not_available": "¡Gracias! La lista de espera abre muy pronto: vuelve en unos días.",
+      "error": "No he podido apuntarte. Inténtalo en un momento.",
+      "done_title": "Ya estás en la lista",
+      "done_text": "Te escribiré a {email} el día que abra el mapa."
+    },
+    "picture": {
+      "eyebrow": "Vista previa",
+      "title": "Así se ve el mapa",
+      "aria": "Mapa del mundo con los países de las autoras coloreados según lo que he leído"
+    },
+    "about": {
+      "eyebrow": "Quién está detrás",
+      "title": "Hola, soy Danny",
+      "body": "Leo a escritoras de todo el mundo y comparto mis lecturas en Instagram. Este mapa las reúne en un solo lugar.",
+      "followers": "Más de 50.000 personas me siguen en Instagram.",
+      "instagram": "Sígueme en Instagram",
+      "more": "Más sobre mí"
+    },
+    "how": {
+      "eyebrow": "Cómo funciona",
+      "title": "Un mapa hecho de lecturas",
+      "step1": "Leo a autoras de todo el mundo.",
+      "step2": "Cada país se colorea según lo que he leído, lo que estoy leyendo y lo que me espera.",
+      "step3": "Tú lo recorres y encuentras tu próxima lectura."
+    },
+    "closing": {
+      "soon_title": "¿Quieres enterarte el primer día?",
+      "soon_cta": "Apúntate",
+      "open_title": "El mapa ya está abierto."
+    },
+    "footer": {
+      "privacy": "Privacidad"
+    }
+  },
+  "coming_soon": {
+    "eyebrow": "Abre pronto",
+    "title": "El mapa abre muy pronto",
+    "text": "Estoy terminando de prepararlo. Apúntate y te aviso el día que abra.",
+    "home": "← Volver al inicio"
+  },
+  "admin_layer": {
+    "load_error": "No he podido cargar esta página.",
+    "reload": "Recargar"
   },
   "map": {
-    "eyebrow": "Explora el mapa",
-    "title": "Toca un país",
-    "subhead": "Cada color marca un estado distinto: autoras que he leído, las que estoy leyendo, sugerencias por descubrir, o una mezcla.",
+    "page_title": "Mapa",
+    "aria_map": "Mapa del mundo con las autoras de cada país",
     "filter": {
       "all": "Todas",
       "to_read": "Por leer",
@@ -97,9 +141,14 @@
     },
     "panel": {
       "close": "Cerrar",
-      "empty": "Aún no hay autoras de este país. ¿Conoces a alguna?",
       "suggest": "Sugerir una autora",
-      "booksLabel": "Libros"
+      "eyebrow": "País",
+      "expand": "Ampliar el panel",
+      "collapse": "Reducir el panel",
+      "empty_country": "Todavía no hay autoras de {country} en el mapa. ¿Conoces a alguna?",
+      "suggest_country": "Sugerir una autora de {country}",
+      "missing": "¿Falta alguien de {country}?",
+      "back_to_country": "Volver a {country}"
     },
     "status": {
       "to_read": "Por leer",
@@ -107,7 +156,6 @@
       "read": "Leída"
     },
     "view": {
-      "world": "Mundo",
       "europe": "Europa",
       "americas": "Américas",
       "africa": "África",
@@ -117,7 +165,49 @@
     "zoom": {
       "in": "Acercar",
       "out": "Alejar",
-      "reset": "Restablecer vista"
+      "start": "Volver a la vista inicial"
+    },
+    "home_aria": "Volver al inicio",
+    "language_label": "EN",
+    "language_aria": "Switch to English",
+    "filter_group_aria": "Filtrar por estado",
+    "search_label": "Buscar",
+    "search_placeholder": "Busca en el mapa",
+    "list_search_placeholder": "Buscar en la lista",
+    "search_clear": "Borrar la búsqueda",
+    "results": {
+      "regions": "Ir a una región",
+      "countries": "Países",
+      "authors": "Autoras",
+      "books": "Libros",
+      "no_authors": "Todavía sin autoras",
+      "none": "No encuentro «{q}» en el mapa.",
+      "suggest": "Sugerir esa autora"
+    },
+    "view_switch_aria": "Cambiar de vista",
+    "view_map": "Mapa",
+    "view_list": "Lista",
+    "suggest_button": "Sugerir",
+    "suggest_button_aria": "Sugerir un libro",
+    "count": {
+      "author_one": "{n} autora",
+      "author_other": "{n} autoras",
+      "book_one": "{n} libro",
+      "book_other": "{n} libros",
+      "country_one": "{n} país",
+      "country_other": "{n} países"
+    },
+    "years_born": "n. {year}",
+    "region_hint": "Te muestro {region}. Pellizca el mapa para ver más.",
+    "loading": "Cargando autoras…",
+    "error": "No he podido cargar las autoras.",
+    "retry": "Reintentar",
+    "list": {
+      "summary": "{books} de {authors} en {countries}",
+      "show_on_map": "Ver en el mapa",
+      "empty_query": "No hay libros que coincidan con «{q}».",
+      "empty_filter": "No hay libros con este filtro.",
+      "suggest": "Sugerir un libro"
     }
   },
   "suggest": {

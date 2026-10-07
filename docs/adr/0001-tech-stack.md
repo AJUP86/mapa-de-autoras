@@ -3,6 +3,7 @@
 - **Status:** Accepted
 - **Date:** 2026-05-26
 - **Supersedes:** —
+- **Amended:** 2026-10-07 — map renderer (see [Amendment](#amendment-2026-10-07--map-renderer))
 
 ## Context
 
@@ -24,6 +25,13 @@
 | Frontend hosting      | **Cloudflare Pages** free tier                                                             |
 | Liveness              | Weekly GitHub Actions cron pinging Supabase (free-tier projects pause after 7 days idle)   |
 | Future native         | **Capacitor** wrapping Astro's static `dist/`                                              |
+
+## Amendment (2026-10-07) — map renderer
+
+Stage 11 (full-screen map, [spec](../specs/2026-10-06-stage-11-map-redesign-design.md) decision 4) replaced the "Map island" row: the map is now drawn with **`d3-geo` + `d3-zoom` directly** (plus `d3-selection`, `d3-transition` and `topojson-client`), and **`@vnedyalk0v/react19-simple-maps` was removed**.
+
+- **Why:** the new map needs an animated fly-to, dots for small countries that keep their size while zooming (counter-scaled), fitting the view to the free screen area, and pan limits. The wrapper hides `d3-zoom`, so each of these meant working against it. It already depended on `d3-geo`/`d3-zoom`, so the bundle barely changed.
+- **Consequences:** the community-fork risk below no longer applies — the documented fallback (`d3-geo` + `topojson-client`) is now the implementation. Map data: `world-atlas` 50m on `/map` and 110m for the home's build-time picture, Antarctica removed. React is now 19 (the table's "React 18" predates the upgrade).
 
 ## Alternatives considered
 

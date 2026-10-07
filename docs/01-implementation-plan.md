@@ -334,6 +334,10 @@ git push -u origin development
 
 **Goal:** `mapadeautoras.com` + `www.mapadeautoras.com` live on Cloudflare Pages backed by `mapa-prod` Supabase project. Real notification emails via Resend.
 
+**Order (revised 2026-10-06):** runs **after Stages 11 and 12** and goes live in **coming-soon mode**: home + waitlist public, map hidden (`PUBLIC_MAP_OPEN=false`). Switch Resend and Supabase to paid plans before Danny announces the waitlist. Stage 14 opens the map.
+
+**Revised 2026-10-07:** runs after 11, 12 and **12b**, and must be live **before Danny's first November book club session**. Open in coming-soon mode: home, About, Privacy, club page; a signed-in admin sees everything.
+
 **Build:**
 
 - New hosted Supabase project `mapa-prod` (same region as staging). Migrations + admin bootstrap + functions deploy.
@@ -342,6 +346,9 @@ git push -u origin development
 - Pivot notify trigger from pg_net trigger to Supabase Database Webhooks (UI-configured per environment; works around the GUC restriction).
 - HTML email template for `notify_owner` (deeplink to admin inbox, country flag, submitter info).
 - Heartbeat workflow matrix updated to include production env.
+- **Added 2026-10-08 — browser smoke tests (Playwright)** against a local build + the local Supabase stack, with a seeded test admin (signed in through the local mail catcher's magic link or a test-only session helper; never a real account): (1) visitor, closed mode — `/es/map`, `/es/book`, `/es/suggest` show "Abre pronto", nav and home have no map links, the waitlist card validates; (2) admin, closed mode — the real map and book page appear, the admin nav has the map icon, signing out hides them; (3) open mode — map loads with colors, Map ↔ List, search, a country panel and a book view open, the suggest sheet opens (submission stubbed). Run before every merge to `master`; in CI if the local stack fits the runner.
+- **Added 2026-10-08 — scheduled daily Pages deploy hook** (e.g. a GitHub Actions cron calling the Cloudflare Pages deploy hook) so the home's map picture and counts, which are baked in at build time, stay fresh while production is closed and nothing else triggers a build.
+- **Added 2026-10-08 — real-device pass + 50m performance check from Stage 11**, as a gate before merging to `master`: real iOS Safari and Android Chrome on the staging site (closed and open mode), and the 50m world data on mid-range phones. If phones jank, simplify the topology at build time.
 
 **Verify:**
 
@@ -349,6 +356,7 @@ git push -u origin development
 2. Submitting a real suggestion triggers a Resend email to `OWNER_NOTIFICATION_EMAIL`.
 3. Magic-link login works on production URL.
 4. Heartbeat workflow includes production deployment.
+5. The Playwright smoke suite passes locally (and in CI if wired).
 
 **Pause for review.**
 
@@ -376,10 +384,138 @@ git push -u origin development
 
 **Pause for review. Merge `development` → `master`. Tag `v0.1.0`.** Launch.
 
+> **Revised 2026-10-06:** Stage 10's polish items now fold into 9b (coming-soon launch) and 14 (release day). The launch itself is Stage 14.
+
+---
+
+## Revised pre-launch order (2026-10-06)
+
+Danny reviewed staging on her phone and asked for a different launch shape: an intro + waitlist home, the map on its own full-screen page, and accounts for readers later. New order:
+
+**11** new home + full-screen map → **12** waitlist → **9b** production in coming-soon mode → _Danny announces the waitlist on Instagram_ → **13** reader accounts → **14** release day.
+
+### Update (2026-10-07)
+
+Danny already sells tickets for her first book club sessions (November 2026, on a third-party platform), and the goal shifted to turning her Instagram audience into an email list she owns. New order:
+
+**11** new home + full-screen map → **12** waitlist (= start of Danny's email list) → **12b** book club page → **9b** production in coming-soon mode, **live before the first November session** → _Danny announces the waitlist and the club on Instagram_ → **13** reader accounts → **14** release day.
+
+Owner decisions (Alejandro, 2026-10-07):
+
+- **Home is a pure landing page.** Intro in Danny's voice, a static picture of the map, "about Danny" (photo, short text, Instagram), how it works, optionally 2–3 favorite books, the waitlist form. No live mini-map, legend or suggest band. The Stage 11 spec and plan (Task 6) are updated to this before Task 6 starts.
+- **Coming-soon mode is stricter.** New visitors get only home, About, Privacy and the club page. Map, list, book pages and suggest show "Abre pronto". A signed-in admin can open every route. Updated in the Stage 11 spec and plan (Task 7) before Task 7 starts.
+- **The waitlist starts Danny's own email list** (see Stage 12).
+- **After launch the map stays open without an account;** reader accounts (Stage 13) are optional and add extras.
+- **Navigation gaps are fixed in one pass after Stage 11**: the `/thanks` button "Volver al mapa" still links to home, and the admin nav has no "Sugerir" link. The email links too: "Ver el mapa" in `supabase/functions/submit_suggestion/email.ts` and `notify_submitter/email.ts` still point at the home page. And `/[lang]/suggest` is now reachable only by URL (no page links to it; the suggest sheet on `/map` is the entry point).
+- **Money:** affiliate links, paid club sessions, clearly labeled publisher sponsorships, later newsletter sponsorships. No selling of browsing data and no personalized ads (reading habits can reveal sensitive data; a consent banner would greet every Instagram visitor).
+
+---
+
+## Stage 11 — New home + full-screen map
+
+**Branch:** `feature/11-map-redesign`
+
+**Goal:** a phone-first map Danny approves. Home becomes intro + waitlist card; the map moves to `/[lang]/map`, full screen with floating controls and a Map | List switch. Spec: [specs/2026-10-06-stage-11-map-redesign-design.md](specs/2026-10-06-stage-11-map-redesign-design.md).
+
+**Build:**
+
+- `/[lang]/map` (+ `?view=list`): `MapApp` island, d3 `WorldMap` renderer (replaces `@vnedyalk0v/react19-simple-maps`), floating search + chips, country sheet with in-panel book view, list view, suggest sheet.
+- Phone behavior: first view by time-zone region, dots on small countries, exact filter semantics.
+- New home: hero, `WaitlistCard` (stub `joinWaitlist()`), live mini-map preview + stats, legend, suggest band. Phone nav fix. **Revised 2026-10-07:** pure landing page instead (see "Update (2026-10-07)" above).
+- `PUBLIC_MAP_OPEN` build-time switch (env guard + `.env.example`), closed-mode pages, `/[lang]/books` → `/[lang]/map?view=list` redirect.
+
+**Verify:** spec §9 — unit tests, both switch values build, phone sizes in the browser, real iOS Safari + Android Chrome.
+
+**Pause for review.**
+
+---
+
+## Stage 12 — Waitlist
+
+**Branch:** `feature/12-waitlist`
+
+**Goal:** collect waitlist emails with proof of consent so Danny can build expectation before release.
+
+**Build:**
+
+- `waitlist` table (email, locale, consent text version, confirmed_at, unsubscribed_at, source), no anon access; writes only through an Edge Function.
+- Edge Function `join_waitlist`: Turnstile, validation, duplicate-safe insert, confirmation email (double opt-in), unsubscribe token.
+- Replace the Stage 11 `joinWaitlist()` stub; confirm + unsubscribe landing pages in both locales.
+- Admin: waitlist count + CSV export.
+- **Added 2026-10-08 (owner) — waitlist page in the admin** (own icon in the admin nav), so Danny can see how many people are waiting and plan the launch: totals (signed up, confirmed, with the news box), new sign-ups per day (small chart) and per source, the CSV export, and next to the numbers the limits that matter on release day (Supabase Realtime concurrent connections and Resend emails per day on the current plans) so the plan upgrade can be decided before the launch email goes out. Counts come from an admin-only RPC; no anon access.
+- Privacy policy section for the waitlist (ES + EN).
+- **Added 2026-10-07 — Danny's email list.** Submitting the form = "email me when the map opens" (launch email only). An optional, unticked box **"Quiero recibir novedades de Danny"** = ongoing news. Store per entry: email, news yes/no, signup date, the exact consent text (version). Form text in Danny's voice says both purposes plus a link to the privacy page. No newsletters are sent before release. After the launch email (Stage 14), entries without the news box are deleted; the rest become Danny's mailing list.
+- **Added 2026-10-08 — database permission tests.** pgTAP tests in `supabase/tests/` run with `supabase test db` against the local stack, for **every** table and admin RPC (not only the waitlist): what `anon` (visitor), a signed-in non-admin and an admin can select / insert / update / delete, plus column grants (e.g. `book_links.affiliate_tag` hidden from `anon`). Each policy gets an allowed and a denied case. Wire `supabase test db` into CI if the runner can start the local stack; otherwise run it before every merge and say so in the PR. Stage 13 (reader accounts) extends the same suite with the reader role.
+
+**Verify:** sign up → confirmation email → confirmed row; unsubscribe link works; duplicates do not resend endlessly; anon cannot read the table; `supabase test db` passes, and breaking one policy on purpose makes it fail.
+
+**Note:** emails reach real people only after 9b sets up Resend on our own domain; until then, test with the Resend account owner's address.
+
+**Pause for review.**
+
+---
+
+## Stage 12b — Book club page (added 2026-10-07)
+
+**Branch:** `feature/12b-book-club`
+
+**Goal:** promote Danny's paid book club sessions (first ones in November 2026) on our own page, open even in coming-soon mode.
+
+**Build:**
+
+- `/[lang]/club`: upcoming sessions with date and time in the visitor's time zone, the book (linked to its page when it is on the map), a short line from Danny, and a "Reservar plaza" link to the third-party platform (no embedded widgets).
+- Sessions in a content file in the repo for the first version (an admin editor later if needed).
+- "Añadir a mi calendario" (.ics download).
+- "Apúntate para enterarte de las próximas sesiones" → the Stage 12 waitlist form with the same optional news box. Ticket buyers are invited to join, never imported.
+
+**Needs from Danny:** session dates and times, platform and booking links, the books, free or paid.
+
+**Verify:** both locales; times shown correctly for Madrid and a Latin American time zone; the .ics opens in Google and Apple calendars; the page is open with `PUBLIC_MAP_OPEN=false`.
+
+**Pause for review.**
+
+---
+
+## Stage 13 — Reader accounts (magic link)
+
+**Branch:** `feature/13-reader-accounts`
+
+**Goal:** readers can create an account with an email link (no passwords), so suggesters are known and can choose notifications.
+
+**Build:**
+
+- Open sign-up for readers while keeping admin rights role-based (`is_admin()`); audit every grant and policy that applies to `authenticated`.
+- Fix the known gap: `book_links.affiliate_tag` is readable by any logged-in user (0016 revoked it from `anon` only). Move the admin read behind an admin-only RPC and revoke the column from `authenticated`.
+- `profiles` (display name, locale, notification choices, consent record); suggest form prefilled for signed-in readers; suggestions linked to the user.
+- "Delete my account" (GDPR); privacy policy update.
+- Supabase Auth: custom SMTP via Resend, raise the 30/hour email limit, redirect URLs for the reader flow (never `/` — see the PR #20 fragment gotcha).
+
+**Verify:** sign up, sign in on a second device, delete account; a reader cannot reach any admin data or RPC; affiliate tags invisible to readers.
+
+**Pause for review.**
+
+---
+
+## Stage 14 — Release day
+
+**Branch:** `feature/14-release`
+
+**Goal:** open the map and tell the waitlist.
+
+**Build / run:**
+
+- Flip `PUBLIC_MAP_OPEN=true` on the production Pages project and redeploy.
+- Send the launch email to confirmed waitlist entries (batch send, both locales, unsubscribe link). Then delete the entries without the news box (Stage 12, added 2026-10-07).
+- Watch Resend volume, Supabase Realtime connections and Auth email rate during the first days.
+
+**Verify:** map reachable from home and nav on production; launch email delivered to inboxes (not spam); no limit warnings.
+
+**Tag the release.** (`master` already serves production since 9b; flipping the switch needs no merge.)
+
 ---
 
 ## What comes after MVP (out of this plan)
 
-Phase 2 candidates from [00-mvp-plan.md § MVP scope vs later](00-mvp-plan.md): Capacitor native wrapper, author detail pages, search, third locale, Plausible analytics, per-book `read` flag if the owner wants the panel to distinguish read vs to-read books per author.
+Phase 2 candidates from [00-mvp-plan.md § MVP scope vs later](00-mvp-plan.md): Capacitor native wrapper, author detail pages, search, third locale, Plausible analytics, per-book `read` flag if the owner wants the panel to distinguish read vs to-read books per author. Added 2026-10-06: installable web app (PWA) + push notifications, personal maps for readers — see [40-phase2-backlog.md](40-phase2-backlog.md). (Search ships in Stage 11.)
 
 Plan that work as `02-implementation-plan-phase2.md` when MVP ships.

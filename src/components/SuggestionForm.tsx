@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import type { CountryOption } from "~/lib/countries";
 
-// Turnstile is loaded via <script> on the suggest page; declare its API here.
+// Turnstile is loaded via <script> (on the suggest page, or by the /map
+// suggest sheet on its first open); declare its API here.
 declare global {
   interface Window {
     turnstile?: {
@@ -59,8 +60,12 @@ interface Props {
   turnstileSiteKey: string;
   /** Supabase Edge Function endpoint — `${PUBLIC_SUPABASE_URL}/functions/v1/submit_suggestion`. */
   submitUrl: string;
-  /** Path the user lands on after a successful submit. */
-  thanksUrl: string;
+  /** Path the user lands on after a successful submit (when there is no `onSuccess`). */
+  thanksUrl?: string;
+  /** ISO code to preselect in the first book's country select (ignored if not in `countries`). */
+  initialCountry?: string;
+  /** Called after a successful submit instead of navigating to `thanksUrl`. */
+  onSuccess?: () => void;
 }
 
 interface BookEntry {
@@ -86,8 +91,16 @@ export default function SuggestionForm({
   turnstileSiteKey,
   submitUrl,
   thanksUrl,
+  initialCountry,
+  onSuccess,
 }: Props) {
-  const [entries, setEntries] = useState<BookEntry[]>(() => [newEntry(0)]);
+  const [entries, setEntries] = useState<BookEntry[]>(() => [
+    {
+      ...newEntry(0),
+      countryIsoA3:
+        initialCountry && countries.some((c) => c.iso_a3 === initialCountry) ? initialCountry : "",
+    },
+  ]);
   const seqRef = useRef(1); // stable monotonic keys — NOT array index.
 
   const [email, setEmail] = useState("");
@@ -118,24 +131,24 @@ export default function SuggestionForm({
       });
     };
 
+    // Script not loaded yet — poll briefly.
+    let poll: ReturnType<typeof setInterval> | undefined;
     if (window.turnstile) {
       mount();
     } else {
-      // Script not loaded yet — poll briefly.
-      const id = setInterval(() => {
+      poll = setInterval(() => {
         if (window.turnstile) {
-          clearInterval(id);
+          clearInterval(poll);
           mount();
         }
       }, 150);
-      return () => {
-        cancelled = true;
-        clearInterval(id);
-      };
     }
 
+    // Also removes a widget the poll mounted: the /map sheet unmounts the form
+    // on close and mounts a fresh one on the next open.
     return () => {
       cancelled = true;
+      clearInterval(poll);
       if (widgetIdRef.current && window.turnstile) {
         window.turnstile.remove(widgetIdRef.current);
         widgetIdRef.current = null;
@@ -208,7 +221,12 @@ export default function SuggestionForm({
         return;
       }
 
-      window.location.assign(thanksUrl);
+      if (onSuccess) {
+        setSubmitting(false);
+        onSuccess();
+      } else if (thanksUrl) {
+        window.location.assign(thanksUrl);
+      }
     } catch {
       setError("network");
       if (window.turnstile && widgetIdRef.current) window.turnstile.reset(widgetIdRef.current);
@@ -229,7 +247,7 @@ export default function SuggestionForm({
               <button
                 type="button"
                 onClick={() => removeEntry(entry.key)}
-                className="text-sm text-oxblood font-body hover:underline"
+                className={`${TAP_AREA} text-sm text-oxblood font-body hover:underline`}
               >
                 {labels.entry.remove}
               </button>
@@ -307,7 +325,7 @@ export default function SuggestionForm({
       <button
         type="button"
         onClick={addEntry}
-        className="text-sm font-medium text-oxblood font-body hover:underline"
+        className={`${TAP_AREA} text-sm font-medium text-oxblood font-body hover:underline`}
       >
         {labels.entry.add}
       </button>
@@ -343,7 +361,9 @@ export default function SuggestionForm({
         />
       </Field>
 
-      <label className="flex items-start gap-3 text-sm font-body text-ink/80 cursor-pointer select-none">
+      <label
+        className={`${TAP_AREA} flex items-start gap-3 text-sm font-body text-ink/80 cursor-pointer select-none`}
+      >
         <input
           type="checkbox"
           checked={newsletterOptIn}
@@ -405,7 +425,12 @@ function Field({
   );
 }
 
+// text-base: 16 px, so iOS Safari does not zoom into the field on focus.
 const inputCls =
-  "w-full rounded-lg border border-ink/15 bg-bone px-3 py-2 text-ink font-body " +
+  "w-full rounded-lg border border-ink/15 bg-bone px-3 py-2 text-base text-ink font-body " +
   "placeholder:text-ink/40 focus:outline-none focus:border-oxblood/60 " +
   "focus:ring-2 focus:ring-oxblood/15 transition-colors";
+
+// Small text buttons / the checkbox row: an invisible ::before grows the tap
+// area to 44 px tall without moving anything (the gaps around them are wider).
+const TAP_AREA = "relative before:absolute before:inset-x-0 before:-inset-y-3 before:content-['']";

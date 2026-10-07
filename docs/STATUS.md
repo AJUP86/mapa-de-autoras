@@ -8,29 +8,105 @@ Running log of what's done, what's next, and any context a future-you (or contri
 
 ## Where we are on the MVP roadmap
 
-| Stage                                                                                     | Status             | Branch                             |
-| ----------------------------------------------------------------------------------------- | ------------------ | ---------------------------------- |
-| 0 — Branching                                                                             | ✅ Merged          | master / development               |
-| 1 — Scaffold + brand tokens + styleguide                                                  | ✅ Merged          | feature/01-scaffold-and-styleguide |
-| 2 — i18n skeleton (ES default, EN at /en/)                                                | ✅ Merged          | feature/02-i18n-skeleton           |
-| 3 — Supabase schema + RLS + 249-country seed                                              | ✅ Merged          | feature/03-supabase-schema         |
-| 4 — Public landing + map (mocked data)                                                    | ✅ Merged          | feature/04-landing-and-map         |
-| 4b — Two-color hierarchy map palette refinement                                           | ✅ Merged          | feature/04b-map-palette-penguin    |
-| 5 — Map runs on live Supabase data + dev seed                                             | ✅ Merged          | feature/05-real-author-data        |
-| **6 — Suggestion form + Turnstile + Edge Function**                                       | ✅ Merged          | feature/06-suggestion-flow         |
-| 7a — Owner notification + admin auth + read-only inbox                                    | ✅ Merged          | feature/07a-notify-and-auth        |
-| 7b-i — Promote suggestion + currently_reading + translate + unified admin UX              | ✅ Merged          | feature/07b-promote-and-crud       |
-| 7b-ii — Author CRUD — add-more-books ✅ (8.5 /admin/add + promote); edit + delete pending | ⏳ Partial         | feature/07b-ii-author-crud         |
-| 8 — Notify submitter on promote (scope pivoted from newsletter)                           | ✅ Merged          | feature/08-newsletter-confirmation |
-| 8.4 — Page-pair DRY (shared components) + always-prefix locale URLs (dynamic routes)      | ✅ Merged          | feature/08.4-page-pair-dry         |
-| **8.5 — Book-first refactor** (books.status, envelope suggestions, catalog, admin add)    | ✅ Merged (PR #18) | feature/8.5-book-first-refactor    |
-| **8.6 — Book detail + curation** (book_quotes, buy links, public detail page, affiliate)  | ✅ Done (PR → dev) | feature/8.6-book-detail            |
-| 9a — Staging deployment (Cloudflare Pages + Supabase staging)                             | ✅ Merged          | feature/09a-staging-deploy         |
-| 9a-ii — Realtime map data (client-side fetch + Supabase Realtime)                         | ✅ Merged          | feature/09a-ii-realtime-map        |
-| 9b — Production deployment (apex + www + Resend)                                          | ⏳ Pending         | feature/09b-production-deploy      |
-| 10 — Launch content + checklist                                                           | ⏳ Pending         | feature/10-launch-prep             |
+| Stage                                                                                     | Status                | Branch                             |
+| ----------------------------------------------------------------------------------------- | --------------------- | ---------------------------------- |
+| 0 — Branching                                                                             | ✅ Merged             | master / development               |
+| 1 — Scaffold + brand tokens + styleguide                                                  | ✅ Merged             | feature/01-scaffold-and-styleguide |
+| 2 — i18n skeleton (ES default, EN at /en/)                                                | ✅ Merged             | feature/02-i18n-skeleton           |
+| 3 — Supabase schema + RLS + 249-country seed                                              | ✅ Merged             | feature/03-supabase-schema         |
+| 4 — Public landing + map (mocked data)                                                    | ✅ Merged             | feature/04-landing-and-map         |
+| 4b — Two-color hierarchy map palette refinement                                           | ✅ Merged             | feature/04b-map-palette-penguin    |
+| 5 — Map runs on live Supabase data + dev seed                                             | ✅ Merged             | feature/05-real-author-data        |
+| **6 — Suggestion form + Turnstile + Edge Function**                                       | ✅ Merged             | feature/06-suggestion-flow         |
+| 7a — Owner notification + admin auth + read-only inbox                                    | ✅ Merged             | feature/07a-notify-and-auth        |
+| 7b-i — Promote suggestion + currently_reading + translate + unified admin UX              | ✅ Merged             | feature/07b-promote-and-crud       |
+| 7b-ii — Author CRUD — add-more-books ✅ (8.5 /admin/add + promote); edit + delete pending | ⏳ Partial            | feature/07b-ii-author-crud         |
+| 8 — Notify submitter on promote (scope pivoted from newsletter)                           | ✅ Merged             | feature/08-newsletter-confirmation |
+| 8.4 — Page-pair DRY (shared components) + always-prefix locale URLs (dynamic routes)      | ✅ Merged             | feature/08.4-page-pair-dry         |
+| **8.5 — Book-first refactor** (books.status, envelope suggestions, catalog, admin add)    | ✅ Merged (PR #18)    | feature/8.5-book-first-refactor    |
+| **8.6 — Book detail + curation** (book_quotes, buy links, public detail page, affiliate)  | ✅ Merged (PR #19)    | feature/8.6-book-detail            |
+| 9a — Staging deployment (Cloudflare Pages + Supabase staging)                             | ✅ Merged             | feature/09a-staging-deploy         |
+| 9a-ii — Realtime map data (client-side fetch + Supabase Realtime)                         | ✅ Merged             | feature/09a-ii-realtime-map        |
+| Fix — admin magic-link redirect (`/` → `/es/`)                                            | ✅ Merged (PR #20)    | fix/admin-login-redirect           |
+| **11 — New home + full-screen map** (`/[lang]/map`, map/list switch, map-closed switch)   | ✅ Built — PR pending | feature/11-map-redesign            |
+| 12 — Waitlist (table + Edge Function + confirm email + unsubscribe)                       | ⏳ Pending            | feature/12-waitlist                |
+| 12b — Book club page (`/[lang]/club`, open in coming-soon mode)                           | ⏳ Pending            | feature/12b-book-club              |
+| 9b — Production deployment (apex + www + Resend), live in **coming-soon mode**            | ⏳ Pending            | feature/09b-production-deploy      |
+| 13 — Reader accounts (magic-link sign-up, profiles, delete account)                       | ⏳ Pending            | feature/13-reader-accounts         |
+| 14 — Release day (open the map, email the waitlist)                                       | ⏳ Pending            | feature/14-release                 |
+| 10 — Launch content + checklist (polish; runs alongside 9b and 14)                        | ⏳ Pending            | feature/10-launch-prep             |
 
-**Everything through 9a-ii + the 9-pre hardening is merged into `development`; `master` still holds only the initial commit (nothing merges there until the production launch).** Revised pre-launch path: **pre-deploy security hardening (9-pre — Branch 1 ✅ merged, Branch 2 ✅ merged + deployed to staging)** → **book-first refactor (8.5 ✅ merged as PR #18 — + public catalog + admin auto-promote add)** → **book detail + curation (8.6 ✅ Done, PR → development pending)** → production deploy (9b) → launch prep (10). Post-launch backlog: author CRUD (7b-ii — **edit/delete only now; add-more-books shipped in 8.5**), real newsletter (broadcast list). Stage 10 (launch prep) has some early work merged (privacy policy, robots, site config) but remains **pending** overall — see [50-launch-checklist.md](50-launch-checklist.md).
+**Everything through 8.6 + the 9-pre hardening + the magic-link fix is merged into `development` and live on staging; `master` still holds only the initial commit (nothing merges there until the production launch).**
+
+**Revised pre-launch path (2026-10-06, after Danny's phone review):** **11** new home + full-screen map → **12** waitlist → **9b** production in coming-soon mode (map hidden by `PUBLIC_MAP_OPEN=false`) → **Danny announces the waitlist on Instagram** → **13** reader accounts → **14** release day. Stage 10 polish items fold into 9b and 14 — see [50-launch-checklist.md](50-launch-checklist.md). Rows are listed in execution order. Post-launch backlog: author CRUD (7b-ii — edit/delete), installable web app (PWA) + push, personal maps — see [40-phase2-backlog.md](40-phase2-backlog.md).
+
+**Updated 2026-10-07:** **11** → **12** waitlist (= start of Danny's own email list, optional "novedades" box) → **12b** book club page → **9b** production in coming-soon mode, live **before Danny's first November book club session** → announce → **13** → **14**. Home becomes a pure landing page; coming-soon mode opens only home, About, Privacy and the club page (admins see everything). Decisions and reasons: [01-implementation-plan.md § Update (2026-10-07)](01-implementation-plan.md#update-2026-10-07).
+
+---
+
+## Last session — 2026-10-08 (Stage 11 — new home + full-screen map)
+
+**Status:** Stage 11 built on `feature/11-map-redesign` (7 tasks, one commit each). Vitest **125**, `astro check` 0 errors, build OK with `PUBLIC_MAP_OPEN=true` and `false` (23 pages). PR to `development` after the manual steps and the real-device check below. Design: [spec](specs/2026-10-06-stage-11-map-redesign-design.md); renderer change: [ADR 0001 amendment](adr/0001-tech-stack.md#amendment-2026-10-07--map-renderer).
+
+### What shipped
+
+- **Map page `/[lang]/map`:** full screen, drawn with `d3-geo` + `d3-zoom` (the react-simple-maps wrapper is gone). Phones open on the visitor's region from the browser time zone; small countries get a dot; exact status chips; search across countries, authors and books; zoom and re-center buttons.
+- **List view** `/[lang]/map?view=list` behind the Map | List switch; `/[lang]/books` redirects there.
+- **Country panel** (bottom sheet on phones, side panel on desktop) with the **book view** inside, and the **suggest sheet** (Turnstile, inline thank-you).
+- **Landing home:** waitlist card (stub until Stage 12) or "Abrir el mapa", the build-time map picture with counts, about Danny, how it works.
+- **Public nav:** logo, "Mapa" (only while the map is open), "Conóceme", short language pill. No "Sugerir" link (owner, 2026-10-07): suggesting lives in the map's sheet; `/[lang]/suggest` stays.
+- **Closed mode (`PUBLIC_MAP_OPEN=false`):** `/map` (and the list), `/book`, `/suggest` and `/thanks` show "Abre pronto" with the waitlist card (`noindex`, out of the sitemap); nav and home have no map links. A signed-in admin gets the real map and book page (a client-side check: it hides, it does not secure). The env guard accepts only `true` or `false`; `astro dev` and `astro build` refuse to start otherwise.
+
+### Manual steps (Alejandro)
+
+- Local `.env` must contain `PUBLIC_MAP_OPEN=true` or `PUBLIC_MAP_OPEN=false` — the dev server refuses to start otherwise.
+- Before merging: staging Cloudflare Pages project → `PUBLIC_MAP_OPEN=true` (Production scope), or the staging build fails on the env guard.
+- Closed-mode admin path, by hand: with `PUBLIC_MAP_OPEN=false` (dev server or a build), sign in at `/admin`, open `/es/map` and `/es/book?id=…` — the real map and book page cover "Abre pronto"; signing out hides them again.
+
+### Follow-ups
+
+- Navigation pass (owner: after Stage 11) — e.g. the thanks page's link, no "Sugerir" in the admin nav.
+- Real-device check before the PR: iOS Safari + Android Chrome, Danny's phone included (spec §9.7).
+- Performance of the 50m map on a real phone.
+
+---
+
+## Last session — 2026-10-06 (staging check, Danny's review, new roadmap)
+
+**Status:** Staging verified end to end. Danny did not approve launch because of the map on phones; the roadmap was re-planned around a new home + full-screen map. Stage 11 spec written on `feature/11-map-redesign`.
+
+### Shipped
+
+- **Admin magic-link fix (PR #20).** The login redirect pointed at `/`, which the static build serves as a meta-refresh stub to `/es/`. A meta-refresh starts a fresh navigation and drops the `#access_token` fragment, so admin login silently failed on every built site since Stage 8.4. Now redirects to `/es/` directly (comment in `src/pages/admin/index.astro`). The dev server hides the bug because it serves `/` as a real 302.
+
+### Verified on staging
+
+- Admin login, the 8.6 book editor round-trip (synopsis, quote, buy link, public page, reload), suggesting a book with the opt-in, promote + **Finalizar y notificar**.
+- `supabase migration list` against staging: **0001–0016 all applied** (the 8.6 note above saying 0014–0016 were pending is out of date). Edge Functions on staging are the 8.5 versions (deployed 2026-08-25).
+- `notify_submitter` returned `{"ok":true}` (Resend accepted it); the email landed in **spam**. Expected while sending from `onboarding@resend.dev`; Stage 9b's own-domain sender (SPF/DKIM/DMARC) is the fix.
+- `net._http_response` shows `Couldn't resolve host name` on each new suggestion: the old `notify_owner` pg_net trigger falls back to the local-dev URL `host.docker.internal`. Expected; 9b replaces it with a Database Webhook.
+
+### Danny's review → new direction
+
+Measured at 375 × 812 the map is about 345 × 170 px, below the fold, with countries smaller than a finger, and the public nav overflows. Danny's direction: the landing becomes intro + **waitlist**; the map moves to its **own full-screen route** with floating controls (Funda / Google Maps) and a **Map | List switch**; suggesting stays available from the map. She approved a clickable prototype: <https://claude.ai/artifact/JeK7bmc7p7cpzfGPx24Yin> (private).
+
+**Decisions (2026-10-06):**
+
+- Waitlist and reader accounts are **two separate stages** (12 and 13): the waitlist goes live with production in coming-soon mode; accounts come later and the waitlist is invited at release.
+- The map is hidden by a **build-time switch** (`PUBLIC_MAP_OPEN`), flipped on release day — not an automatic date.
+- On phones the map opens on the visitor's **region from the browser time zone** (no permission prompt; nothing leaves the device).
+- Installable web app (PWA) before any store app; personal maps later. Both in the backlog.
+
+### Limits to plan for (launch week)
+
+- Resend free plan: **100 emails/day** (3,000/month); paid $20/month removes the daily cap. Every login link and waitlist confirmation counts.
+- Supabase free plan: **200 concurrent Realtime connections**; every map visitor opens one. The map still loads without Realtime.
+- Supabase Auth sends at most **30 emails/hour** by default with custom SMTP — raise it before Stage 13 goes live.
+- Upgrades apply immediately; upgrade the day before the Instagram announcement, not during it.
+
+### Next
+
+- Review the Stage 11 spec: [specs/2026-10-06-stage-11-map-redesign-design.md](specs/2026-10-06-stage-11-map-redesign-design.md). Then the implementation plan, then build.
 
 ---
 
@@ -436,33 +512,29 @@ Worth remembering for future sessions:
 1. **Resend account + domain auth** — create Resend account, authenticate `mapadeautoras.com` (SPF/DKIM/DMARC). Allow ~24h DNS propagation buffer before relying on real email delivery.
 2. **Pivot notify trigger to Supabase Database Webhooks** — no committed code change needed; configured via the Supabase dashboard per environment. Unblocks real `notify_owner` emails in production (hosted Supabase blocks the pg_net GUC approach).
 3. **HTML email template for `notify_owner`** — deeplink to admin inbox, country flag, formatted submitter info. Small follow-up; can land in 9b or as a phase-2 polish item (see `docs/40-phase2-backlog.md`).
+4. **Coming-soon mode** — production builds with `PUBLIC_MAP_OPEN=false` (Stage 11 switch) until Stage 14.
+5. **Paid plans before the waitlist announcement** — Resend ($20/month, removes the 100/day cap) and Supabase Pro ($25/month, no auto-pause, more Realtime connections). Upgrades apply immediately; Supabase downgrades only at the end of the billing cycle.
+6. **Public Realtime decision** — keep it on with the paid plan, or turn it off for public visitors (the map works without it). See the Stage 11 spec §10.
 
 ---
 
 ## How to resume tomorrow
 
-**Next up: Stage 9a-iii — realtime admin inbox + pending-count badge.** Design brainstormed (spec not yet written). Locked decisions:
-
-- **Scope:** inbox list (`<AdminInbox>`) + nav badge (`<AdminAwareNav>`).
-- **Approach:** refetch-on-change (admin-only, low volume — not granular patching).
-- **Migration 0010:** `alter publication supabase_realtime add table public.suggestions;`
-- **Shared hook** `src/lib/use-suggestions-realtime.ts` (subscribe + `onChange` + reconnect resync); replaces the 60s poll in `<AdminAwareNav>`.
-- **DE-RISK FIRST:** probe that an _admin-JWT_ subscriber receives `postgres_changes` on the RLS-gated `suggestions` table (the map used anon/public rows; this is admin-only). If not, call `supabase.realtime.setAuth(session.access_token)` before subscribing.
-- **First move:** write `docs/specs/2026-07-02-stage-9a-iii-realtime-inbox-design.md`, then the plan.
+**Stage 11 — new home + full-screen map is built** on `feature/11-map-redesign` (PR pending). Spec: [specs/2026-10-06-stage-11-map-redesign-design.md](specs/2026-10-06-stage-11-map-redesign-design.md). **Next:** open the PR → staging checks (closed and open mode, real devices) → Stage 12 waitlist. The follow-ups from the final review are in [50-launch-checklist.md](50-launch-checklist.md) → "Stage 11 follow-ups".
 
 ```sh
-git checkout development
-git pull
-git checkout -b feature/09a-iii-realtime-inbox
+git switch feature/11-map-redesign
 
 # Local stack — see supabase/README.md for full quickstart
 npm run dev:db
-npm run dev:db:reset      # applies 0001-0009 + seeds
+npm run dev:db:reset      # applies 0001-0016 + seeds
 npm run dev:functions
 npm run dev
-npm test                 # 28-test baseline (map-state + realtime-reducers)
+npm test                  # 132 tests
 # Re-bootstrap the admin user locally (reset wipes auth.users — see supabase/README.md)
 ```
+
+The realtime admin inbox (formerly "Stage 9a-iii") moved to the backlog: [40-phase2-backlog.md](40-phase2-backlog.md) → "Realtime pending-count badge + live inbox".
 
 **Loose ends (small, optional, any time):**
 

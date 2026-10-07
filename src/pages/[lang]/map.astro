@@ -1,0 +1,24 @@
+---
+import MapPage from "~/components/pages/MapPage.astro";
+import ComingSoonPage from "~/components/pages/ComingSoonPage.astro";
+import AdminMap from "~/components/map/AdminMap";
+import { adminLayerLabels, mapAppProps } from "~/components/page-props";
+import { LOCALES, type Locale } from "~/i18n/locales";
+import { MAP_OPEN } from "~/lib/site-config";
+
+export function getStaticPaths() {
+  return LOCALES.map((lang) => ({ params: { lang } }));
+}
+
+const { lang } = Astro.params as { lang: Locale };
+// Closed (spec §5.5): "Abre pronto" for visitors; a signed-in admin gets the
+// real map on top of it.
+const adminProps = MAP_OPEN ? null : await mapAppProps(lang);
+---
+{adminProps ? (
+  <ComingSoonPage lang={lang}>
+    <AdminMap client:only="react" {...adminProps} adminLabels={adminLayerLabels(lang)} />
+  </ComingSoonPage>
+) : (
+  <MapPage lang={lang} />
+)}

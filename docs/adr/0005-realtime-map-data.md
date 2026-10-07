@@ -2,6 +2,8 @@
 
 Status: Accepted (2026-06-18)
 
+Amended: 2026-10-08 — data ownership (see [Amendment](#amendment-2026-10-08--data-ownership))
+
 ## Context
 
 Stages 4-5 chose Astro static output and a build-time Supabase fetch in `src/pages/index.astro` front-matter. The full author + books catalog was baked into the static HTML at build time and passed to `<MapSection>` as a prop. The trade-off was deliberate: maximum CDN cacheability, zero runtime cost on the public surface.
@@ -18,6 +20,14 @@ Flip the public map's data flow to **static shell + client-side fetch + Realtime
 - On WebSocket reconnect, one-shot `getCatalog()` to resync.
 
 The build no longer fetches data; `src/pages/index.astro` and `src/pages/en/index.astro` drop the `await getCatalog()` call and the `catalog` prop on `<MapSection>`.
+
+## Amendment (2026-10-08) — data ownership
+
+Stage 11 (full-screen map, [spec](../specs/2026-10-06-stage-11-map-redesign-design.md)) replaced `<MapSection>`. The decision above (static shell, client-side fetch, Realtime patching) stands; what changed is who owns the data and one build-time exception.
+
+- **Data owner:** the `useCatalog` hook (`src/lib/use-catalog.ts`), used by `MapApp` on `/[lang]/map`, now fetches the catalog (`fetchCatalog()`), subscribes to the Realtime channel and resyncs on reconnect — the same behavior, moved out of `MapSection`. The unused `getCatalog()` wrapper was removed.
+- **One deliberate build-time fetch:** the home's static map picture and its counts caption (`MapPicture.astro`) read the catalog once per build, so they are refreshed on each deploy (a scheduled daily deploy hook is planned for Stage 9b). If the fetch fails, the picture is drawn uncolored without counts; it never fails the build. Everything else still loads client-side.
+- **Closed mode:** while `PUBLIC_MAP_OPEN=false`, visitors never mount the map, so they open no Realtime connections; only a signed-in admin loads `MapApp`. The connection-cost point in Consequences applies to `/map` visitors only.
 
 ## Alternatives considered
 

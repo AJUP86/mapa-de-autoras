@@ -2,8 +2,11 @@
 //
 // Mounted in Base.astro so every page renders the same nav slot. On mount
 // reads the supabase session; renders a small skeleton during the check,
-// then either the public nav (logo + Sugerir) or the admin nav (logo +
-// inbox icon with pending-count badge + add icon + logout).
+// then either the public nav (logo, "Mapa" while the map is open, "Conóceme"
+// and a short EN/ES pill; Stage 11: fits a 360 px phone, and suggesting lives
+// on the map, so no "Sugerir" link) or the admin nav (logo + map icon —
+// the real map in both modes — + inbox icon with pending-count badge + books
+// + add icon + logout; fits a 360 px phone).
 //
 // The pending count is queried once on mount; refreshed every 60s with
 // setInterval. Realtime upgrade is phase 2 — see docs/40-phase2-backlog.md.
@@ -12,17 +15,20 @@ import { useEffect, useState } from "react";
 import { readSession, signOut, type AdminSessionState } from "~/lib/admin-session";
 import { supabase } from "~/lib/supabase";
 import AdminNavIcon from "./AdminNavIcon";
+import { IconMap } from "./icons";
 
 interface Labels {
-  mapa: string;
-  mapaHref: string;
-  sugerir: string;
-  sugerirHref: string;
-  books: string;
-  booksHref: string;
+  /** Admin variant: the text logo ("Inicio"). */
+  home: string;
+  homeHref: string;
+  /** Public variant: the wordmark next to the "m" mark. */
+  siteName: string;
+  map: string;
+  mapHref: string;
   about: string;
   aboutHref: string;
   languageSwitchHref: string;
+  /** Short pill text ("EN" on /es, "ES" on /en). */
   languageSwitchLabel: string;
   languageSwitchAriaLabel: string;
   languageSwitchHreflang: string;
@@ -34,9 +40,11 @@ interface Labels {
 
 interface Props {
   labels: Labels;
+  /** PUBLIC_MAP_OPEN (MAP_OPEN): the public nav links "Mapa" only when open. */
+  mapOpen: boolean;
 }
 
-export default function AdminAwareNav({ labels }: Props) {
+export default function AdminAwareNav({ labels, mapOpen }: Props) {
   const [state, setState] = useState<AdminSessionState>({ kind: "loading" });
   const [pendingCount, setPendingCount] = useState<number>(0);
 
@@ -92,66 +100,117 @@ export default function AdminAwareNav({ labels }: Props) {
   }, [state.kind]);
 
   if (state.kind === "loading") return <NavSkeleton />;
+  if (state.kind !== "admin")
+    return <PublicNav labels={labels} mapOpen={mapOpen} search={search} />;
 
   return (
     <nav className="flex items-center justify-between gap-4 px-6 py-3 border-b border-ink/10 bg-parchment">
       <a
-        href={labels.mapaHref}
+        href={labels.homeHref}
         className="font-display text-lg font-semibold text-ink no-underline"
       >
-        {labels.mapa}
+        {labels.home}
       </a>
-      {state.kind === "admin" ? (
-        <div className="flex items-center gap-1">
-          <AdminNavIcon label={labels.sugerencias} href="/admin/inbox" badge={pendingCount}>
-            <InboxIcon />
-          </AdminNavIcon>
-          <AdminNavIcon label={labels.libros} href="/admin/books">
-            <BookIcon />
-          </AdminNavIcon>
-          <AdminNavIcon label={labels.anadir} href="/admin/add">
-            <PlusIcon />
-          </AdminNavIcon>
-          <AdminNavIcon
-            label={labels.salir}
-            onClick={async () => {
-              await signOut();
-              window.location.replace("/admin");
-            }}
+      <div className="flex items-center gap-1">
+        {/* The real map in both modes: while it is closed, /map's admin gate shows it. */}
+        <AdminNavIcon label={labels.map} href={labels.mapHref}>
+          <IconMap size={20} />
+        </AdminNavIcon>
+        <AdminNavIcon label={labels.sugerencias} href="/admin/inbox" badge={pendingCount}>
+          <InboxIcon />
+        </AdminNavIcon>
+        <AdminNavIcon label={labels.libros} href="/admin/books">
+          <BookIcon />
+        </AdminNavIcon>
+        <AdminNavIcon label={labels.anadir} href="/admin/add">
+          <PlusIcon />
+        </AdminNavIcon>
+        <AdminNavIcon
+          label={labels.salir}
+          onClick={async () => {
+            await signOut();
+            window.location.replace("/admin");
+          }}
+        >
+          <LogoutIcon />
+        </AdminNavIcon>
+      </div>
+    </nav>
+  );
+}
+
+// Public bar: one row at every width (h-15), content aligned with the home's
+// 1080 px column. Below `sm` the wordmark is visually hidden (the "m" mark
+// stays, the link keeps its name) so logo, links and the language pill fit a
+// 360 px phone. Every target is at least 44 × 44 px.
+const PUBLIC_BAR = "border-b border-ink/10 bg-parchment";
+const PUBLIC_ROW =
+  "mx-auto flex h-15 max-w-[1080px] items-center justify-between gap-2 px-4 sm:px-6";
+const PUBLIC_LINK =
+  "inline-flex min-h-11 items-center px-2 text-[0.9rem] whitespace-nowrap text-ink/80 no-underline hover:text-oxblood sm:px-3";
+
+function PublicNav({
+  labels,
+  mapOpen,
+  search,
+}: {
+  labels: Labels;
+  mapOpen: boolean;
+  search: string;
+}) {
+  // While the map is closed (spec §5.5) the nav does not link to it.
+  const links = [
+    ...(mapOpen ? [{ href: labels.mapHref, label: labels.map }] : []),
+    { href: labels.aboutHref, label: labels.about },
+  ];
+  return (
+    <nav className={PUBLIC_BAR}>
+      <div className={PUBLIC_ROW}>
+        <a
+          href={labels.homeHref}
+          className="flex min-h-11 min-w-11 flex-none items-center gap-2.5 font-display text-[1.12rem] font-semibold tracking-[-0.01em] whitespace-nowrap text-ink no-underline"
+        >
+          <span
+            aria-hidden="true"
+            className="grid size-[30px] flex-none place-items-center rounded-full bg-oxblood text-base leading-none text-bone"
           >
-            <LogoutIcon />
-          </AdminNavIcon>
-        </div>
-      ) : (
-        <div className="flex items-center gap-4">
-          <a href={labels.aboutHref} className="text-sm text-ink/80 hover:text-oxblood">
-            {labels.about}
-          </a>
-          <a href={labels.booksHref} className="text-sm text-ink/80 hover:text-oxblood">
-            {labels.books}
-          </a>
-          <a href={labels.sugerirHref} className="text-sm text-ink/80 underline hover:text-oxblood">
-            {labels.sugerir}
-          </a>
+            m
+          </span>
+          <span className="sr-only sm:not-sr-only">{labels.siteName}</span>
+        </a>
+        <div className="flex min-w-0 items-center">
+          <ul className="flex items-center">
+            {links.map((link) => (
+              <li key={link.href}>
+                <a href={link.href} className={PUBLIC_LINK}>
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
           <a
             href={`${labels.languageSwitchHref}${search}`}
             hrefLang={labels.languageSwitchHreflang}
             aria-label={labels.languageSwitchAriaLabel}
-            className="inline-flex items-center justify-center rounded-full border border-ink/15 bg-bone px-3 py-1 text-xs font-medium tracking-wider text-ink/80 transition-colors hover:border-oxblood/40 hover:text-oxblood"
+            className="group ml-1 inline-flex min-h-11 min-w-11 items-center justify-center no-underline"
           >
-            {labels.languageSwitchLabel}
+            <span className="rounded-full border border-ink/15 bg-bone px-2.5 py-1 text-xs font-semibold tracking-wider text-ink/80 transition-colors group-hover:border-oxblood/40 group-hover:text-oxblood">
+              {labels.languageSwitchLabel}
+            </span>
           </a>
         </div>
-      )}
+      </div>
     </nav>
   );
 }
 
 function NavSkeleton() {
   return (
-    <nav className="flex items-center justify-between gap-4 px-6 py-3 border-b border-ink/10 bg-parchment">
-      <div className="h-6 w-32 rounded bg-ink/5" aria-hidden />
-      <div className="h-6 w-24 rounded bg-ink/5" aria-hidden />
+    <nav className={PUBLIC_BAR}>
+      <div className={PUBLIC_ROW}>
+        <div className="h-[30px] w-[30px] rounded-full bg-ink/5 sm:w-40" aria-hidden />
+        <div className="h-6 w-56 max-w-[60%] rounded bg-ink/5" aria-hidden />
+      </div>
     </nav>
   );
 }

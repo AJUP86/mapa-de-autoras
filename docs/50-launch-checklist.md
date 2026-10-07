@@ -128,17 +128,32 @@ Full 9b spec lives in `docs/01-implementation-plan.md`. Checklist form here:
   - `RESEND_FROM_EMAIL` (e.g., `hola@mapadeautoras.com`)
   - `OWNER_NOTIFICATION_EMAIL` (Danny's email)
 - [ ] Configure Supabase auth `site_url` = `https://mapadeautoras.com` + redirect URLs for `/` + `/admin` + `/admin/inbox`.
-- [ ] Keep public signups **disabled** on `mapa-prod` (Auth → Providers → Email → "Allow new users to sign up" off). `book_links.affiliate_tag` is readable by any `authenticated` role — migration `0016` revokes it from `anon` only — so a self-serve `authenticated` account would still be able to read it; revoking it from `authenticated` too would break the admin editor's read unless that read moves behind a `SECURITY DEFINER` RPC.
+- [ ] Keep public signups **disabled** on `mapa-prod` (Auth → Providers → Email → "Allow new users to sign up" off). `book_links.affiliate_tag` is readable by any `authenticated` role — migration `0016` revokes it from `anon` only — so a self-serve `authenticated` account would still be able to read it; revoking it from `authenticated` too would break the admin editor's read unless that read moves behind a `SECURITY DEFINER` RPC. **Stage 13 fixes this before opening reader sign-up.**
 - [ ] **Pivot `notify_owner` from pg_net trigger to Supabase Database Webhook** (dashboard-configured per environment). Solves the `app.functions_url` GUC restriction we deferred in 9a. Webhook fires on INSERT to `public.suggestions` → POSTs to `notify_owner` function URL.
 - [ ] Create SEPARATE Cloudflare Pages project `mapa-de-autoras-prod` (NOT reuse staging project).
 - [ ] Pages production branch = `master`.
-- [ ] Pages env vars in Production scope: `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`, `PUBLIC_TURNSTILE_SITE_KEY`, `NODE_VERSION=22`.
+- [ ] Pages env vars in Production scope: `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`, `PUBLIC_TURNSTILE_SITE_KEY`, `PUBLIC_MAP_OPEN=false` (coming-soon mode until Stage 14), `NODE_VERSION=22`.
 - [ ] Add `mapadeautoras.com` + `www.mapadeautoras.com` as custom domains on the Pages project.
 - [ ] Resend domain auth on `mapadeautoras.com` — SPF/DKIM/DMARC records via Cloudflare DNS (same account, one-click).
 - [ ] Turnstile: extend the widget to include the two prod hostnames (or create a separate prod widget for cleaner separation).
 - [ ] Add `PROD_SUPABASE_URL` + `PROD_SUPABASE_ANON_KEY` to GitHub Actions secrets.
 - [ ] Extend `.github/workflows/heartbeat.yml` matrix to include the production entry.
 - [ ] Smoke test end-to-end on production: submit real suggestion → Danny gets real email → login → promote → author appears on map via Realtime.
+
+### 6.5 Coming-soon launch + waitlist announcement (after 9b)
+
+- [ ] Production home shows the waitlist; `/map`, the list and book pages show "Abre pronto" (`PUBLIC_MAP_OPEN=false`).
+- [ ] Waitlist end to end on production: sign up → confirmation email arrives in the **inbox** (not spam) → confirmed row → unsubscribe works.
+- [ ] Privacy policy covers the waitlist (both locales), reviewed by Danny.
+- [ ] **The day before the announcement:** Resend paid plan ($20/month, removes the 100/day cap) and Supabase Pro ($25/month). Upgrades apply immediately; Supabase downgrades only at the end of the billing cycle.
+- [ ] Danny announces on Instagram.
+
+### 6.6 Release day (Stage 14)
+
+- [ ] Stage 13 (reader accounts) merged and verified, including the `affiliate_tag` fix and the higher Auth email limit (default 30/hour with custom SMTP).
+- [ ] Flip `PUBLIC_MAP_OPEN=true` on the production Pages project → redeploy → map reachable from home and nav.
+- [ ] Launch email to confirmed waitlist entries (both locales, unsubscribe link).
+- [ ] Watch Resend volume, Realtime connections and Auth email rate for the first days.
 
 ### 7. Launch polish (Stage 10 essentials)
 
@@ -211,6 +226,51 @@ Full 9b spec lives in `docs/01-implementation-plan.md`. Checklist form here:
 - [ ] Lighthouse ≥90 on Performance, Accessibility, Best Practices, SEO.
 - [ ] Realtime map still works end-to-end (regression check: promote in tab 1, watch tab 2 update).
 - [ ] Heartbeat workflow matrix runs green for BOTH staging and production entries.
+
+---
+
+## Stage 11 follow-ups (from the final review, 2026-10-08)
+
+The whole-branch review of Stage 11 found no blockers; its fix wave is done. These are the items it left open, grouped by when they matter.
+
+### Before 9b
+
+- [ ] Scheduled daily Pages deploy hook, so the home's map picture and counts stay fresh while production is closed (also in the 9b build list).
+- [ ] The Playwright smoke tests (already in 9b) also cover: Esc closes the layers in order (suggest sheet, search dropdown, panel), focus returns to where it was, and `?view` stays in sync with the Map | List switch.
+
+### Before Stage 14 (release)
+
+- [ ] Contrast: `text-ink/60` secondary text (~3.9:1, WCAG 1.4.3) and the ochre focus ring (~2.7:1, WCAG 1.4.11).
+- [ ] The injected Turnstile script has no `onerror`: a failed first load is never retried.
+- [ ] Opening a book in the panel announces nothing: name the dialog after the book, or focus the title.
+- [ ] The suggest sheet drops a half-typed draft on Esc or a scrim tap; consider a "discard?" confirm.
+- [ ] Simplify the 50m topology at build time if the phone pass shows jank.
+- [ ] The navigation pass: the `/thanks` button, the email links ("Ver el mapa" in `submit_suggestion` / `notify_submitter`), `/suggest` reachable only by URL, the admin `NavSkeleton` width and layout.
+
+### Later (code health)
+
+- [ ] Unsorted-fixture test for the search sort and the year tie-break.
+- [ ] `fold()`: write the combining-mark range as `\u0300-\u036f` escapes instead of raw characters.
+- [ ] `fmt` → `Object.hasOwn`.
+- [ ] Tests for `browserRegion`, the 900 px² boundary, and mapping `Indian/*` time zones to a region.
+- [ ] Test pinning the AUS + Ashmore merge.
+- [ ] Extract and test `constrainToFreeArea` / `keepView`.
+- [ ] Arrow-key navigation in the search combobox.
+- [ ] `scroll-pb` ignores the bottom safe area.
+- [ ] `SuggestionForm` props as a union (`thanksUrl` | `onSuccess`).
+- [ ] A `bookHref` helper (the book page link is duplicated).
+- [ ] Split `MapApp.tsx` (565 lines at the review) into hooks (`useSuggestSheet`, search).
+- [ ] `MapPicture` imports `world-geo.ts`, which parses the 50m data at build.
+- [ ] The Instagram URL guard is duplicated: extract a helper.
+- [ ] Unit tests for the env guard values and the closed-route sitemap regex (`astro.config.mjs`).
+- [ ] The env guard reads the `.env.production*` mode in dev.
+- [ ] Landscape phones and iPads get the desktop zoom and lose double-tap: check in the device pass.
+- [ ] Shadow tokens hard-code the ink rgb (matters once there is a dark mode).
+- [ ] `WaitlistCard` double-submit guard → a ref (Stage 12).
+- [ ] Country panel: the header counts only writers with books, but the list shows every writer, so "N autoras" can be lower than the cards shown (only for a published writer with no books, which promote prevents; mostly a Realtime gap). Filter book-less writers out of the panel too, and use that for the empty-country state.
+- [ ] CI closed-mode checks: `if grep …` passes silently when the sitemap or `dist/es/index.html` is missing. Add `test -s` on those files first.
+- [ ] `BookPanel`: a live status change while a book is open triggers a refetch; if that refetch fails, the open book is replaced by the error message. Keep the shown book on a failed refresh.
+- [ ] `docs/STATUS.md` shows two test counts (125 in the stage table, 132 in "How to resume"). Keep one.
 
 ---
 

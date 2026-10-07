@@ -5,33 +5,19 @@
   },
   "nav": {
     "home": "Home",
-    "suggest": "Suggest",
-    "books": "Books",
-    "about": "About"
+    "map": "Map",
+    "about": "About",
+    "language_short": "ES"
   },
   "books": {
-    "eyebrow": "Catalogue",
     "title": "All the books",
-    "intro": "Every book on the map, with its reading status.",
-    "loading": "Loading…",
-    "error": "Couldn't load the books.",
-    "empty": "No published books yet.",
-    "col_author": "Writer",
-    "col_country": "Country",
-    "col_book": "Book",
-    "col_year": "Year",
-    "col_status": "Status",
-    "filter_author_placeholder": "Filter by writer…",
-    "filter_country_all": "All countries",
-    "filter_year_all": "All years",
-    "no_matches": "No book matches the filter.",
-    "view_detail": "View"
+    "intro": "Every book on the map, with its reading status."
   },
   "book": {
     "loading": "Loading…",
     "error": "Couldn't load the book.",
     "not_found": "I couldn't find this book.",
-    "back_to_books": "← Back to the catalogue",
+    "back_to_list": "← Back to the list",
     "country_label": "Country",
     "year_label": "Year",
     "language_label": "Original language",
@@ -39,6 +25,7 @@
     "quotes_heading": "Passages I underlined",
     "buy_heading": "Where to find it",
     "affiliate_disclosure": "Some of these are affiliate links: if you buy through one, I earn a small commission at no extra cost to you.",
+    "open_page": "Open the book page",
     "retailer": {
       "amazon": "Amazon",
       "bookshop": "Bookshop",
@@ -79,16 +66,73 @@
     "changes_title": "Changes to this policy",
     "changes_body": "If I update this policy, I'll change the date at the top of the page."
   },
-  "hero": {
-    "eyebrow": "map of women writers",
-    "headlineA": "Women who write",
-    "headlineB": "the world.",
-    "subhead": "An interactive map of women writers. Tap a country to discover its authors, the books I've read, and the ones still ahead."
+  "home": {
+    "eyebrow": "Map of women writers",
+    "title_a": "Women who write",
+    "title_b": "the world.",
+    "lead": "I read women writers from every corner of the world and mark them on a map: the ones I've read, what I'm reading now and what's waiting on my shelf.",
+    "lead_soon": "Very soon you'll be able to explore it and find your next read.",
+    "lead_open": "Explore it and find your next read.",
+    "open_map": "Open the map",
+    "waitlist": {
+      "soon": "Opening soon",
+      "title": "Join the waitlist",
+      "text": "I'll let you know the day the map opens.",
+      "email_label": "Your email",
+      "email_placeholder": "name@email.com",
+      "submit": "Notify me",
+      "submitting": "Sending…",
+      "news_label": "I'd like to get news from Danny",
+      "fine": "I'll write to tell you when the map opens. If you tick the box, I'll also tell you now and then what I'm reading. You can unsubscribe any time.",
+      "privacy_link": "How I handle your data",
+      "invalid": "Enter a valid email, for example name@email.com.",
+      "not_available": "Thank you! The waitlist opens very soon — come back in a few days.",
+      "error": "I couldn't sign you up. Try again in a moment.",
+      "done_title": "You're on the list",
+      "done_text": "I'll write to {email} the day the map opens."
+    },
+    "picture": {
+      "eyebrow": "Preview",
+      "title": "This is the map",
+      "aria": "World map with the writers' countries colored by what I've read"
+    },
+    "about": {
+      "eyebrow": "Who's behind it",
+      "title": "Hi, I'm Danny",
+      "body": "I read women writers from all over the world and share my reading on Instagram. This map brings them together in one place.",
+      "followers": "More than 50,000 people follow me on Instagram.",
+      "instagram": "Follow me on Instagram",
+      "more": "More about me"
+    },
+    "how": {
+      "eyebrow": "How it works",
+      "title": "A map made of books",
+      "step1": "I read women writers from all over the world.",
+      "step2": "Each country is colored by what I've read, what I'm reading and what's waiting.",
+      "step3": "You explore it and find your next read."
+    },
+    "closing": {
+      "soon_title": "Want to know on day one?",
+      "soon_cta": "Sign up",
+      "open_title": "The map is open."
+    },
+    "footer": {
+      "privacy": "Privacy"
+    }
+  },
+  "coming_soon": {
+    "eyebrow": "Opening soon",
+    "title": "The map opens very soon",
+    "text": "I'm putting the finishing touches on it. Sign up and I'll let you know the day it opens.",
+    "home": "← Back to home"
+  },
+  "admin_layer": {
+    "load_error": "I couldn't load this page.",
+    "reload": "Reload"
   },
   "map": {
-    "eyebrow": "Explore the map",
-    "title": "Tap a country",
-    "subhead": "Each color marks a different state: authors I've read, currently reading, suggestions to discover, or a mix.",
+    "page_title": "Map",
+    "aria_map": "World map of women writers by country",
     "filter": {
       "all": "All",
       "to_read": "To read",
@@ -97,9 +141,14 @@
     },
     "panel": {
       "close": "Close",
-      "empty": "No authors from this country yet. Know one?",
-      "suggest": "Suggest an author",
-      "booksLabel": "Books"
+      "suggest": "Suggest a writer",
+      "eyebrow": "Country",
+      "expand": "Expand panel",
+      "collapse": "Collapse panel",
+      "empty_country": "No writers from {country} on the map yet. Know one?",
+      "suggest_country": "Suggest a writer from {country}",
+      "missing": "Missing someone from {country}?",
+      "back_to_country": "Back to {country}"
     },
     "status": {
       "to_read": "To read",
@@ -107,7 +156,6 @@
       "read": "Read"
     },
     "view": {
-      "world": "World",
       "europe": "Europe",
       "americas": "Americas",
       "africa": "Africa",
@@ -117,7 +165,49 @@
     "zoom": {
       "in": "Zoom in",
       "out": "Zoom out",
-      "reset": "Reset view"
+      "start": "Back to the starting view"
+    },
+    "home_aria": "Back to home",
+    "language_label": "ES",
+    "language_aria": "Cambiar a español",
+    "filter_group_aria": "Filter by status",
+    "search_label": "Search",
+    "search_placeholder": "Search the map",
+    "list_search_placeholder": "Search the list",
+    "search_clear": "Clear search",
+    "results": {
+      "regions": "Go to a region",
+      "countries": "Countries",
+      "authors": "Writers",
+      "books": "Books",
+      "no_authors": "No writers yet",
+      "none": "I can't find “{q}” on the map.",
+      "suggest": "Suggest that writer"
+    },
+    "view_switch_aria": "Switch view",
+    "view_map": "Map",
+    "view_list": "List",
+    "suggest_button": "Suggest",
+    "suggest_button_aria": "Suggest a book",
+    "count": {
+      "author_one": "{n} writer",
+      "author_other": "{n} writers",
+      "book_one": "{n} book",
+      "book_other": "{n} books",
+      "country_one": "{n} country",
+      "country_other": "{n} countries"
+    },
+    "years_born": "b. {year}",
+    "region_hint": "Showing you {region}. Pinch the map to see more.",
+    "loading": "Loading writers…",
+    "error": "I couldn't load the writers.",
+    "retry": "Try again",
+    "list": {
+      "summary": "{books} by {authors} in {countries}",
+      "show_on_map": "Show on the map",
+      "empty_query": "No books match “{q}”.",
+      "empty_filter": "No books with this filter.",
+      "suggest": "Suggest a book"
     }
   },
   "suggest": {

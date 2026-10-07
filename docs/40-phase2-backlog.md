@@ -69,9 +69,35 @@ Each item names where it was discussed and why it's not in MVP. When picking one
 
 **Why deferred:** Map-first navigation is MVP. Postgres FTS or trigram index makes this cheap when needed.
 
+**Update 2026-10-06:** a client-side search (countries, writers, books) ships in Stage 11 on `/map`. A server-side index is only needed if the catalog grows into the thousands.
+
+### Personal maps for readers
+
+**Discussed:** 2026-10-06, Danny's ideas after the phone review. Her full idea: every user gets their own map instance and adds their own collection.
+
+**Why deferred:** That is a different product (user-generated data, moderation, privacy, support, cost). A smaller version fits later: signed-in readers mark books from Danny's catalog as read and get their own colored map (`user_books(user_id, book_id, status)` over the curated catalog). Needs Stage 13 accounts first.
+
+### Center the map on the visitor's country
+
+**Discussed:** 2026-10-06. Stage 11 centers on the visitor's **region** from the browser time zone (no permission, no server).
+
+**Why deferred:** Country-level centering needs Cloudflare's visitor-country header through a small Pages Function. Only worth it if region-level framing proves too coarse.
+
 ### Third locale (e.g., Portuguese, en-LATAM)
 
 **Why deferred:** Astro i18n + DeepL Edge Function both scale to N locales. Wait for demand signal.
+
+### Dark mode
+
+**Discussed in:** Stage 11 execution (2026-10-07).
+**Why deferred:** Does not help the pre-release goals (waitlist, club page, production before the November club sessions). Estimated 1–2 days. Plan: after release, or after 9b if there is room.
+**Where to add it later:**
+
+- Nearly every color already goes through `src/styles/tokens.css` (`--c-*`); redefine them under `@media (prefers-color-scheme: dark)`. Follow the system setting first; a manual toggle (stored per browser, with a tiny inline script so the page does not flash light) can come later.
+- The token names are literal (`ink` = dark text, `bone`/`parchment` = light surfaces). About 25 places use them as light text on a colored fill (`bg-oxblood text-bone`, `bg-ink text-parchment`); add a semantic "text on accent" token and move those to it, or the buttons go dark-on-dark.
+- Map colors: water, land and the three status colors need dark variants that keep their meaning and contrast (the oxblood "Por leer" fill nearly disappears on a dark background). Danny approves the dark palette from a prototype first.
+- Small fixes: `--shadow-float` / `--shadow-sheet` hard-code the ink rgb; `SuggestionForm` renders Turnstile with `theme: "light"` (use `"auto"`); about 4 hard-coded colors outside `tokens.css`.
+- Verify every page in both modes, including admin, plus contrast of `text-ink/60`-style secondary text.
 
 ---
 
@@ -102,9 +128,19 @@ Each item names where it was discussed and why it's not in MVP. When picking one
 
 **Why deferred:** Per `00-mvp-plan.md`; only matters if the panel needs to distinguish "read" vs "to-read" books per author.
 
+### Installable web app (PWA) + push notifications
+
+**Discussed:** 2026-10-06. Recommended before any store app.
+
+**What:** web manifest + icons + service worker, so readers can add the site to their home screen (own icon, full screen) and receive push notifications. Free. On iPhone, web push works only after the site is added to the home screen (iOS 16.4+).
+
+**Why deferred:** After release day (Stage 14); builds on reader accounts (Stage 13) for notification preferences.
+
 ### Capacitor native wrapper
 
 **Why deferred:** Per `00-mvp-plan.md`; phase 2.
+
+**Update 2026-10-06:** do the PWA first. A store app costs $99/year (Apple) + $25 once (Google), every update goes through review, iPhone builds need a Mac or a paid cloud build, and Apple often rejects apps that only wrap a website (guideline 4.2). Revisit once the app has features a website cannot easily offer (personal maps, offline).
 
 ### HTML email template for `notify_owner`
 
