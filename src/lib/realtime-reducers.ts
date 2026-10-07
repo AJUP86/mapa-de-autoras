@@ -1,7 +1,7 @@
 // Pure reducers for granular Realtime patching.
 //
 // Each function takes a catalog snapshot + an event payload, returns a new
-// catalog. Used by MapSection's Realtime event handlers to update local state
+// catalog. Used by useCatalog's Realtime event handlers to update local state
 // without re-fetching from Supabase on every change.
 //
 // Rules:

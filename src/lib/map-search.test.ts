@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { bookCountry, fold, listGroups, searchCatalog } from "./map-search";
+import { bookCountry, catalogCounts, fold, listGroups, searchCatalog } from "./map-search";
 import type { CountryEntry } from "./map-state";
 
 const catalog: CountryEntry[] = [
@@ -98,5 +98,21 @@ describe("bookCountry", () => {
   it("returns null for a book that is not in the catalog", () => {
     expect(bookCountry(catalog, "nope")).toBeNull();
     expect(bookCountry([], "b1")).toBeNull();
+  });
+});
+
+describe("catalogCounts", () => {
+  it("counts countries, writers and books", () => {
+    expect(catalogCounts(catalog)).toEqual({ countries: 2, authors: 3, books: 3 });
+  });
+  it("leaves out writers and countries without books", () => {
+    const withEmpty: CountryEntry[] = [
+      ...catalog,
+      { iso_a3: "MAR", authors: [{ id: "a4", name: "Leila Slimani", books: [] }] },
+    ];
+    expect(catalogCounts(withEmpty)).toEqual({ countries: 2, authors: 3, books: 3 });
+  });
+  it("is all zeros for an empty catalog", () => {
+    expect(catalogCounts([])).toEqual({ countries: 0, authors: 0, books: 0 });
   });
 });

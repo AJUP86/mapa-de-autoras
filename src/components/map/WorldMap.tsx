@@ -1,7 +1,7 @@
 // WorldMap.tsx — Stage 11
 //
 // Full-bleed world map drawn with d3-geo and driven by d3-zoom (replaces the
-// react19-simple-maps wrapper, which hid d3-zoom). React renders the country
+// old map-wrapper library, which hid d3-zoom). React renders the country
 // paths and dots; the zoom transform is written straight to the DOM through a
 // ref so panning never re-renders ~175 paths per frame.
 

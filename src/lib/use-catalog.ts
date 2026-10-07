@@ -1,8 +1,9 @@
 // use-catalog.ts — Stage 11
 //
 // The public catalog for map UIs: initial fetch + optional Supabase Realtime
-// patching (ADR 0005). Moved out of MapSection.tsx with the same behavior so
-// /map and the home preview share it; the preview passes { realtime: false }.
+// patching (ADR 0005). Moved out of the old home map (MapSection.tsx) with the
+// same behavior. /map is the only caller; `{ realtime: false }` skips the
+// subscription (unused since the home picture became build-time).
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "./supabase";

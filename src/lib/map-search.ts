@@ -42,6 +42,25 @@ export function allBooks(catalog: ReadonlyArray<CountryEntry>): BookHit[] {
   );
 }
 
+export interface CatalogCounts {
+  countries: number;
+  authors: number;
+  books: number;
+}
+
+/**
+ * Countries, writers and books that count for the home's caption: only
+ * writers and countries with at least one book (same rule as the list summary).
+ */
+export function catalogCounts(catalog: ReadonlyArray<CountryEntry>): CatalogCounts {
+  const books = allBooks(catalog);
+  return {
+    countries: new Set(books.map((h) => h.iso_a3)).size,
+    authors: new Set(books.map((h) => h.author.id)).size,
+    books: books.length,
+  };
+}
+
 /** The country (iso_a3) of the writer who owns `bookId`, or null when the catalog has no such book. */
 export function bookCountry(catalog: ReadonlyArray<CountryEntry>, bookId: string): string | null {
   const entry = catalog.find((e) => e.authors.some((a) => a.books.some((b) => b.id === bookId)));

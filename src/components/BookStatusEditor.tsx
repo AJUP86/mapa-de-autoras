@@ -4,7 +4,7 @@
 // Changing a status writes books.status (optimistic UI + error revert).
 // books has REPLICA IDENTITY FULL and is in the supabase_realtime
 // publication, so the mutation repaints the public map live via the
-// existing MapSection subscription — this component is only the mutator
+// /map page's subscription (useCatalog) — this component is only the mutator
 // and holds no realtime subscription of its own.
 
 import { useEffect, useState } from "react";

@@ -26,7 +26,6 @@
     "@fontsource-variable/inter": "^5",
     "@supabase/supabase-js": "^2.107.0",
     "@tailwindcss/vite": "^4",
-    "@vnedyalk0v/react19-simple-maps": "^2.0.7",
     "astro": "^5",
     "d3-geo": "^3.1.1",
     "d3-selection": "^3.0.0",

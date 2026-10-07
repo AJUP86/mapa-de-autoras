@@ -1,35 +1,8 @@
-// icons.tsx — Stage 11. Stroke icons for the /map controls (24 × 24 grid,
-// drawn in currentColor, hidden from assistive tech: the buttons carry labels).
+// icons.tsx — Stage 11. Stroke icons for the /map controls, drawn with the
+// shared Icon base (24 × 24 grid, currentColor, hidden from assistive tech:
+// the buttons carry labels).
 
-import type { ReactNode } from "react";
-
-function Icon({
-  children,
-  strokeWidth = 2,
-  size = 18,
-}: {
-  children: ReactNode;
-  strokeWidth?: number;
-  size?: number;
-}) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      width={size}
-      height={size}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={strokeWidth}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      focusable="false"
-      className="flex-none"
-    >
-      {children}
-    </svg>
-  );
-}
+import { Icon } from "../icons";
 
 export function IconClose() {
   return (
@@ -98,15 +71,6 @@ export function IconBack() {
   return (
     <Icon strokeWidth={2.2}>
       <path d="M15 18l-6-6 6-6" />
-    </Icon>
-  );
-}
-
-/** Opens in a new tab (buy links). */
-export function IconExternal() {
-  return (
-    <Icon>
-      <path d="M14 4h6v6M10 14L20 4M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5" />
     </Icon>
   );
 }

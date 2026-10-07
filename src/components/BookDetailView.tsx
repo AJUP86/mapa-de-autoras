@@ -10,7 +10,7 @@ import { visibleLinks, type BookDetail } from "~/lib/book-detail";
 import type { BookDetailLabels } from "./book-labels";
 import BookCover from "./BookCover";
 import StatusPill from "./StatusPill";
-import { IconExternal } from "./map/icons";
+import { IconExternal } from "./icons";
 
 interface Props {
   book: BookDetail;

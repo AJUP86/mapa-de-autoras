@@ -5,9 +5,10 @@
   },
   "nav": {
     "home": "Home",
+    "map": "Map",
     "suggest": "Suggest",
-    "books": "Books",
-    "about": "About"
+    "about": "About",
+    "language_short": "ES"
   },
   "books": {
     "title": "All the books",
@@ -66,16 +67,61 @@
     "changes_title": "Changes to this policy",
     "changes_body": "If I update this policy, I'll change the date at the top of the page."
   },
-  "hero": {
-    "eyebrow": "map of women writers",
-    "headlineA": "Women who write",
-    "headlineB": "the world.",
-    "subhead": "An interactive map of women writers. Tap a country to discover its authors, the books I've read, and the ones still ahead."
+  "home": {
+    "eyebrow": "Map of women writers",
+    "title_a": "Women who write",
+    "title_b": "the world.",
+    "lead": "I read women writers from every corner of the world and mark them on a map: the ones I've read, what I'm reading now and what's waiting on my shelf.",
+    "lead_soon": "Very soon you'll be able to explore it and find your next read.",
+    "lead_open": "Explore it and find your next read.",
+    "open_map": "Open the map",
+    "waitlist": {
+      "soon": "Opening soon",
+      "title": "Join the waitlist",
+      "text": "I'll let you know the day the map opens.",
+      "email_label": "Your email",
+      "email_placeholder": "name@email.com",
+      "submit": "Notify me",
+      "submitting": "Sending…",
+      "news_label": "I'd like to get news from Danny",
+      "fine": "I'll write to tell you when the map opens. If you tick the box, I'll also tell you now and then what I'm reading. You can unsubscribe any time.",
+      "privacy_link": "How I handle your data",
+      "invalid": "Enter a valid email, for example name@email.com.",
+      "not_available": "Thank you! The waitlist opens very soon — come back in a few days.",
+      "error": "I couldn't sign you up. Try again in a moment.",
+      "done_title": "You're on the list",
+      "done_text": "I'll write to {email} the day the map opens."
+    },
+    "picture": {
+      "eyebrow": "Preview",
+      "title": "This is the map",
+      "aria": "World map with the writers' countries colored by what I've read"
+    },
+    "about": {
+      "eyebrow": "Who's behind it",
+      "title": "Hi, I'm Danny",
+      "body": "I read women writers from all over the world and share my reading on Instagram. This map brings them together in one place.",
+      "followers": "More than 50,000 people follow me on Instagram.",
+      "instagram": "Follow me on Instagram",
+      "more": "More about me"
+    },
+    "how": {
+      "eyebrow": "How it works",
+      "title": "A map made of books",
+      "step1": "I read women writers from all over the world.",
+      "step2": "Each country is colored by what I've read, what I'm reading and what's waiting.",
+      "step3": "You explore it and find your next read."
+    },
+    "closing": {
+      "soon_title": "Want to know on day one?",
+      "soon_cta": "Sign up",
+      "open_title": "The map is open."
+    },
+    "footer": {
+      "privacy": "Privacy"
+    }
   },
   "map": {
-    "eyebrow": "Explore the map",
-    "title": "Tap a country",
-    "subhead": "Each color marks a different state: authors I've read, currently reading, suggestions to discover, or a mix.",
     "page_title": "Map",
     "aria_map": "World map of women writers by country",
     "filter": {
@@ -86,9 +132,7 @@
     },
     "panel": {
       "close": "Close",
-      "empty": "No authors from this country yet. Know one?",
-      "suggest": "Suggest an author",
-      "booksLabel": "Books",
+      "suggest": "Suggest a writer",
       "eyebrow": "Country",
       "expand": "Expand panel",
       "collapse": "Collapse panel",
@@ -103,7 +147,6 @@
       "read": "Read"
     },
     "view": {
-      "world": "World",
       "europe": "Europe",
       "americas": "Americas",
       "africa": "Africa",
@@ -113,7 +156,6 @@
     "zoom": {
       "in": "Zoom in",
       "out": "Zoom out",
-      "reset": "Reset view",
       "start": "Back to the starting view"
     },
     "home_aria": "Back to home",

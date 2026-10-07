@@ -26,6 +26,21 @@
 
   --shadow-float: 0 1px 2px rgb(27 42 65 / 0.1), 0 8px 24px rgb(27 42 65 / 0.14);
   --shadow-sheet: 0 -6px 30px rgb(27 42 65 / 0.2);
+
+  /* The waitlist card's "Abre pronto" dot: an oxblood ring that grows and
+     fades. Used as motion-safe:animate-soon-pulse (off under reduced motion). */
+  --animate-soon-pulse: soon-pulse 2s infinite;
+  @keyframes soon-pulse {
+    0% {
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--c-oxblood) 45%, transparent);
+    }
+    70% {
+      box-shadow: 0 0 0 9px color-mix(in srgb, var(--c-oxblood) 0%, transparent);
+    }
+    100% {
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--c-oxblood) 0%, transparent);
+    }
+  }
 }
 
 html,
@@ -48,18 +63,9 @@ h6 {
   letter-spacing: -0.01em;
 }
 
-/* Suppress browser default focus ring on map countries — it renders as a
-   bounding-box rectangle around the clicked country and is visually jarring.
-   Selection state is communicated via the country's own stroke instead. */
-.rsm-geography:focus,
-.rsm-geography:focus-visible,
-svg[role="img"] path:focus,
-svg[role="img"] path:focus-visible {
-  outline: none !important;
-}
-
-/* World map — Stage 11 (/map + home preview). Fills come from the state
-   aliases in tokens.css, so a palette change repaints the map too. */
+/* World map — Stage 11 (/map + the home's build-time picture). Fills come
+   from the state aliases in tokens.css, so a palette change repaints the map
+   too. */
 .map-country {
   fill: var(--c-bone);
   stroke: var(--c-paper-line);

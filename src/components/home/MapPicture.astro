@@ -1,0 +1,90 @@
+---
+// MapPicture.astro — Stage 11. The home's map picture: the world (110m data,
+// no Antarctica) with each country colored from the catalog as it was at build
+// time, and the counts caption below. Rendered at build time — no JavaScript.
+// After release (open) the whole card links to /map with an "Abrir el mapa"
+// pill; before release it is a plain picture.
+import { geoEqualEarth, geoPath } from "d3-geo";
+import type { FeatureCollection, MultiPolygon, Polygon } from "geojson";
+import world110 from "world-atlas/countries-110m.json";
+import { IconArrowRight } from "~/components/icons";
+import { plural } from "~/i18n/format";
+import type { Locale } from "~/i18n/locales";
+import { t } from "~/i18n/t";
+import { fetchCatalog } from "~/lib/authors";
+import { CompactPath } from "~/lib/compact-path";
+import { catalogCounts } from "~/lib/map-search";
+import { countryColor, countryStatuses, type CountryEntry } from "~/lib/map-state";
+import { worldFeatures, type CountryProps } from "~/lib/world-geo";
+
+interface Props {
+  lang: Locale;
+  /** PUBLIC_MAP_OPEN: link the card to /map. */
+  open: boolean;
+}
+
+const { lang, open } = Astro.props;
+
+let catalog: CountryEntry[] | null = null;
+try {
+  catalog = await fetchCatalog();
+} catch (e) {
+  // The picture must never fail the build: draw it uncolored, without counts.
+  console.warn("[MapPicture] catalog fetch failed, drawing the map uncolored:", (e as Error).message);
+}
+const statuses = catalog ? countryStatuses(catalog) : {};
+
+// Fixed viewBox: Equal Earth fitted to the width, height from the fitted
+// bounds, a small margin all round. Path data on a whole-unit grid, written
+// relative (CompactPath) to keep the inline SVG small.
+const WIDTH = 960;
+const MARGIN = 12;
+const world: FeatureCollection<Polygon | MultiPolygon, CountryProps> = {
+  type: "FeatureCollection",
+  features: worldFeatures(world110),
+};
+const projection = geoEqualEarth().fitWidth(WIDTH - 2 * MARGIN, world);
+const height = Math.ceil(geoPath(projection).bounds(world)[1][1]);
+const viewBox = `${-MARGIN} ${-MARGIN} ${WIDTH} ${height + 2 * MARGIN}`;
+
+const shapes = world.features
+  .map((f) => {
+    const path = new CompactPath(1);
+    geoPath(projection, path)(f);
+    const color = f.properties.iso ? countryColor(statuses[f.properties.iso], "all") : null;
+    return { d: path.toString(), className: color ? `map-country is-${color}` : "map-country" };
+  })
+  .filter((s) => s.d);
+
+const counts = catalog ? catalogCounts(catalog) : null;
+const c = (key: string) => t(lang, `map.count.${key}`);
+const caption =
+  counts && counts.books > 0
+    ? [
+        plural(counts.countries, c("country_one"), c("country_other")),
+        plural(counts.authors, c("author_one"), c("author_other")),
+        plural(counts.books, c("book_one"), c("book_other")),
+      ].join(" · ")
+    : null;
+
+const Card = open ? "a" : "div";
+---
+
+<Card
+  href={open ? `/${lang}/map` : undefined}
+  class:list={[
+    "relative block overflow-hidden rounded-[20px] bg-water",
+    open && "group no-underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ochre",
+  ]}
+>
+  <svg viewBox={viewBox} role="img" aria-label={t(lang, "home.picture.aria")} class="block h-auto w-full">
+    {shapes.map((s) => <path d={s.d} class={s.className} />)}
+  </svg>
+  {open && (
+    <span class="absolute right-3 bottom-3 inline-flex h-10 items-center gap-2 rounded-full bg-ink px-4 text-[0.9rem] font-semibold text-bone shadow-float transition-colors group-hover:bg-oxblood sm:right-4 sm:bottom-4 sm:h-11 sm:px-5 sm:text-[0.95rem]">
+      {t(lang, "home.open_map")}
+      <IconArrowRight />
+    </span>
+  )}
+</Card>
+{caption && <p class="mt-4 text-ink/75 tabular-nums">{caption}</p>}

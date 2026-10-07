@@ -87,6 +87,18 @@ Each item names where it was discussed and why it's not in MVP. When picking one
 
 **Why deferred:** Astro i18n + DeepL Edge Function both scale to N locales. Wait for demand signal.
 
+### Dark mode
+
+**Discussed in:** Stage 11 execution (2026-10-07).
+**Why deferred:** Does not help the pre-release goals (waitlist, club page, production before the November club sessions). Estimated 1–2 days. Plan: after release, or after 9b if there is room.
+**Where to add it later:**
+
+- Nearly every color already goes through `src/styles/tokens.css` (`--c-*`); redefine them under `@media (prefers-color-scheme: dark)`. Follow the system setting first; a manual toggle (stored per browser, with a tiny inline script so the page does not flash light) can come later.
+- The token names are literal (`ink` = dark text, `bone`/`parchment` = light surfaces). About 25 places use them as light text on a colored fill (`bg-oxblood text-bone`, `bg-ink text-parchment`); add a semantic "text on accent" token and move those to it, or the buttons go dark-on-dark.
+- Map colors: water, land and the three status colors need dark variants that keep their meaning and contrast (the oxblood "Por leer" fill nearly disappears on a dark background). Danny approves the dark palette from a prototype first.
+- Small fixes: `--shadow-float` / `--shadow-sheet` hard-code the ink rgb; `SuggestionForm` renders Turnstile with `theme: "light"` (use `"auto"`); about 4 hard-coded colors outside `tokens.css`.
+- Verify every page in both modes, including admin, plus contrast of `text-ink/60`-style secondary text.
+
 ---
 
 ## Operations & infrastructure

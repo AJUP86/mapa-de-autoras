@@ -1547,15 +1547,17 @@ git add package.json package-lock.json src/lib/world-geo.ts src/lib/world-geo.te
 
 **Commit:** `feat(11): book view in the map panel and suggest sheet`
 
-### Task 6: New home, phone nav, remove the old map
+### Task 6: Landing home, phone nav, remove the old map
 
-**Scope:** spec §5.1, §5.4, §6.3.
+> **Revised 2026-10-07 (owner):** the home is a pure landing page (spec §5.1). Replaces the earlier outline (mini-map preview, legend, suggest band).
 
-**Files:** create `src/lib/waitlist.ts` (+ test: `isValidEmail`, `joinWaitlist(email, locale)` stub resolving `{ ok: false, reason: "not_available" }`), `src/components/WaitlistCard.tsx`, `src/components/MapPreview.tsx` (`useCatalog({ realtime: false })`, fixed viewBox, stats); rewrite `src/components/pages/IndexPage.astro`; add `home.*` i18n keys; `AdminAwareNav.tsx` public variant = logo, "Mapa", "Conóceme", "Sugerir", short "EN"/"ES" pill (fits 360 px); `Base.astro` nav labels. Delete `MapSection.tsx`, `AuthorsMap.tsx`, `ContinentNav.tsx`, `MapFilter.tsx`, `CountryPanel.tsx`; remove `computeCountryStates`, `fillFor`, `CountryState`, `CountryStyle`, `MapLabels` and their tests; `npm uninstall @vnedyalk0v/react19-simple-maps`; remove the `.rsm-geography` rule from `global.css`; remove unused `map.eyebrow/title/subhead/panel` keys.
+**Scope:** spec §5.1, §5.1.1, §5.4, §6.3.
 
-**Checks:** home at 375 px: hero, waitlist card (valid email → "abre muy pronto" message, invalid → error), live colored preview + stats, legend, suggest band, no horizontal scroll; nav fits at 360 px; `grep -rn "computeCountryStates\|fillFor\|simple-maps" src` returns nothing. Gates + `npm run build`.
+**Files:** create `src/lib/site-config.ts` (+ test: `parseMapOpen("true") === true`, anything else `false`; `MAP_OPEN` from `import.meta.env.PUBLIC_MAP_OPEN`) and add `PUBLIC_MAP_OPEN=true` to `.env.example` (Task 7 adds the env guard, CI value and the closed routes); create `src/lib/waitlist.ts` (+ test: `isValidEmail`, `joinWaitlist({ email, locale, news })` stub resolving `{ ok: false, reason: "not_available" }`), `src/components/WaitlistCard.tsx` (news checkbox, unticked), `src/components/home/MapPicture.astro` (build-time SVG + counts, no JS); rewrite `src/components/pages/IndexPage.astro` (hero, map picture, about Danny, how it works, closing band, footer; waitlist vs "Abrir el mapa" from `MAP_OPEN`); add `home.*` i18n keys; `AdminAwareNav.tsx` public variant = logo, "Mapa", "Conóceme", "Sugerir", short "EN"/"ES" pill (fits 360 px); `Base.astro` nav labels. Delete `MapSection.tsx`, `AuthorsMap.tsx`, `ContinentNav.tsx`, `MapFilter.tsx`, `CountryPanel.tsx`; remove `computeCountryStates`, `fillFor`, `CountryState`, `CountryStyle`, `MapLabels` and their tests; `npm uninstall @vnedyalk0v/react19-simple-maps`; remove the `.rsm-geography` rule from `global.css`; remove unused i18n keys (`hero.*` if replaced, `map.eyebrow/title/subhead`, old `map.panel.*` not used by `/map`).
 
-**Commit:** `feat(11): new home with waitlist card and map preview; phone nav; remove the old map`
+**Checks:** home at 375 px and 1280 px, both locales: hero, map picture with build-time colors and counts, about Danny, how it works, closing band, footer, no horizontal scroll; with `MAP_OPEN` false the waitlist card validates the email and shows the "abre muy pronto" message, the news box starts unticked, the closing button jumps to the card; with `MAP_OPEN` true the hero and closing band show "Abrir el mapa" and the picture links to `/map`; nav fits at 360 px; `grep -rn "computeCountryStates\|fillFor\|simple-maps" src` returns nothing; the home ships no map JavaScript. Gates + `npm run build`.
+
+**Commit:** `feat(11): landing home with waitlist card and map picture; phone nav; remove the old map`
 
 ### Task 7: "Map closed" switch + docs
 
