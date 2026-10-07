@@ -28,8 +28,9 @@ Running log of what's done, what's next, and any context a future-you (or contri
 | 9a — Staging deployment (Cloudflare Pages + Supabase staging)                             | ✅ Merged          | feature/09a-staging-deploy         |
 | 9a-ii — Realtime map data (client-side fetch + Supabase Realtime)                         | ✅ Merged          | feature/09a-ii-realtime-map        |
 | Fix — admin magic-link redirect (`/` → `/es/`)                                            | ✅ Merged (PR #20) | fix/admin-login-redirect           |
-| **11 — New home + full-screen map** (`/[lang]/map`, map/list switch, map-closed switch)   | 📝 Spec for review | feature/11-map-redesign            |
+| **11 — New home + full-screen map** (`/[lang]/map`, map/list switch, map-closed switch)   | 🚧 Tasks 1–5 done  | feature/11-map-redesign            |
 | 12 — Waitlist (table + Edge Function + confirm email + unsubscribe)                       | ⏳ Pending         | feature/12-waitlist                |
+| 12b — Book club page (`/[lang]/club`, open in coming-soon mode)                           | ⏳ Pending         | feature/12b-book-club              |
 | 9b — Production deployment (apex + www + Resend), live in **coming-soon mode**            | ⏳ Pending         | feature/09b-production-deploy      |
 | 13 — Reader accounts (magic-link sign-up, profiles, delete account)                       | ⏳ Pending         | feature/13-reader-accounts         |
 | 14 — Release day (open the map, email the waitlist)                                       | ⏳ Pending         | feature/14-release                 |
@@ -38,6 +39,8 @@ Running log of what's done, what's next, and any context a future-you (or contri
 **Everything through 8.6 + the 9-pre hardening + the magic-link fix is merged into `development` and live on staging; `master` still holds only the initial commit (nothing merges there until the production launch).**
 
 **Revised pre-launch path (2026-10-06, after Danny's phone review):** **11** new home + full-screen map → **12** waitlist → **9b** production in coming-soon mode (map hidden by `PUBLIC_MAP_OPEN=false`) → **Danny announces the waitlist on Instagram** → **13** reader accounts → **14** release day. Stage 10 polish items fold into 9b and 14 — see [50-launch-checklist.md](50-launch-checklist.md). Rows are listed in execution order. Post-launch backlog: author CRUD (7b-ii — edit/delete), installable web app (PWA) + push, personal maps — see [40-phase2-backlog.md](40-phase2-backlog.md).
+
+**Updated 2026-10-07:** **11** → **12** waitlist (= start of Danny's own email list, optional "novedades" box) → **12b** book club page → **9b** production in coming-soon mode, live **before Danny's first November book club session** → announce → **13** → **14**. Home becomes a pure landing page; coming-soon mode opens only home, About, Privacy and the club page (admins see everything). Decisions and reasons: [01-implementation-plan.md § Update (2026-10-07)](01-implementation-plan.md#update-2026-10-07).
 
 ---
 
