@@ -398,11 +398,18 @@ export default function MapApp({
     ? (catalog.find((e) => e.iso_a3 === selected)?.authors ?? NO_AUTHORS)
     : NO_AUTHORS;
   const name = selected ? (names.get(selected) ?? selected) : "";
+  // The open book's status as the catalog has it now (BookPanel's cache must not outlive it).
+  const bookStatus = book
+    ? authors.flatMap((a) => a.books).find((b) => b.id === book)?.status
+    : undefined;
 
   return (
     <>
       {/* Inert under the suggest sheet: focus cannot leave the dialog. */}
       <div ref={rootRef} className="map-ui absolute inset-0" inert={sheetOpen}>
+        {/* The page's h1: the list view has its own (MapList), so never both. */}
+        {view === "map" && <h1 className="sr-only">{labels.pageTitle.map}</h1>}
+
         {/* Stays mounted under the list (keeps its view), out of reach while covered. */}
         <div className="absolute inset-0" inert={view === "list"}>
           <WorldMap
@@ -523,6 +530,7 @@ export default function MapApp({
                 bookId={book}
                 lang={lang}
                 labels={bookLabels}
+                status={bookStatus}
                 countryName={name}
                 backLabel={fmt(labels.panel.backToCountry, { country: name })}
                 closeLabel={labels.panel.close}

@@ -7,6 +7,7 @@
 import { useEffect, useState } from "react";
 import type { Locale } from "~/i18n/locales";
 import { getBookDetail, type BookDetail } from "~/lib/book-detail";
+import type { BookStatus } from "~/lib/map-state";
 import type { BookDetailLabels } from "../book-labels";
 import BookDetailView from "../BookDetailView";
 import { IconBack, IconClose } from "./icons";
@@ -15,6 +16,8 @@ interface Props {
   bookId: string;
   lang: Locale;
   labels: BookDetailLabels;
+  /** The catalog's current status for this book (live: Realtime patches it), when known. */
+  status?: BookStatus;
   /** Localized name of the book's country (the header text). */
   countryName: string;
   /** Accessible name of the back button ("Volver a México"). */
@@ -31,10 +34,25 @@ type Result = { kind: "loaded"; book: BookDetail } | { kind: "not_found" } | { k
 const cache = new Map<string, BookDetail>();
 const cacheKey = (id: string, lang: Locale) => `${lang}:${id}`;
 
+/**
+ * The cached detail for a book, unless the catalog's status for it has moved
+ * on since it was fetched: then the entry is dropped (and fetched again).
+ */
+function cachedDetail(id: string, lang: Locale, status?: BookStatus): BookDetail | undefined {
+  const key = cacheKey(id, lang);
+  const cached = cache.get(key);
+  if (cached && status && cached.status !== status) {
+    cache.delete(key);
+    return undefined;
+  }
+  return cached;
+}
+
 export default function BookPanel({
   bookId,
   lang,
   labels,
+  status,
   countryName,
   backLabel,
   closeLabel,
@@ -43,13 +61,12 @@ export default function BookPanel({
 }: Props) {
   // The result for `id`; anything for another id means "still loading".
   const [result, setResult] = useState<{ id: string; value: Result } | null>(() => {
-    const book = cache.get(cacheKey(bookId, lang));
+    const book = cachedDetail(bookId, lang, status);
     return book ? { id: bookId, value: { kind: "loaded", book } } : null;
   });
 
   useEffect(() => {
-    const key = cacheKey(bookId, lang);
-    const cached = cache.get(key);
+    const cached = cachedDetail(bookId, lang, status);
     if (cached) {
       setResult((r) =>
         r?.id === bookId ? r : { id: bookId, value: { kind: "loaded", book: cached } },
@@ -59,7 +76,7 @@ export default function BookPanel({
     let cancelled = false;
     getBookDetail(bookId, lang)
       .then((book) => {
-        if (book) cache.set(key, book);
+        if (book) cache.set(cacheKey(bookId, lang), book);
         if (!cancelled)
           setResult({
             id: bookId,
@@ -72,7 +89,7 @@ export default function BookPanel({
     return () => {
       cancelled = true;
     };
-  }, [bookId, lang]);
+  }, [bookId, lang, status]);
 
   const value = result?.id === bookId ? result.value : null;
   const pageHref = `/${lang}/book?id=${encodeURIComponent(bookId)}`;
@@ -103,7 +120,13 @@ export default function BookPanel({
       </header>
 
       {value?.kind === "loaded" ? (
-        <BookDetailView book={value.book} lang={lang} labels={labels} compact />
+        // The catalog's status wins: it is live, the fetched detail is a snapshot.
+        <BookDetailView
+          book={status ? { ...value.book, status } : value.book}
+          lang={lang}
+          labels={labels}
+          compact
+        />
       ) : (
         <div role="status" className="grid justify-items-start gap-2 px-5 pt-6 pb-7">
           <p className="text-ink/75">

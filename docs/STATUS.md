@@ -520,7 +520,7 @@ Worth remembering for future sessions:
 
 ## How to resume tomorrow
 
-**Next up: Stage 11 — new home + full-screen map.** Spec: [specs/2026-10-06-stage-11-map-redesign-design.md](specs/2026-10-06-stage-11-map-redesign-design.md) (for review). After approval: write the implementation plan in `docs/plans/`, then build task by task. The design reference is Danny's approved prototype (link in the spec).
+**Stage 11 — new home + full-screen map is built** on `feature/11-map-redesign` (PR pending). Spec: [specs/2026-10-06-stage-11-map-redesign-design.md](specs/2026-10-06-stage-11-map-redesign-design.md). **Next:** open the PR → staging checks (closed and open mode, real devices) → Stage 12 waitlist. The follow-ups from the final review are in [50-launch-checklist.md](50-launch-checklist.md) → "Stage 11 follow-ups".
 
 ```sh
 git switch feature/11-map-redesign
@@ -530,7 +530,7 @@ npm run dev:db
 npm run dev:db:reset      # applies 0001-0016 + seeds
 npm run dev:functions
 npm run dev
-npm test                  # 43-test baseline
+npm test                  # 132 tests
 # Re-bootstrap the admin user locally (reset wipes auth.users — see supabase/README.md)
 ```
 

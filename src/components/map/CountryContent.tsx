@@ -4,6 +4,7 @@
 
 import type { Author } from "~/lib/map-state";
 import { fmt, plural } from "~/i18n/format";
+import { writersWithBooks } from "~/lib/map-search";
 import { authorYears } from "~/lib/panel-format";
 import BookRow from "./BookRow";
 import { IconClose } from "./icons";
@@ -38,10 +39,12 @@ export default function CountryContent({
     !notice && focusBookId != null && authors.some((a) => a.books.some((b) => b.id === focusBookId))
       ? focusBookId
       : null;
+  // Same counting rule as the search, the list and the home: writers with books.
+  const writerCount = writersWithBooks(authors).length;
   const bookCount = authors.reduce((n, a) => n + a.books.length, 0);
   const counts =
-    !notice && authors.length > 0
-      ? `${plural(authors.length, labels.count.authorOne, labels.count.authorOther)} · ${plural(
+    !notice && writerCount > 0
+      ? `${plural(writerCount, labels.count.authorOne, labels.count.authorOther)} · ${plural(
           bookCount,
           labels.count.bookOne,
           labels.count.bookOther,

@@ -1,5 +1,5 @@
 // waitlist-labels.ts — Stage 11. Every string the waitlist card needs,
-// resolved at build time (the home today; the "Abre pronto" pages in Task 7).
+// resolved at build time (the home and the "Abre pronto" pages).
 
 import { t } from "~/i18n/t";
 import type { Locale } from "~/i18n/locales";

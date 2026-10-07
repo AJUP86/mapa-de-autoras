@@ -126,6 +126,10 @@
     "text": "Estoy terminando de prepararlo. Apúntate y te aviso el día que abra.",
     "home": "← Volver al inicio"
   },
+  "admin_layer": {
+    "load_error": "No he podido cargar esta página.",
+    "reload": "Recargar"
+  },
   "map": {
     "page_title": "Mapa",
     "aria_map": "Mapa del mundo con las autoras de cada país",

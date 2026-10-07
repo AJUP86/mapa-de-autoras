@@ -13,9 +13,10 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     env:
-      # `astro build` is data-independent (9a-ii), but astro.config.mjs
-      # fails the build when these are absent — by design (audit P0-8).
-      # CI builds against placeholders; real values live in Cloudflare Pages.
+      # `astro build` reads Supabase data (the home picture, the country list)
+      # but tolerates it missing, and astro.config.mjs fails the build when
+      # these vars are absent — by design (audit P0-8). CI builds against
+      # placeholders; real values live in Cloudflare Pages.
       PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
       PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
       PUBLIC_TURNSTILE_SITE_KEY: ci-placeholder-site-key
@@ -32,3 +33,16 @@ jobs:
       - run: npm run check
       - run: npm test
       - run: npm run build
+      # The closed site (spec §5.5): the gated routes are noindex, the home
+      # does not link to them and the sitemap leaves them out. Any failed
+      # check fails the step.
+      - name: Build closed (PUBLIC_MAP_OPEN=false) and check
+        env:
+          PUBLIC_MAP_OPEN: "false"
+        run: |
+          npm run build
+          for page in map book suggest thanks; do
+            grep -q noindex "dist/es/$page/index.html" || { echo "no noindex on /es/$page"; exit 1; }
+          done
+          if grep -E 'href="/es/(map|suggest)"' dist/es/index.html; then echo "home links to a closed page"; exit 1; fi
+          if grep -E '<loc>[^<]*/(map|book|suggest|thanks)/?</loc>' dist/sitemap-*.xml; then echo "sitemap lists a closed page"; exit 1; fi

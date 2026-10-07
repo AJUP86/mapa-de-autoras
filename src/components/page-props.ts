@@ -4,7 +4,8 @@
 
 import { t } from "~/i18n/t";
 import type { Locale } from "~/i18n/locales";
-import { getCountries } from "~/lib/countries";
+import { getBuildCountries } from "~/lib/build-countries";
+import type { AdminLayerLabels } from "./AdminOnly";
 import type { BookDetailProps } from "./BookDetail";
 import { bookDetailLabels } from "./book-labels";
 import type { MapAppProps } from "./map/MapApp";
@@ -20,13 +21,18 @@ export async function mapAppProps(lang: Locale): Promise<MapAppProps> {
     lang,
     labels: mapPageLabels(lang),
     // Localized country names for the panel and the search, resolved at build time.
-    countries: await getCountries(lang),
+    countries: await getBuildCountries(lang),
     // The panel's book view and the suggest sheet (same strings and endpoint as /book and /suggest).
     bookLabels: bookDetailLabels(lang),
     suggestLabels: suggestFormLabels(lang),
     turnstileSiteKey: import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "",
     submitUrl: `${supabaseUrl}/functions/v1/submit_suggestion`,
   };
+}
+
+/** The admin layer's "could not load" message (AdminLoadBoundary). */
+export function adminLayerLabels(lang: Locale): AdminLayerLabels {
+  return { loadError: t(lang, "admin_layer.load_error"), reload: t(lang, "admin_layer.reload") };
 }
 
 export function bookDetailProps(lang: Locale): BookDetailProps {

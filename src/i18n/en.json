@@ -126,6 +126,10 @@
     "text": "I'm putting the finishing touches on it. Sign up and I'll let you know the day it opens.",
     "home": "← Back to home"
   },
+  "admin_layer": {
+    "load_error": "I couldn't load this page.",
+    "reload": "Reload"
+  },
   "map": {
     "page_title": "Map",
     "aria_map": "World map of women writers by country",

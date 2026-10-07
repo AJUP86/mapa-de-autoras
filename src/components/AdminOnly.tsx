@@ -13,8 +13,20 @@
 // "Abre pronto" page: while it is mounted the page behind is hidden (one
 // <main>, nothing to tab into) and does not scroll, and focus starts in the
 // layer.
+//
+// AdminLoadBoundary wraps the lazily loaded page inside the layer: if its
+// chunk cannot be loaded (typically a stale hashed file after a redeploy), the
+// layer says so and offers a reload, instead of silently showing "Abre pronto".
 
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import {
+  Component,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ErrorInfo,
+  type ReactNode,
+} from "react";
 import { isAdmin, readSession } from "~/lib/admin-session";
 import { supabase } from "~/lib/supabase";
 
@@ -90,4 +102,44 @@ export function AdminLayer({ className, children }: { className: string; childre
       {children}
     </div>
   );
+}
+
+export interface AdminLayerLabels {
+  loadError: string;
+  reload: string;
+}
+
+export class AdminLoadBoundary extends Component<
+  { labels: AdminLayerLabels; children: ReactNode },
+  { failed: boolean }
+> {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("[admin layer] could not load the page:", error, info.componentStack);
+  }
+
+  render() {
+    if (!this.state.failed) return this.props.children;
+    const { loadError, reload } = this.props.labels;
+    return (
+      <div
+        role="alert"
+        className="absolute inset-0 grid place-content-center justify-items-center gap-3 p-6 text-center"
+      >
+        <p className="text-ink/75">{loadError}</p>
+        <button
+          type="button"
+          onClick={() => location.reload()}
+          className="min-h-11 rounded-full bg-oxblood px-5 text-[0.95rem] font-semibold text-bone hover:bg-oxblood-2"
+        >
+          {reload}
+        </button>
+      </div>
+    );
+  }
 }

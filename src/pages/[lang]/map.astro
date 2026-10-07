@@ -2,7 +2,7 @@
 import MapPage from "~/components/pages/MapPage.astro";
 import ComingSoonPage from "~/components/pages/ComingSoonPage.astro";
 import AdminMap from "~/components/map/AdminMap";
-import { mapAppProps } from "~/components/page-props";
+import { adminLayerLabels, mapAppProps } from "~/components/page-props";
 import { LOCALES, type Locale } from "~/i18n/locales";
 import { MAP_OPEN } from "~/lib/site-config";
 
@@ -17,7 +17,7 @@ const adminProps = MAP_OPEN ? null : await mapAppProps(lang);
 ---
 {adminProps ? (
   <ComingSoonPage lang={lang}>
-    <AdminMap client:only="react" {...adminProps} />
+    <AdminMap client:only="react" {...adminProps} adminLabels={adminLayerLabels(lang)} />
   </ComingSoonPage>
 ) : (
   <MapPage lang={lang} />

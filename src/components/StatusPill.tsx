@@ -1,7 +1,7 @@
-// StatusPill.tsx — Stage 11. The book-status badge, shared by the map panel
-// and (later) the list and book views. Same encoding as the map: read =
-// penguin, reading = sage, to_read = oxblood. Text uses the darker line
-// colors so it stays ≥ 4.5:1 on the light tints.
+// StatusPill.tsx — Stage 11. The book-status badge, shared by the map panel,
+// the list and the book views. Same encoding as the map: read = penguin,
+// reading = sage, to_read = oxblood. Text uses the darker line colors so it
+// stays ≥ 4.5:1 on the light tints.
 
 import type { BookStatus } from "~/lib/map-state";
 

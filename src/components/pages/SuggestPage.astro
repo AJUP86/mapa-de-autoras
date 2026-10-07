@@ -3,14 +3,14 @@ import Base from "~/layouts/Base.astro";
 import SuggestionForm from "~/components/SuggestionForm";
 import { suggestFormLabels } from "~/components/suggest-labels";
 import { t } from "~/i18n/t";
-import { getCountries } from "~/lib/countries";
+import { getBuildCountries } from "~/lib/build-countries";
 
 interface Props {
   lang: "es" | "en";
 }
 
 const { lang } = Astro.props;
-const countries = await getCountries(lang);
+const countries = await getBuildCountries(lang);
 const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? "";
 const submitUrl = `${supabaseUrl}/functions/v1/submit_suggestion`;

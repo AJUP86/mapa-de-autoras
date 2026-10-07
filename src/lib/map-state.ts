@@ -1,7 +1,8 @@
 // Domain types + pure helpers for the map.
 // Kept apart from the React components so they're easy to unit-test later.
-// The shapes match what `src/lib/authors.ts::getCatalog()` returns at build
-// time — same structure as the Stage-4 mock, just sourced from Postgres.
+// The shapes match what `src/lib/authors.ts::fetchCatalog()` returns — client-
+// side through `useCatalog` on /map, and at build time for the home's map
+// picture — same structure as the Stage-4 mock, just sourced from Postgres.
 //
 // Book-first (Stage 8.5): book status drives the map. An author no longer has
 // a status; each of its books carries a `to_read | reading | read` status, and

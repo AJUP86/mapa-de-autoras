@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { bookCountry, catalogCounts, fold, listGroups, searchCatalog } from "./map-search";
+import {
+  bookCountry,
+  catalogCounts,
+  fold,
+  listGroups,
+  searchCatalog,
+  writersWithBooks,
+} from "./map-search";
 import type { CountryEntry } from "./map-state";
 
 const catalog: CountryEntry[] = [
@@ -114,5 +121,37 @@ describe("catalogCounts", () => {
   });
   it("is all zeros for an empty catalog", () => {
     expect(catalogCounts([])).toEqual({ countries: 0, authors: 0, books: 0 });
+  });
+});
+
+// One counting rule: a writer counts only with at least one book — in search
+// results, the list summary, the home counts and the panel header.
+describe("writers without books", () => {
+  const noBooks = (id: string, name: string) => ({ id, name, books: [] });
+  const withEmpty: CountryEntry[] = [
+    { ...catalog[0], authors: [...catalog[0].authors, noBooks("a5", "Guadalupe Nettel")] },
+    catalog[1],
+    { iso_a3: "MAR", authors: [noBooks("a4", "Leila Slimani")] },
+  ];
+
+  it("writersWithBooks keeps only writers with at least one book", () => {
+    expect(writersWithBooks(withEmpty[0].authors).map((a) => a.id)).toEqual(["a1", "a2"]);
+    expect(writersWithBooks(withEmpty[2].authors)).toEqual([]);
+  });
+  it("are not counted in search results", () => {
+    const r = searchCatalog("m", withEmpty, countries);
+    expect(r.countries.map((c) => [c.iso_a3, c.authorCount])).toEqual([
+      ["MEX", 2],
+      ["MAR", 0],
+    ]);
+  });
+  it("are not counted in the list", () => {
+    const groups = listGroups(withEmpty, names, "all", "", "es");
+    expect(groups.map((g) => g.iso_a3)).toEqual(["JPN", "MEX"]);
+    const writers = new Set(groups.flatMap((g) => g.books.map((h) => h.author.id)));
+    expect([...writers].sort()).toEqual(["a1", "a2", "a3"]);
+  });
+  it("are not counted on the home", () => {
+    expect(catalogCounts(withEmpty)).toEqual({ countries: 2, authors: 3, books: 3 });
   });
 });

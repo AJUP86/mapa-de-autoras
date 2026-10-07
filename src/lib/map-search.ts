@@ -42,6 +42,15 @@ export function allBooks(catalog: ReadonlyArray<CountryEntry>): BookHit[] {
   );
 }
 
+/**
+ * The one counting rule: a writer counts only with at least one book. Search
+ * results, the list summary, the home's caption and the country panel's header
+ * all count writers through this.
+ */
+export function writersWithBooks(authors: ReadonlyArray<Author>): Author[] {
+  return authors.filter((a) => a.books.length > 0);
+}
+
 export interface CatalogCounts {
   countries: number;
   authors: number;
@@ -50,13 +59,13 @@ export interface CatalogCounts {
 
 /**
  * Countries, writers and books that count for the home's caption: only
- * writers and countries with at least one book (same rule as the list summary).
+ * writers and countries with at least one book (writersWithBooks).
  */
 export function catalogCounts(catalog: ReadonlyArray<CountryEntry>): CatalogCounts {
   const books = allBooks(catalog);
   return {
     countries: new Set(books.map((h) => h.iso_a3)).size,
-    authors: new Set(books.map((h) => h.author.id)).size,
+    authors: catalog.reduce((n, e) => n + writersWithBooks(e.authors).length, 0),
     books: books.length,
   };
 }
@@ -80,7 +89,7 @@ export function searchCatalog(
 ): SearchResults {
   const q = fold(query.trim());
   if (!q) return { countries: [], authors: [], books: [] };
-  const authorCount = new Map(catalog.map((e) => [e.iso_a3, e.authors.length]));
+  const authorCount = new Map(catalog.map((e) => [e.iso_a3, writersWithBooks(e.authors).length]));
   const countryHits = countries
     .filter((c) => fold(c.name).includes(q))
     .map((c) => ({ iso_a3: c.iso_a3, name: c.name, authorCount: authorCount.get(c.iso_a3) ?? 0 }))

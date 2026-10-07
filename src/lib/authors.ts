@@ -83,13 +83,3 @@ export async function fetchCatalog(): Promise<CountryEntry[]> {
 
   return Array.from(byCountry, ([iso_a3, authors]) => ({ iso_a3, authors }));
 }
-
-/** Same as fetchCatalog() but returns [] (and logs) on failure. */
-export async function getCatalog(): Promise<CountryEntry[]> {
-  try {
-    return await fetchCatalog();
-  } catch (e) {
-    console.warn("[authors] getCatalog() failed:", (e as Error).message);
-    return [];
-  }
-}

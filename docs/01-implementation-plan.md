@@ -347,6 +347,8 @@ git push -u origin development
 - HTML email template for `notify_owner` (deeplink to admin inbox, country flag, submitter info).
 - Heartbeat workflow matrix updated to include production env.
 - **Added 2026-10-08 — browser smoke tests (Playwright)** against a local build + the local Supabase stack, with a seeded test admin (signed in through the local mail catcher's magic link or a test-only session helper; never a real account): (1) visitor, closed mode — `/es/map`, `/es/book`, `/es/suggest` show "Abre pronto", nav and home have no map links, the waitlist card validates; (2) admin, closed mode — the real map and book page appear, the admin nav has the map icon, signing out hides them; (3) open mode — map loads with colors, Map ↔ List, search, a country panel and a book view open, the suggest sheet opens (submission stubbed). Run before every merge to `master`; in CI if the local stack fits the runner.
+- **Added 2026-10-08 — scheduled daily Pages deploy hook** (e.g. a GitHub Actions cron calling the Cloudflare Pages deploy hook) so the home's map picture and counts, which are baked in at build time, stay fresh while production is closed and nothing else triggers a build.
+- **Added 2026-10-08 — real-device pass + 50m performance check from Stage 11**, as a gate before merging to `master`: real iOS Safari and Android Chrome on the staging site (closed and open mode), and the 50m world data on mid-range phones. If phones jank, simplify the topology at build time.
 
 **Verify:**
 
@@ -404,7 +406,7 @@ Owner decisions (Alejandro, 2026-10-07):
 - **Coming-soon mode is stricter.** New visitors get only home, About, Privacy and the club page. Map, list, book pages and suggest show "Abre pronto". A signed-in admin can open every route. Updated in the Stage 11 spec and plan (Task 7) before Task 7 starts.
 - **The waitlist starts Danny's own email list** (see Stage 12).
 - **After launch the map stays open without an account;** reader accounts (Stage 13) are optional and add extras.
-- **Navigation gaps are fixed in one pass after Stage 11**: the `/thanks` button "Volver al mapa" still links to home, and the admin nav has no "Sugerir" link.
+- **Navigation gaps are fixed in one pass after Stage 11**: the `/thanks` button "Volver al mapa" still links to home, and the admin nav has no "Sugerir" link. The email links too: "Ver el mapa" in `supabase/functions/submit_suggestion/email.ts` and `notify_submitter/email.ts` still point at the home page. And `/[lang]/suggest` is now reachable only by URL (no page links to it; the suggest sheet on `/map` is the entry point).
 - **Money:** affiliate links, paid club sessions, clearly labeled publisher sponsorships, later newsletter sponsorships. No selling of browsing data and no personalized ads (reading habits can reveal sensitive data; a consent banner would greet every Instagram visitor).
 
 ---

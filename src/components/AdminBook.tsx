@@ -4,7 +4,7 @@
 // (bookDetailProps, BOOK_MAIN_CLASS). BookDetail is loaded only for an admin.
 
 import { lazy, Suspense } from "react";
-import AdminOnly, { AdminLayer } from "./AdminOnly";
+import AdminOnly, { AdminLayer, AdminLoadBoundary, type AdminLayerLabels } from "./AdminOnly";
 import type { BookDetailProps } from "./BookDetail";
 
 const BookDetail = lazy(() => import("./BookDetail"));
@@ -12,16 +12,19 @@ const BookDetail = lazy(() => import("./BookDetail"));
 interface Props extends BookDetailProps {
   /** The open page's `<main>` classes (BOOK_MAIN_CLASS). */
   mainClass: string;
+  adminLabels: AdminLayerLabels;
 }
 
-export default function AdminBook({ mainClass, ...props }: Props) {
+export default function AdminBook({ mainClass, adminLabels, ...props }: Props) {
   return (
     <AdminOnly>
       <AdminLayer className="fixed inset-0 z-[70] overflow-y-auto bg-parchment">
         <main className={mainClass}>
-          <Suspense fallback={null}>
-            <BookDetail {...props} />
-          </Suspense>
+          <AdminLoadBoundary labels={adminLabels}>
+            <Suspense fallback={null}>
+              <BookDetail {...props} />
+            </Suspense>
+          </AdminLoadBoundary>
         </main>
       </AdminLayer>
     </AdminOnly>

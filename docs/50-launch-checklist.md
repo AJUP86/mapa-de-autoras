@@ -229,6 +229,51 @@ Full 9b spec lives in `docs/01-implementation-plan.md`. Checklist form here:
 
 ---
 
+## Stage 11 follow-ups (from the final review, 2026-10-08)
+
+The whole-branch review of Stage 11 found no blockers; its fix wave is done. These are the items it left open, grouped by when they matter.
+
+### Before 9b
+
+- [ ] Scheduled daily Pages deploy hook, so the home's map picture and counts stay fresh while production is closed (also in the 9b build list).
+- [ ] The Playwright smoke tests (already in 9b) also cover: Esc closes the layers in order (suggest sheet, search dropdown, panel), focus returns to where it was, and `?view` stays in sync with the Map | List switch.
+
+### Before Stage 14 (release)
+
+- [ ] Contrast: `text-ink/60` secondary text (~3.9:1, WCAG 1.4.3) and the ochre focus ring (~2.7:1, WCAG 1.4.11).
+- [ ] The injected Turnstile script has no `onerror`: a failed first load is never retried.
+- [ ] Opening a book in the panel announces nothing: name the dialog after the book, or focus the title.
+- [ ] The suggest sheet drops a half-typed draft on Esc or a scrim tap; consider a "discard?" confirm.
+- [ ] Simplify the 50m topology at build time if the phone pass shows jank.
+- [ ] The navigation pass: the `/thanks` button, the email links ("Ver el mapa" in `submit_suggestion` / `notify_submitter`), `/suggest` reachable only by URL, the admin `NavSkeleton` width and layout.
+
+### Later (code health)
+
+- [ ] Unsorted-fixture test for the search sort and the year tie-break.
+- [ ] `fold()`: write the combining-mark range as `\u0300-\u036f` escapes instead of raw characters.
+- [ ] `fmt` → `Object.hasOwn`.
+- [ ] Tests for `browserRegion`, the 900 px² boundary, and mapping `Indian/*` time zones to a region.
+- [ ] Test pinning the AUS + Ashmore merge.
+- [ ] Extract and test `constrainToFreeArea` / `keepView`.
+- [ ] Arrow-key navigation in the search combobox.
+- [ ] `scroll-pb` ignores the bottom safe area.
+- [ ] `SuggestionForm` props as a union (`thanksUrl` | `onSuccess`).
+- [ ] A `bookHref` helper (the book page link is duplicated).
+- [ ] Split `MapApp.tsx` (565 lines at the review) into hooks (`useSuggestSheet`, search).
+- [ ] `MapPicture` imports `world-geo.ts`, which parses the 50m data at build.
+- [ ] The Instagram URL guard is duplicated: extract a helper.
+- [ ] Unit tests for the env guard values and the closed-route sitemap regex (`astro.config.mjs`).
+- [ ] The env guard reads the `.env.production*` mode in dev.
+- [ ] Landscape phones and iPads get the desktop zoom and lose double-tap: check in the device pass.
+- [ ] Shadow tokens hard-code the ink rgb (matters once there is a dark mode).
+- [ ] `WaitlistCard` double-submit guard → a ref (Stage 12).
+- [ ] Country panel: the header counts only writers with books, but the list shows every writer, so "N autoras" can be lower than the cards shown (only for a published writer with no books, which promote prevents; mostly a Realtime gap). Filter book-less writers out of the panel too, and use that for the empty-country state.
+- [ ] CI closed-mode checks: `if grep …` passes silently when the sitemap or `dist/es/index.html` is missing. Add `test -s` on those files first.
+- [ ] `BookPanel`: a live status change while a book is open triggers a refetch; if that refetch fails, the open book is replaced by the error message. Keep the shown book on a failed refresh.
+- [ ] `docs/STATUS.md` shows two test counts (125 in the stage table, 132 in "How to resume"). Keep one.
+
+---
+
 ## Post-launch backlog (iterate after launch)
 
 Moved out of "MVP roadmap" — not launch-blocking; addressed once the site is live and taking traffic.
