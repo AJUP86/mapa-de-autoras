@@ -11,7 +11,7 @@ import type { Locale } from "~/i18n/locales";
 import type { BookDetailLabels } from "./book-labels";
 import BookDetailView from "./BookDetailView";
 
-interface Props {
+export interface BookDetailProps {
   lang: Locale;
   labels: BookDetailLabels;
   /** The list view of the map (`/{lang}/map?view=list`). */
@@ -25,7 +25,7 @@ type State =
   | { kind: "not_found" }
   | { kind: "loaded"; book: BookDetailData };
 
-export default function BookDetail({ lang, labels, listHref, siteTitle }: Props) {
+export default function BookDetail({ lang, labels, listHref, siteTitle }: BookDetailProps) {
   const [state, setState] = useState<State>({ kind: "loading" });
 
   useEffect(() => {

@@ -1,0 +1,47 @@
+---
+// ComingSoonPage.astro — Stage 11. The "Abre pronto" page: what /map (and so
+// the list view), /book, /suggest and /thanks render while the map is closed
+// (PUBLIC_MAP_OPEN=false, spec §5.5). Eyebrow, short text, the home's waitlist
+// card and a link home; noindex. The default slot sits outside <main> — /map
+// and /book put their admin layer there (AdminMap, AdminBook).
+import Base from "~/layouts/Base.astro";
+import WaitlistCard from "~/components/WaitlistCard";
+import { waitlistLabels } from "~/components/waitlist-labels";
+import type { Locale } from "~/i18n/locales";
+import { t } from "~/i18n/t";
+
+interface Props {
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+const title = t(lang, "coming_soon.title");
+---
+
+<Base lang={lang} title={`${title} · ${t(lang, "meta.title")}`} description={t(lang, "coming_soon.text")} noindex>
+  <main class="mx-auto max-w-[560px] px-4 pt-10 pb-14 sm:px-6 sm:pt-16 sm:pb-20">
+    <div class="text-center">
+      <p class="text-[0.72rem] font-medium uppercase tracking-[0.18em] text-ink/70">
+        {t(lang, "coming_soon.eyebrow")}
+      </p>
+      <h1 class="mt-4 font-display text-[clamp(2.2rem,8vw,3.2rem)] font-semibold leading-[1.05] tracking-[-0.012em] text-ink">
+        {title}
+      </h1>
+      <p class="mx-auto mt-5 max-w-[30em] text-[1.1rem] text-ink/75">
+        {t(lang, "coming_soon.text")}
+      </p>
+    </div>
+    <div class="mt-8">
+      <WaitlistCard client:load lang={lang} labels={waitlistLabels(lang)} />
+    </div>
+    <p class="mt-6 text-center">
+      <a
+        href={`/${lang}/`}
+        class="inline-flex min-h-11 items-center font-medium text-oxblood underline decoration-ochre decoration-2 underline-offset-4 hover:text-oxblood-2"
+      >
+        {t(lang, "coming_soon.home")}
+      </a>
+    </p>
+  </main>
+  <slot />
+</Base>

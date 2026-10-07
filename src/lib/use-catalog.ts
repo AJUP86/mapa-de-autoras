@@ -1,9 +1,8 @@
 // use-catalog.ts — Stage 11
 //
-// The public catalog for map UIs: initial fetch + optional Supabase Realtime
+// The public catalog for the /map page: initial fetch + Supabase Realtime
 // patching (ADR 0005). Moved out of the old home map (MapSection.tsx) with the
-// same behavior. /map is the only caller; `{ realtime: false }` skips the
-// subscription (unused since the home picture became build-time).
+// same behavior.
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "./supabase";
@@ -25,7 +24,7 @@ export type CatalogState =
   | { kind: "error" }
   | { kind: "loaded"; catalog: CountryEntry[] };
 
-export function useCatalog({ realtime = true }: { realtime?: boolean } = {}) {
+export function useCatalog() {
   const [state, setState] = useState<CatalogState>({ kind: "loading" });
   const [attempt, setAttempt] = useState(0);
   const hasSubscribedOnce = useRef(false);
@@ -50,7 +49,7 @@ export function useCatalog({ realtime = true }: { realtime?: boolean } = {}) {
   // patches never tear the channel down (same rule as the old MapSection).
   const loaded = state.kind === "loaded";
   useEffect(() => {
-    if (!realtime || !loaded) return;
+    if (!loaded) return;
     const patch = (fn: (c: CountryEntry[]) => CountryEntry[]) =>
       setState((prev) =>
         prev.kind === "loaded" ? { kind: "loaded", catalog: fn(prev.catalog) } : prev,
@@ -91,7 +90,7 @@ export function useCatalog({ realtime = true }: { realtime?: boolean } = {}) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [realtime, loaded]);
+  }, [loaded]);
 
   const retry = useCallback(() => setAttempt((n) => n + 1), []);
   return { state, retry };

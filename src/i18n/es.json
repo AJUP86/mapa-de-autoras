@@ -6,7 +6,6 @@
   "nav": {
     "home": "Inicio",
     "map": "Mapa",
-    "suggest": "Sugerir",
     "about": "Conóceme",
     "language_short": "EN"
   },
@@ -120,6 +119,12 @@
     "footer": {
       "privacy": "Privacidad"
     }
+  },
+  "coming_soon": {
+    "eyebrow": "Abre pronto",
+    "title": "El mapa abre muy pronto",
+    "text": "Estoy terminando de prepararlo. Apúntate y te aviso el día que abra.",
+    "home": "← Volver al inicio"
   },
   "map": {
     "page_title": "Mapa",

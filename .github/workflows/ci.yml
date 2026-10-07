@@ -19,6 +19,8 @@ jobs:
       PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
       PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
       PUBLIC_TURNSTILE_SITE_KEY: ci-placeholder-site-key
+      # Required too (exactly "true" or "false"); CI builds the open site.
+      PUBLIC_MAP_OPEN: "true"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

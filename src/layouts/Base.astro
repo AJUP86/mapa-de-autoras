@@ -2,12 +2,18 @@
 import "../styles/global.css";
 import AdminAwareNav from "~/components/AdminAwareNav";
 import { t } from "~/i18n/t";
+import { MAP_OPEN } from "~/lib/site-config";
 
 interface Props {
   title?: string;
   description?: string;
   lang?: "es" | "en";
   noindex?: boolean;
+  /**
+   * The full-screen /map: no nav, and the document itself never scrolls or
+   * bounces (the map pans instead). Classes on html/body rather than a page
+   * <style>, so the lock never reaches the closed /map ("Abre pronto").
+   */
   bare?: boolean;
 }
 
@@ -38,6 +44,8 @@ const enUrl = new URL(enPath, site).href;
 
 const isEn = lang === "en";
 
+const fullScreen = bare && "h-full overflow-hidden overscroll-none";
+
 // Language switch: swap /es/... <-> /en/... on the current path.
 // If we're on an admin page (/admin/*), the switch target defaults to the
 // home page of the other locale (admin stays single-locale Spanish).
@@ -54,8 +62,6 @@ const navLabels = {
   mapHref: `${localePrefix}/map`,
   about: t(lang, "nav.about"),
   aboutHref: `${localePrefix}/about`,
-  suggest: t(lang, "nav.suggest"),
-  suggestHref: `${localePrefix}/suggest`,
   languageSwitchHref,
   languageSwitchLabel: t(lang, "nav.language_short"),
   languageSwitchAriaLabel: isEn ? "Cambiar a español" : "Switch to English",
@@ -68,7 +74,7 @@ const navLabels = {
 ---
 
 <!doctype html>
-<html lang={lang}>
+<html lang={lang} class:list={[fullScreen]}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -81,8 +87,8 @@ const navLabels = {
     <link rel="alternate" hreflang="en" href={enUrl} />
     <link rel="alternate" hreflang="x-default" href={esUrl} />
   </head>
-  <body class="font-body bg-parchment text-ink">
-    {!bare && <AdminAwareNav client:load labels={navLabels} />}
+  <body class:list={["font-body bg-parchment text-ink", fullScreen]}>
+    {!bare && <AdminAwareNav client:load labels={navLabels} mapOpen={MAP_OPEN} />}
     <slot />
   </body>
 </html>

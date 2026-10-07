@@ -7,14 +7,14 @@
 import { geoEqualEarth, geoPath } from "d3-geo";
 import type { FeatureCollection, MultiPolygon, Polygon } from "geojson";
 import world110 from "world-atlas/countries-110m.json";
+import { buildTimeCatalog } from "~/components/home/build-time-catalog";
 import { IconArrowRight } from "~/components/icons";
 import { plural } from "~/i18n/format";
 import type { Locale } from "~/i18n/locales";
 import { t } from "~/i18n/t";
-import { fetchCatalog } from "~/lib/authors";
 import { CompactPath } from "~/lib/compact-path";
 import { catalogCounts } from "~/lib/map-search";
-import { countryColor, countryStatuses, type CountryEntry } from "~/lib/map-state";
+import { countryColor, countryStatuses } from "~/lib/map-state";
 import { worldFeatures, type CountryProps } from "~/lib/world-geo";
 
 interface Props {
@@ -25,13 +25,9 @@ interface Props {
 
 const { lang, open } = Astro.props;
 
-let catalog: CountryEntry[] | null = null;
-try {
-  catalog = await fetchCatalog();
-} catch (e) {
-  // The picture must never fail the build: draw it uncolored, without counts.
-  console.warn("[MapPicture] catalog fetch failed, drawing the map uncolored:", (e as Error).message);
-}
+// One fetch per build for both locales; null when it failed — the picture
+// is then drawn uncolored, without counts.
+const catalog = await buildTimeCatalog();
 const statuses = catalog ? countryStatuses(catalog) : {};
 
 // Fixed viewBox: Equal Earth fitted to the width, height from the fitted

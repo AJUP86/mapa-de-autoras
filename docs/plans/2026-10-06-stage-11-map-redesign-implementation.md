@@ -1561,12 +1561,14 @@ git add package.json package-lock.json src/lib/world-geo.ts src/lib/world-geo.te
 
 ### Task 7: "Map closed" switch + docs
 
-**Scope:** spec decisions 9–10, §5.5.
+> **Revised 2026-10-07 (owner):** stricter closed mode with admin access (spec §5.5). `site-config.ts` (`MAP_OPEN`) and the `.env.example` entry already landed in Task 6.
 
-**Files:** create `src/lib/site-config.ts` (+ test: `parseMapOpen("true") === true`, anything else false; `MAP_OPEN` constant from `import.meta.env.PUBLIC_MAP_OPEN`), `src/components/pages/ComingSoonPage.astro` (text + `WaitlistCard` + home link); `map.astro` and `book.astro` render `ComingSoonPage` when closed; `IndexPage.astro` hides the map CTA/link; `Base.astro` passes `mapOpen` so `AdminAwareNav` hides "Mapa"; `astro.config.mjs` env guard requires `PUBLIC_MAP_OPEN` ∈ {`true`, `false`} and the sitemap drops `/map` + `/book` when closed; `.github/workflows/ci.yml` env `PUBLIC_MAP_OPEN: "true"`; `.env.example` entry. Docs: `STATUS.md` (Stage 11 done section), ADR 0001 amendment (map renderer is now d3 directly), `RAG.md` if a doc was added.
+**Scope:** spec decisions 9–10, §5.5, §6.5.
 
-**Manual step for Alejandro before merging:** set `PUBLIC_MAP_OPEN=true` (Production scope) on the **staging** Cloudflare Pages project. Without it the staging build fails on the env guard.
+**Files:** `astro.config.mjs` env guard requires `PUBLIC_MAP_OPEN` ∈ {`true`, `false`} (clear error otherwise) and the sitemap drops `/map`, `/book`, `/books`, `/suggest`, `/thanks` when closed; `.github/workflows/ci.yml` env `PUBLIC_MAP_OPEN: "true"`; create `src/components/pages/ComingSoonPage.astro` (eyebrow, text, `WaitlistCard`, home link, `noindex`) and a small admin gate (`AdminOnly.tsx` using `readSession`/`isAdmin` from `~/lib/admin-session`) with per-route wrappers for the real `/map` and `/book`; `map.astro`, `book.astro`, `suggest.astro`, `thanks.astro` (or their page components) branch on `MAP_OPEN`; `Base.astro` passes `mapOpen` so `AdminAwareNav` hides "Mapa" and "Sugerir" when closed. Carried minors from the Task 6 review (language pill width, one catalog fetch per build, remove `useCatalog`'s unused `realtime` option). Docs: `STATUS.md` (Stage 11 done section), ADR 0001 amendment (map renderer is now d3 directly), `RAG.md` if a doc was added.
 
-**Checks:** `PUBLIC_MAP_OPEN=false npm run build` → `dist/es/map/index.html` is the "Abre pronto" page, no map link in nav or home, sitemap without `/map`; `PUBLIC_MAP_OPEN=true npm run build` → map page as before; missing value → build fails with a clear message. Real-device pass (spec §9.7) before the PR.
+**Manual steps for Alejandro:** `PUBLIC_MAP_OPEN=true` (or `false`) in the local `.env` — the dev server refuses to start without it; before merging, set `PUBLIC_MAP_OPEN=true` (Production scope) on the **staging** Cloudflare Pages project, or the staging build fails on the env guard.
 
-**Commit:** `feat(11): PUBLIC_MAP_OPEN switch with coming-soon pages; docs`
+**Checks:** `PUBLIC_MAP_OPEN=false npm run build` → `dist/es/map/index.html`, `dist/es/book/index.html`, `dist/es/suggest/index.html`, `dist/es/thanks/index.html` are the "Abre pronto" page (`noindex`), no map/suggest link in nav or home, sitemap without those routes; in the browser a signed-in admin gets the real map and book page; `PUBLIC_MAP_OPEN=true npm run build` → everything as before; missing or misspelled value → build fails with a clear message. Real-device pass (spec §9.7) before the PR.
+
+**Commit:** `feat(11): PUBLIC_MAP_OPEN switch with coming-soon pages and admin access; docs`

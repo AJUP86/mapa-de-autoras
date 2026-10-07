@@ -346,6 +346,7 @@ git push -u origin development
 - Pivot notify trigger from pg_net trigger to Supabase Database Webhooks (UI-configured per environment; works around the GUC restriction).
 - HTML email template for `notify_owner` (deeplink to admin inbox, country flag, submitter info).
 - Heartbeat workflow matrix updated to include production env.
+- **Added 2026-10-08 — browser smoke tests (Playwright)** against a local build + the local Supabase stack, with a seeded test admin (signed in through the local mail catcher's magic link or a test-only session helper; never a real account): (1) visitor, closed mode — `/es/map`, `/es/book`, `/es/suggest` show "Abre pronto", nav and home have no map links, the waitlist card validates; (2) admin, closed mode — the real map and book page appear, the admin nav has the map icon, signing out hides them; (3) open mode — map loads with colors, Map ↔ List, search, a country panel and a book view open, the suggest sheet opens (submission stubbed). Run before every merge to `master`; in CI if the local stack fits the runner.
 
 **Verify:**
 
@@ -353,6 +354,7 @@ git push -u origin development
 2. Submitting a real suggestion triggers a Resend email to `OWNER_NOTIFICATION_EMAIL`.
 3. Magic-link login works on production URL.
 4. Heartbeat workflow includes production deployment.
+5. The Playwright smoke suite passes locally (and in CI if wired).
 
 **Pause for review.**
 
@@ -438,10 +440,12 @@ Owner decisions (Alejandro, 2026-10-07):
 - Edge Function `join_waitlist`: Turnstile, validation, duplicate-safe insert, confirmation email (double opt-in), unsubscribe token.
 - Replace the Stage 11 `joinWaitlist()` stub; confirm + unsubscribe landing pages in both locales.
 - Admin: waitlist count + CSV export.
+- **Added 2026-10-08 (owner) — waitlist page in the admin** (own icon in the admin nav), so Danny can see how many people are waiting and plan the launch: totals (signed up, confirmed, with the news box), new sign-ups per day (small chart) and per source, the CSV export, and next to the numbers the limits that matter on release day (Supabase Realtime concurrent connections and Resend emails per day on the current plans) so the plan upgrade can be decided before the launch email goes out. Counts come from an admin-only RPC; no anon access.
 - Privacy policy section for the waitlist (ES + EN).
 - **Added 2026-10-07 — Danny's email list.** Submitting the form = "email me when the map opens" (launch email only). An optional, unticked box **"Quiero recibir novedades de Danny"** = ongoing news. Store per entry: email, news yes/no, signup date, the exact consent text (version). Form text in Danny's voice says both purposes plus a link to the privacy page. No newsletters are sent before release. After the launch email (Stage 14), entries without the news box are deleted; the rest become Danny's mailing list.
+- **Added 2026-10-08 — database permission tests.** pgTAP tests in `supabase/tests/` run with `supabase test db` against the local stack, for **every** table and admin RPC (not only the waitlist): what `anon` (visitor), a signed-in non-admin and an admin can select / insert / update / delete, plus column grants (e.g. `book_links.affiliate_tag` hidden from `anon`). Each policy gets an allowed and a denied case. Wire `supabase test db` into CI if the runner can start the local stack; otherwise run it before every merge and say so in the PR. Stage 13 (reader accounts) extends the same suite with the reader role.
 
-**Verify:** sign up → confirmation email → confirmed row; unsubscribe link works; duplicates do not resend endlessly; anon cannot read the table.
+**Verify:** sign up → confirmation email → confirmed row; unsubscribe link works; duplicates do not resend endlessly; anon cannot read the table; `supabase test db` passes, and breaking one policy on purpose makes it fail.
 
 **Note:** emails reach real people only after 9b sets up Resend on our own domain; until then, test with the Resend account owner's address.
 

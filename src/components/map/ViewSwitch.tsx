@@ -5,7 +5,8 @@
 // + the 16 px side padding.
 
 import type { MapView } from "~/lib/map-view";
-import { IconList, IconMap } from "./icons";
+import { IconMap } from "../icons";
+import { IconList } from "./icons";
 
 const VIEWS: MapView[] = ["map", "list"];
 

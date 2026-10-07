@@ -44,7 +44,7 @@ import {
   type Filter,
 } from "~/lib/map-state";
 
-interface Props {
+export interface MapAppProps {
   lang: Locale;
   labels: MapPageLabels;
   /** Localized country names (build time), keyed by iso_a3 — never the atlas names. */
@@ -70,7 +70,7 @@ export default function MapApp({
   suggestLabels,
   turnstileSiteKey,
   submitUrl,
-}: Props) {
+}: MapAppProps) {
   const { state, retry } = useCatalog();
   const [filter, setFilter] = useState<Filter>("all");
   const [selected, setSelected] = useState<string | null>(null);

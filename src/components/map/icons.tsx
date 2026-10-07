@@ -47,16 +47,6 @@ export function IconSearch() {
   );
 }
 
-/** Folded map (Map | List switch). */
-export function IconMap() {
-  return (
-    <Icon>
-      <path d="M3 6.5l6-3 6 3 6-3v14l-6 3-6-3-6 3z" />
-      <path d="M9 3.5v14M15 6.5v14" />
-    </Icon>
-  );
-}
-
 /** Bulleted list (Map | List switch). */
 export function IconList() {
   return (

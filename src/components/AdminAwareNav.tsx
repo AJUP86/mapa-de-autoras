@@ -2,9 +2,11 @@
 //
 // Mounted in Base.astro so every page renders the same nav slot. On mount
 // reads the supabase session; renders a small skeleton during the check,
-// then either the public nav (logo, Mapa, Conóceme, Sugerir and a short
-// EN/ES pill; Stage 11: fits a 360 px phone) or the admin nav (logo + inbox
-// icon with pending-count badge + add icon + logout).
+// then either the public nav (logo, "Mapa" while the map is open, "Conóceme"
+// and a short EN/ES pill; Stage 11: fits a 360 px phone, and suggesting lives
+// on the map, so no "Sugerir" link) or the admin nav (logo + map icon —
+// the real map in both modes — + inbox icon with pending-count badge + books
+// + add icon + logout; fits a 360 px phone).
 //
 // The pending count is queried once on mount; refreshed every 60s with
 // setInterval. Realtime upgrade is phase 2 — see docs/40-phase2-backlog.md.
@@ -13,6 +15,7 @@ import { useEffect, useState } from "react";
 import { readSession, signOut, type AdminSessionState } from "~/lib/admin-session";
 import { supabase } from "~/lib/supabase";
 import AdminNavIcon from "./AdminNavIcon";
+import { IconMap } from "./icons";
 
 interface Labels {
   /** Admin variant: the text logo ("Inicio"). */
@@ -24,8 +27,6 @@ interface Labels {
   mapHref: string;
   about: string;
   aboutHref: string;
-  suggest: string;
-  suggestHref: string;
   languageSwitchHref: string;
   /** Short pill text ("EN" on /es, "ES" on /en). */
   languageSwitchLabel: string;
@@ -39,9 +40,11 @@ interface Labels {
 
 interface Props {
   labels: Labels;
+  /** PUBLIC_MAP_OPEN (MAP_OPEN): the public nav links "Mapa" only when open. */
+  mapOpen: boolean;
 }
 
-export default function AdminAwareNav({ labels }: Props) {
+export default function AdminAwareNav({ labels, mapOpen }: Props) {
   const [state, setState] = useState<AdminSessionState>({ kind: "loading" });
   const [pendingCount, setPendingCount] = useState<number>(0);
 
@@ -97,7 +100,8 @@ export default function AdminAwareNav({ labels }: Props) {
   }, [state.kind]);
 
   if (state.kind === "loading") return <NavSkeleton />;
-  if (state.kind !== "admin") return <PublicNav labels={labels} search={search} />;
+  if (state.kind !== "admin")
+    return <PublicNav labels={labels} mapOpen={mapOpen} search={search} />;
 
   return (
     <nav className="flex items-center justify-between gap-4 px-6 py-3 border-b border-ink/10 bg-parchment">
@@ -108,6 +112,10 @@ export default function AdminAwareNav({ labels }: Props) {
         {labels.home}
       </a>
       <div className="flex items-center gap-1">
+        {/* The real map in both modes: while it is closed, /map's admin gate shows it. */}
+        <AdminNavIcon label={labels.map} href={labels.mapHref}>
+          <IconMap size={20} />
+        </AdminNavIcon>
         <AdminNavIcon label={labels.sugerencias} href="/admin/inbox" badge={pendingCount}>
           <InboxIcon />
         </AdminNavIcon>
@@ -133,20 +141,27 @@ export default function AdminAwareNav({ labels }: Props) {
 
 // Public bar: one row at every width (h-15), content aligned with the home's
 // 1080 px column. Below `sm` the wordmark is visually hidden (the "m" mark
-// stays, the link keeps its name) so logo, three links and the language pill
-// fit a 360 px phone. Every target is 44 px tall.
+// stays, the link keeps its name) so logo, links and the language pill fit a
+// 360 px phone. Every target is at least 44 × 44 px.
 const PUBLIC_BAR = "border-b border-ink/10 bg-parchment";
 const PUBLIC_ROW =
   "mx-auto flex h-15 max-w-[1080px] items-center justify-between gap-2 px-4 sm:px-6";
 const PUBLIC_LINK =
   "inline-flex min-h-11 items-center px-2 text-[0.9rem] whitespace-nowrap text-ink/80 no-underline hover:text-oxblood sm:px-3";
 
-function PublicNav({ labels, search }: { labels: Labels; search: string }) {
-  // Task 7: "Mapa" and "Sugerir" are hidden while the map is closed (mapOpen).
+function PublicNav({
+  labels,
+  mapOpen,
+  search,
+}: {
+  labels: Labels;
+  mapOpen: boolean;
+  search: string;
+}) {
+  // While the map is closed (spec §5.5) the nav does not link to it.
   const links = [
-    { href: labels.mapHref, label: labels.map },
+    ...(mapOpen ? [{ href: labels.mapHref, label: labels.map }] : []),
     { href: labels.aboutHref, label: labels.about },
-    { href: labels.suggestHref, label: labels.suggest },
   ];
   return (
     <nav className={PUBLIC_BAR}>
@@ -177,7 +192,7 @@ function PublicNav({ labels, search }: { labels: Labels; search: string }) {
             href={`${labels.languageSwitchHref}${search}`}
             hrefLang={labels.languageSwitchHreflang}
             aria-label={labels.languageSwitchAriaLabel}
-            className="group ml-1 inline-flex min-h-11 items-center no-underline"
+            className="group ml-1 inline-flex min-h-11 min-w-11 items-center justify-center no-underline"
           >
             <span className="rounded-full border border-ink/15 bg-bone px-2.5 py-1 text-xs font-semibold tracking-wider text-ink/80 transition-colors group-hover:border-oxblood/40 group-hover:text-oxblood">
               {labels.languageSwitchLabel}

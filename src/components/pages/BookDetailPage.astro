@@ -1,7 +1,7 @@
 ---
 import Base from "~/layouts/Base.astro";
 import BookDetail from "~/components/BookDetail";
-import { bookDetailLabels } from "~/components/book-labels";
+import { BOOK_MAIN_CLASS, bookDetailProps } from "~/components/page-props";
 import { t } from "~/i18n/t";
 
 interface Props {
@@ -10,7 +10,8 @@ interface Props {
 
 const { lang } = Astro.props;
 
-const labels = bookDetailLabels(lang);
+// Same props as the closed page's admin layer (AdminBook).
+const props = bookDetailProps(lang);
 ---
 
 <Base
@@ -18,13 +19,7 @@ const labels = bookDetailLabels(lang);
   title={`${t(lang, "books.title")} · ${t(lang, "meta.title")}`}
   description={t(lang, "books.intro")}
 >
-  <main class="mx-auto max-w-3xl px-6 py-12 sm:py-16">
-    <BookDetail
-      client:load
-      lang={lang}
-      labels={labels}
-      listHref={`/${lang}/map?view=list`}
-      siteTitle={t(lang, "meta.title")}
-    />
+  <main class={BOOK_MAIN_CLASS}>
+    <BookDetail client:load {...props} />
   </main>
 </Base>

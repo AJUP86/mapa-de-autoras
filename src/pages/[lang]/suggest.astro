@@ -1,6 +1,8 @@
 ---
 import SuggestPage from "~/components/pages/SuggestPage.astro";
+import ComingSoonPage from "~/components/pages/ComingSoonPage.astro";
 import { LOCALES, type Locale } from "~/i18n/locales";
+import { MAP_OPEN } from "~/lib/site-config";
 
 export function getStaticPaths() {
   return LOCALES.map((lang) => ({ params: { lang } }));
@@ -8,4 +10,5 @@ export function getStaticPaths() {
 
 const { lang } = Astro.params as { lang: Locale };
 ---
-<SuggestPage lang={lang} />
+{/* Closed: "Abre pronto" for everyone, admins too (spec §5.5). */}
+{MAP_OPEN ? <SuggestPage lang={lang} /> : <ComingSoonPage lang={lang} />}

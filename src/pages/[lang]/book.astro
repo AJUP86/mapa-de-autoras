@@ -1,11 +1,24 @@
 ---
 import BookDetailPage from "~/components/pages/BookDetailPage.astro";
+import ComingSoonPage from "~/components/pages/ComingSoonPage.astro";
+import AdminBook from "~/components/AdminBook";
+import { BOOK_MAIN_CLASS, bookDetailProps } from "~/components/page-props";
 import { LOCALES, type Locale } from "~/i18n/locales";
+import { MAP_OPEN } from "~/lib/site-config";
 
 export function getStaticPaths() {
   return LOCALES.map((lang) => ({ params: { lang } }));
 }
 
 const { lang } = Astro.params as { lang: Locale };
+// Closed (spec §5.5): "Abre pronto" for visitors; a signed-in admin gets the
+// real book page on top of it.
+const adminProps = MAP_OPEN ? null : bookDetailProps(lang);
 ---
-<BookDetailPage lang={lang} />
+{adminProps ? (
+  <ComingSoonPage lang={lang}>
+    <AdminBook client:only="react" {...adminProps} mainClass={BOOK_MAIN_CLASS} />
+  </ComingSoonPage>
+) : (
+  <BookDetailPage lang={lang} />
+)}

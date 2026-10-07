@@ -41,6 +41,16 @@ export function IconExternal() {
   );
 }
 
+/** Folded map (the /map Map | List switch, the admin nav's "Mapa"). */
+export function IconMap({ size }: { size?: number }) {
+  return (
+    <Icon size={size}>
+      <path d="M3 6.5l6-3 6 3 6-3v14l-6 3-6-3-6 3z" />
+      <path d="M9 3.5v14M15 6.5v14" />
+    </Icon>
+  );
+}
+
 /** Arrow right ("Abrir el mapa"). */
 export function IconArrowRight() {
   return (
